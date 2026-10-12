@@ -3,7 +3,9 @@
   // Resolve from the shared script so nested games and repository paths work.
   const script = document.currentScript;
   const portal = new URL('../index.html#games', script.src);
-  const framed = /oshite_aobee|aobee_rhythm_game|aobee_grand_prix/.test(location.pathname);
+  const names = [['oshite_aobee','puzzle'],['aobee_rhythm_game','rhythm'],['aobee_grand_prix','race'],['aobee_farm','farm'],['AOBEE_MIX','mix'],['aobee_quiz','quiz'],['aobee_adventure','adventure'],['aobee_shooter','shooter'],['aobee_star_guard','guard'],['hashire_aobee','runner'],['/rpg/','rpg']];
+  document.documentElement.dataset.aobeeGame = names.find(([name]) => location.pathname.includes(name))?.[1] || '';
+  const framed = true;
   if (framed) {
     document.documentElement.classList.add('aobee-portal-framed');
     if (location.pathname.includes('oshite_aobee')) document.documentElement.classList.add('aobee-puzzle');
@@ -12,7 +14,7 @@
       html.aobee-portal-framed body{padding-top:48px!important;box-sizing:border-box}
       html.aobee-portal-framed body:before{content:'';position:fixed;inset:0 0 auto;height:48px;background:#102b48;z-index:2147483646;pointer-events:none}
       html.aobee-portal-framed #app{height:calc(100dvh - 48px)}
-      html.aobee-portal-framed .game{height:calc(100dvh - 48px);min-height:0}
+      html[data-aobee-game="rhythm"] .game{height:calc(100dvh - 48px);min-height:0}
       html.aobee-portal-framed #storyRibbon{top:58px}
       html.aobee-portal-framed .titleScreen .titleArt{height:54%;max-height:54%;object-fit:cover}
       html.aobee-portal-framed .titleControls{position:absolute;left:0;right:0;bottom:8px;padding:0 18px 8px}
@@ -24,6 +26,10 @@
       html.aobee-portal-framed .titleControls .bestLine{height:22px;margin:5px 0 0;font-size:11px}
     `;
     document.head.append(sheet);
+    const sharedStyle = document.createElement('link');
+    sharedStyle.rel = 'stylesheet';
+    sharedStyle.href = new URL('game-polish.css?v=3',script.src).href;
+    document.head.append(sharedStyle);
   }
   const host = document.createElement('div');
   host.id = 'aobee-portal-return';
@@ -41,4 +47,21 @@
     host.addEventListener(type, event => event.stopPropagation());
   }
   document.body.append(host);
+  // Native modal dialogs sit above the document: keep the return link available.
+  const keepVisible = () => {
+    const dialogs = [...document.querySelectorAll('dialog[open]')];
+    const target = dialogs.at(-1) || document.body;
+    if (host.parentElement !== target) target.append(host);
+  };
+  const observedDialogs = new WeakSet();
+  const bindDialogs = () => {
+    for(const dialog of document.querySelectorAll('dialog')) if(!observedDialogs.has(dialog)) {
+      observedDialogs.add(dialog);
+      new MutationObserver(keepVisible).observe(dialog,{attributes:true,attributeFilter:['open']});
+    }
+    keepVisible();
+  };
+  new MutationObserver(bindDialogs).observe(document.body,{childList:true});
+  bindDialogs();
+  keepVisible();
 })();

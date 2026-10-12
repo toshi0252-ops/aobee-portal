@@ -1,0 +1,44 @@
+html.aobee-portal-framed{--aobee-height:calc(100dvh - 48px)}
+html[data-aobee-game="rpg"] #app{height:var(--aobee-height)!important;min-height:0!important}
+html[data-aobee-game="farm"] main.wrap{height:var(--aobee-height)!important}
+html[data-aobee-game="farm"] .publicTitle{inset:48px 0 0!important;height:var(--aobee-height)!important}
+html[data-aobee-game="farm"] .publicMenu{top:58px!important;height:calc(100dvh - 70px)!important}
+html[data-aobee-game="guard"] .app{padding-top:0}
+html[data-aobee-game="adventure"] #app{min-height:var(--aobee-height)!important;height:var(--aobee-height)!important;padding:5px!important}
+html[data-aobee-game="adventure"] #title{min-height:0!important;height:calc(100dvh - 58px)!important;overflow:auto!important;padding:5px!important}
+html[data-aobee-game="adventure"] #titleArt{height:36dvh!important;min-height:0!important;object-fit:cover!important}
+html[data-aobee-game="adventure"] #titleMenu{margin:-16px 10px 0!important;padding:10px!important;gap:6px!important}
+html[data-aobee-game="adventure"] #titleMenu button,html[data-aobee-game="adventure"] #titleMenu #start{min-height:44px!important;font-size:15px!important;padding:5px!important}
+html[data-aobee-game="adventure"] #game.on{height:var(--aobee-height)!important;max-height:var(--aobee-height)!important}
+html[data-aobee-game="quiz"] .app{min-height:var(--aobee-height)!important}
+html[data-aobee-game="quiz"] .modal{min-height:var(--aobee-height)!important}
+html[data-aobee-game="shooter"] #wrap{height:var(--aobee-height)!important}
+html[data-aobee-game="runner"] #c{height:var(--aobee-height)!important}
+html[data-aobee-game="runner"] #soundBtn{top:58px!important}
+html[data-aobee-game="runner"] #pauseBtn{top:114px!important}
+html[data-aobee-game="runner"] #aobeeMenu{top:48px!important}
+html[data-aobee-game="runner"] #aobeeMenu .panel{max-height:calc(100dvh - 70px)}
+html[data-aobee-game="mix"] #app{height:auto!important}
+html[data-aobee-game="mix"] .title-screen{top:48px!important}
+html[data-aobee-game="mix"] .title-art-frame{height:var(--aobee-height)!important;max-height:var(--aobee-height)!important}
+html[data-aobee-game="mix"] #app>.game{grid-template-columns:minmax(0,calc(var(--mix-height,340px) / 2)) 94px!important;width:max-content;max-width:100%;margin:auto;gap:6px;align-items:start}
+html[data-aobee-game="mix"] #board{height:var(--mix-height,340px)!important;width:100%;aspect-ratio:1/2;min-height:0}
+html[data-aobee-game="mix"] .hero.hero-brand{height:44px!important;min-height:44px!important}
+html[data-aobee-game="mix"] .side .card:nth-child(2),html[data-aobee-game="mix"] .side .card:nth-child(3){display:none}
+html[data-aobee-game="mix"] .side .next{height:48px}
+html[data-aobee-game="mix"] .side-pause,html[data-aobee-game="mix"] .side-title{min-height:40px;padding:4px}
+html[data-aobee-game="mix"] .controls button,html[data-aobee-game="mix"] .row2 button{min-height:44px}
+@media(max-height:740px){html[data-aobee-game="mix"] .hero.hero-brand{display:none!important}}
+html[data-aobee-game="race"] #panel{top:4%;max-height:calc(100dvh - 180px);padding:12px 14px}
+html[data-aobee-game="race"] #panel h1{font-size:22px;margin-bottom:8px}
+html[data-aobee-game="race"] #panel p{font-size:12px;line-height:1.7;margin:8px 0}
+html[data-aobee-game="race"] .race-options{margin:7px auto;gap:8px;font-size:12px}
+html[data-aobee-game="race"] .race-options select{font-size:13px;padding:6px}
+html[data-aobee-game="race"] #panel button{height:44px;min-height:44px;font-size:15px;margin:4px}
+html[data-aobee-game="race"] #practiceStart{background:#d2f6f0;color:#173f56}
+html[data-aobee-game="race"] #controls{height:100px;flex:none;gap:8px;padding:6px}
+html[data-aobee-game="race"] #controls button{height:60px;min-height:44px}
+html[data-aobee-game="race"] #screen{max-height:calc(100dvh - 148px)}
+.first-day-guide{border:1px solid #d6dfc5;border-radius:16px;background:#f4f8e8;padding:16px;margin:12px 0;color:#344b36}
+.first-day-guide h3{margin:0 0 12px}.first-day-guide ol{padding-left:23px;margin:0;line-height:1.9}.first-day-guide li+li{margin-top:8px}
+@media(max-height:460px) and (orientation:landscape){html[data-aobee-game="race"] #panel{left:15%;width:70%;max-height:calc(100dvh - 64px);z-index:20}html[data-aobee-game="mix"] #app>.game{grid-template-columns:140px 94px!important}html[data-aobee-game="mix"] #board{height:280px!important}}
