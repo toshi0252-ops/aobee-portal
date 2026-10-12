@@ -206,7 +206,7 @@ html,body{margin:0;padding:0;overflow-x:hidden}
 @keyframes mixFlash{0%{box-shadow:inset 0 0 0 5px #fff,0 0 30px #fff}100%{box-shadow:inset 0 0 0 0 transparent,0 0 0 transparent}}
 
 .mix-power-card{padding:6px!important}.mix-gauge{display:grid;grid-template-columns:18px 1fr 28px;gap:3px;align-items:center;margin:4px 0;font-size:10px}.mix-track{height:7px;background:#dcecf2;border-radius:999px;overflow:hidden}.mix-track i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#55c7e8,#ffd84d);transition:width .2s}.mix-gauge small{font-size:8px;text-align:right}
-</style><script defer src="../assets/portal-return.js?v=3"></script>
+</style><script defer src="../assets/portal-return.js?v=4"></script>
 <script defer src="../assets/mix-fit.js"></script></head><body>
 <div id="titleScreen" class="title-screen title-art-screen">
   <div class="title-art-frame">
@@ -554,9 +554,9 @@ titleBtn.addEventListener('click',()=>{running=false;pair=null;cancelAnimationFr
 const titleScreen=document.getElementById('titleScreen');
 const titleModal=document.getElementById('titleModal');
 const titleModalBody=document.getElementById('titleModalBody');
-function openTitle(){running=false;paused=false;titleScreen.style.display='block';titleModal.classList.remove('show');}
+function openTitle(){document.getElementById('titleBtn').click();titleScreen.style.display='block';titleModal.classList.remove('show');}
 function closeTitle(){titleScreen.style.display='none';}
-document.getElementById('titleStart').onclick=()=>{closeTitle();start();};
+document.getElementById('titleStart').onclick=()=>{closeTitle();document.getElementById('start').click();document.getElementById('app').focus({preventScroll:true});};
 document.getElementById('titleModalClose').onclick=()=>titleModal.classList.remove('show');
 document.querySelectorAll('[data-title-panel]').forEach(btn=>btn.onclick=()=>{
  const k=btn.dataset.titlePanel;

@@ -28,7 +28,7 @@
     document.head.append(sheet);
     const sharedStyle = document.createElement('link');
     sharedStyle.rel = 'stylesheet';
-    sharedStyle.href = new URL('game-polish.css?v=3',script.src).href;
+    sharedStyle.href = new URL('game-polish.css?v=4',script.src).href;
     document.head.append(sharedStyle);
   }
   const host = document.createElement('div');
@@ -48,9 +48,11 @@
   }
   document.body.append(host);
   // Native modal dialogs sit above the document: keep the return link available.
-  const keepVisible = () => {
+  let activeDialog = null;
+  const keepVisible = (records = []) => {
+    for(const record of records) if(record.target.tagName === 'DIALOG' && record.target.open) activeDialog = record.target;
     const dialogs = [...document.querySelectorAll('dialog[open]')];
-    const target = dialogs.at(-1) || document.body;
+    const target = activeDialog?.open ? activeDialog : dialogs.at(-1) || document.body;
     if (host.parentElement !== target) target.append(host);
   };
   const observedDialogs = new WeakSet();

@@ -1,5 +1,8 @@
 html.aobee-portal-framed{--aobee-height:calc(100dvh - 48px)}
 html[data-aobee-game="rpg"] #app{height:var(--aobee-height)!important;min-height:0!important}
+html[data-aobee-game="rhythm"] .game>header{justify-content:flex-end}
+html[data-aobee-game="rhythm"] header .title{display:none}
+html[data-aobee-game="rhythm"] #storyRibbon{top:126px!important;max-width:calc(100vw - 24px);font-size:12px;padding:6px 12px}
 html[data-aobee-game="farm"] main.wrap{height:var(--aobee-height)!important}
 html[data-aobee-game="farm"] .publicTitle{inset:48px 0 0!important;height:var(--aobee-height)!important}
 html[data-aobee-game="farm"] .publicMenu{top:58px!important;height:calc(100dvh - 70px)!important}
@@ -10,6 +13,18 @@ html[data-aobee-game="adventure"] #titleArt{height:36dvh!important;min-height:0!
 html[data-aobee-game="adventure"] #titleMenu{margin:-16px 10px 0!important;padding:10px!important;gap:6px!important}
 html[data-aobee-game="adventure"] #titleMenu button,html[data-aobee-game="adventure"] #titleMenu #start{min-height:44px!important;font-size:15px!important;padding:5px!important}
 html[data-aobee-game="adventure"] #game.on{height:var(--aobee-height)!important;max-height:var(--aobee-height)!important}
+html[data-aobee-game="adventure"] #game.on{height:calc(100dvh - 58px)!important;display:flex;flex-direction:column;gap:4px}
+html[data-aobee-game="adventure"] #game>h1{font-size:22px;margin:0;line-height:28px;flex:none}
+html[data-aobee-game="adventure"] #game>.hud{font-size:12px;min-height:32px;padding:5px;flex:none}
+html[data-aobee-game="adventure"] #board{flex:none;width:var(--adventure-board,240px)!important;height:var(--adventure-board,240px)!important;aspect-ratio:1!important;margin:0 auto;border-width:4px}
+html[data-aobee-game="adventure"] #cv{width:100%!important;height:100%!important;max-height:none!important}
+html[data-aobee-game="adventure"] #mini{width:38%!important;height:auto!important}
+html[data-aobee-game="adventure"] #pad{display:grid;grid-template-columns:repeat(3,48px)!important;gap:4px;margin:0 auto;flex:none}
+html[data-aobee-game="adventure"] #pad button{min-height:44px!important;height:44px!important;padding:0;font-size:20px}
+html[data-aobee-game="adventure"] #actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;flex:none;width:100%;margin:0!important}
+html[data-aobee-game="adventure"] #actions button{min-height:44px!important;height:44px!important;font-size:12px!important;padding:3px!important}
+html[data-aobee-game="adventure"] #game>#msg{min-height:24px;padding:2px 8px;margin:0;font-size:12px;flex:none}
+@media(max-height:460px) and (orientation:landscape){html[data-aobee-game="adventure"] #game.on{overflow:auto!important;height:var(--aobee-height)!important}html[data-aobee-game="adventure"] #board{min-height:180px;min-width:180px}}
 html[data-aobee-game="quiz"] .app{min-height:var(--aobee-height)!important}
 html[data-aobee-game="quiz"] .modal{min-height:var(--aobee-height)!important}
 html[data-aobee-game="shooter"] #wrap{height:var(--aobee-height)!important}
@@ -27,7 +42,7 @@ html[data-aobee-game="mix"] .hero.hero-brand{height:44px!important;min-height:44
 html[data-aobee-game="mix"] .side .card:nth-child(2),html[data-aobee-game="mix"] .side .card:nth-child(3){display:none}
 html[data-aobee-game="mix"] .side .next{height:48px}
 html[data-aobee-game="mix"] .side-pause,html[data-aobee-game="mix"] .side-title{min-height:40px;padding:4px}
-html[data-aobee-game="mix"] .controls button,html[data-aobee-game="mix"] .row2 button{min-height:44px}
+html[data-aobee-game="mix"] .controls button,html[data-aobee-game="mix"] .row2 button{min-height:44px!important;height:44px!important}
 @media(max-height:740px){html[data-aobee-game="mix"] .hero.hero-brand{display:none!important}}
 html[data-aobee-game="race"] #panel{top:4%;max-height:calc(100dvh - 180px);padding:12px 14px}
 html[data-aobee-game="race"] #panel h1{font-size:22px;margin-bottom:8px}

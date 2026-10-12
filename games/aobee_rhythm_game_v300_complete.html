@@ -128,7 +128,7 @@ header{position:relative;z-index:25;display:flex;justify-content:space-between;a
 #ring{display:none!important}
 #starTarget{position:absolute;z-index:9;left:72%;top:calc(30% + 30px);width:76px;height:76px;transform:translate(-50%,-50%);border:5px solid #fff;border-radius:50%;box-shadow:0 0 0 4px #42d8ff66,0 0 18px #fff8,inset 0 0 12px #42d8ff66;pointer-events:none}
 #starTarget:after{content:"";position:absolute;inset:8px;border:2px dashed #fff8;border-radius:50%}
-</style><script defer src="../assets/portal-return.js?v=3"></script>
+</style><script defer src="../assets/portal-return.js?v=4"></script>
 </head><body><main class="game"><div class="hill"></div>
 <div id="menuTop" class="hidden"><button id="backBtn" class="miniBtn">← 戻る</button><button id="pauseBtn" class="miniBtn">Ⅱ ポーズ</button></div>
 <div id="difficultyTag" class="hidden">NORMAL</div>
@@ -327,11 +327,10 @@ q('stage4Btn').addEventListener('click',openCarpenter);
 })();
 
 
-window.addEventListener('message',(e)=>{
- if(e && e.data && e.data.type==='aobee-carpenter-back') closeCarpenter();
-});
-
 (function(){
+ const q=id=>document.getElementById(id);
+ function closeCarpenter(){q('carpenterFrame').srcdoc='';q('carpenterStage').classList.add('hidden');q('stageSelect').classList.remove('hidden')}
+ window.addEventListener('message',e=>{if(e.source===q('carpenterFrame').contentWindow&&e.data?.type==='aobee-carpenter-back')closeCarpenter()});
  const back=q('carpenterBack2'), pause=q('carpenterPause'), resume=q('carpenterResume');
  const layer=q('carpenterPauseLayer'), frame=q('carpenterFrame');
  function post(type){try{frame.contentWindow.postMessage({type:type},'*')}catch(_){}}
@@ -472,7 +471,7 @@ try{
  function showCourseStep(i,score){const total=courseScores.reduce((a,b)=>a+b,0),last=i===5;$('courseNextTitle').textContent=last?'🎉 通しプレイ COMPLETE！':'STAGE '+(i+1)+' CLEAR！';$('courseNextScore').textContent=stageNames[i]+'　'+score+'点';$('courseTotal').textContent='TOTAL '+total+'点';$('courseRows').style.display=last?'block':'none';if(last){$('courseRows').innerHTML=stageNames.map((n,j)=>`${j+1}. ${n}<b style="float:right">${courseScores[j]}点</b>`).join('<br>');try{let old=Number(localStorage.getItem('aobee_rhythm_course_best')||0);if(total>old)localStorage.setItem('aobee_rhythm_course_best',String(total))}catch(e){}$('courseNextBtn').textContent='タイトルへ'}else $('courseNextBtn').textContent='次のステージへ';$('courseNext').classList.remove('hidden')}
  function visible(el){if(!el)return false;const cs=getComputedStyle(el);return cs.display!=='none'&&cs.visibility!=='hidden'&&!el.classList.contains('hidden')}
  function watchParent(){const r=$('resultScreen');if(!r)return;new MutationObserver(()=>{if(visible(r)){const sc=extractScore(r.innerText);if(sc!==null)completed(0,sc)}}).observe(r,{attributes:true,subtree:true,childList:true,characterData:true})}
- function watchFrame(frame,i){if(!frame||frame.dataset.scoreWatch==='1')return;frame.dataset.scoreWatch='1';const attach=()=>{try{const d=frame.contentDocument;if(!d)return;const scan=()=>{const candidates=[d.getElementById('result'),d.getElementById('resultScreen')].filter(Boolean);for(const r of candidates)if(visible(r)){let sc=extractScore(r.innerText);if(sc===null){const fs=d.getElementById('fs');if(fs)sc=Number(fs.textContent)||0}if(sc!==null){completed(i,sc);break}}};new MutationObserver(scan).observe(d.documentElement,{attributes:true,subtree:true,childList:true,characterData:true});scan()}catch(e){}};frame.addEventListener('load',attach);attach()}
+ function watchFrame(frame,i){if(!frame||frame.dataset.scoreWatch==='1')return;frame.dataset.scoreWatch='1';const attach=()=>{try{const d=frame.contentDocument;if(!d||!d.documentElement)return;const scan=()=>{const candidates=[d.getElementById('result'),d.getElementById('resultScreen')].filter(Boolean);for(const r of candidates)if(visible(r)){let sc=extractScore(r.innerText);if(sc===null){const fs=d.getElementById('fs');if(fs)sc=Number(fs.textContent)||0}if(sc!==null){completed(i,sc);break}}};new MutationObserver(scan).observe(d.documentElement,{attributes:true,subtree:true,childList:true,characterData:true});scan()}catch(e){}};frame.addEventListener('load',attach);attach()}
  function attachAll(){watchFrame($('homeRunFrame'),1);watchFrame($('sushiFrame'),2);watchFrame($('carpenterFrame'),3);watchFrame($('cookingFrame'),4);watchFrame($('liveFrame'),5)}
  function courseBackToTitle(){if(mode!=='course')return;setTimeout(()=>{['homeRunStage','sushiStage','carpenterStage','cookingStage','liveStage','lab2','resultScreen'].forEach(id=>$(id)?.classList.add('hidden'));$('stageSelect')?.classList.add('hidden');$('playMode')?.classList.add('hidden');$('courseNext')?.classList.add('hidden');$('startScreen')?.classList.remove('hidden');try{const a=$('liveFrame')?.contentDocument?.getElementById('music');if(a)a.pause()}catch(e){}mode='free';updateBests()},0)}
  const courseBackIds=new Set(['backBtn','homeRunBack','sushiBack','carpenterBack2','cookingBack','liveBack']);
