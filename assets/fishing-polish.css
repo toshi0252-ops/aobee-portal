@@ -1,6 +1,6 @@
 /* Dedicated illustration and controls, with no controls over the title art. */
-body .wrap{padding:8px}
-body .game{height:calc(100dvh - 132px);min-height:360px;max-height:760px}
+body .wrap{padding:8px;height:calc(100dvh - 48px);min-height:0;gap:6px}
+body .game{height:auto!important;min-height:0!important;max-height:none!important}
 body .hint{min-height:32px;display:flex;align-items:center;justify-content:center;padding:6px 8px;font-size:13px;line-height:1.45;opacity:1;color:#e2f7ff}
 #menuScreen.fishing-menu{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(90px,1fr) auto auto auto;gap:8px;padding:12px!important;overflow:auto!important;touch-action:pan-y!important;align-items:stretch}
 #menuScreen.fishing-menu.hidden{display:none}
@@ -27,4 +27,9 @@ body .hint{min-height:32px;display:flex;align-items:center;justify-content:cente
  .fishing-menu>#menuStart{grid-area:start;align-self:center}
  .fishing-menu>.menuBtns{grid-area:options;align-self:start}
 }
-@media(max-height:520px){body .game{min-height:400px}.fishing-menu>.titleArtWrap{min-height:90px!important}}
+@media(max-height:520px){
+ body{height:auto;min-height:100dvh;overflow:auto}
+ body .wrap{height:auto;min-height:calc(100dvh - 48px);grid-template-rows:auto 420px auto}
+ body .game{min-height:400px!important}
+ .fishing-menu>.titleArtWrap{min-height:90px!important}
+}
