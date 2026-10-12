@@ -8,15 +8,23 @@ body .hint{min-height:32px;display:flex;align-items:center;justify-content:cente
 .fishing-menu>.htmlGameLogo b{font-size:12px;margin:0 0 3px;letter-spacing:.12em}
 .fishing-menu>.htmlGameLogo strong{font-size:clamp(20px,4vw,30px);letter-spacing:0}
 .fishing-menu>.titleArtWrap{width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;border:2px solid #adf1ff!important;border-radius:14px!important;overflow:hidden}
-.fishing-menu>.titleArtWrap .titleArt{object-fit:contain!important;object-position:center!important;background:#063966}
+.fishing-menu>.titleArtWrap .titleArt{object-fit:cover!important;object-position:center 30%!important;background:#063966}
 .fishing-menu>.stagePick{position:static!important;inset:auto!important;width:100%!important;height:auto!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:auto!important;gap:6px!important;margin:0!important}
 .fishing-menu .stageBtn{min-height:40px!important;height:auto!important;font-size:13px!important;padding:6px!important;border-width:2px!important}
 .fishing-menu>#menuStart{position:static!important;inset:auto!important;width:100%!important;height:auto!important;min-height:44px!important;margin:0!important;font-size:19px!important;border-radius:13px!important;background:#ef4267!important;box-shadow:0 3px #9e173a!important}
 .fishing-menu>.menuBtns{position:static!important;inset:auto!important;width:100%!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;margin:0!important}
 .fishing-menu>.menuBtns .menuBtn{min-height:36px!important;font-size:12px!important;padding:5px!important;border-width:2px!important;box-shadow:none!important}
-.fishing-menu #controlSettings{grid-column:1/-1;background:#ffcf32;color:#07345d;min-height:36px;font-size:13px}
+.fishing-menu #controlSettings{grid-column:1/-1;background:#ffcf32;color:#07345d;min-height:36px;font-size:13px;font-weight:900;border:2px solid white;border-radius:11px;padding:6px;cursor:pointer}
 #cast[data-action="wait"]{background:#245377;color:#d6eafa;box-shadow:none;cursor:default}
 #cast[data-action="release"]{background:#cf3754;border-color:#fff2a8}
 #cast[data-action="reel"],#cast[data-action="success"]{background:#087c64}
 .controls .suggested{background:#ffd42b;color:#17314b;border-color:white}
+@media(min-width:620px){
+ #menuScreen.fishing-menu{grid-template-columns:minmax(0,.9fr) minmax(0,1fr);grid-template-rows:auto auto auto minmax(0,1fr);grid-template-areas:"art logo" "art stages" "art start" "art options";gap:12px;padding:16px!important}
+ .fishing-menu>.titleArtWrap{grid-area:art}
+ .fishing-menu>.htmlGameLogo{grid-area:logo;align-self:center}
+ .fishing-menu>.stagePick{grid-area:stages;align-self:center}
+ .fishing-menu>#menuStart{grid-area:start;align-self:center}
+ .fishing-menu>.menuBtns{grid-area:options;align-self:start}
+}
 @media(max-height:520px){body .game{min-height:400px}.fishing-menu>.titleArtWrap{min-height:90px!important}}
