@@ -51,7 +51,7 @@
    const style=doc.createElement('style');
    style.textContent=Object.entries({down:'front',up:'back',left:'left',right:'right'}).map(([direction,pose])=>`.cell.player[data-face="${direction}"],.cell.player.pushing[data-face="${direction}"]{background-image:url("${urls[pose]}")!important}`).join('\n')+`html .clearMascot{background-image:url("${urls.cheer}")!important}html .mascot{background-image:url("${urls.front}")!important}#aobee:not(img),#titleAobee:not(img){background-image:url("${urls.front}")!important;background-size:contain!important;background-position:center bottom!important;background-repeat:no-repeat!important}#aobee:not(img)>*,#titleAobee:not(img)>*{visibility:hidden!important}`;
    doc.head.append(style);
-   const banner=doc.querySelector('.hero.hero-brand');if(banner){banner.style.setProperty('background-image','linear-gradient(110deg,#e8faff,#c5eaff)','important');banner.innerHTML='<img alt="あおびー" style="height:100%;width:64px;object-fit:contain"><strong style="color:#07529c;font:900 15px system-ui">AOBEE MIX POWER</strong>';banner.querySelector('img').src=urls.front;banner.style.setProperty('display','flex','important')}
+   const banner=doc.querySelector('.hero.hero-brand');if(banner){banner.style.setProperty('background-image','linear-gradient(110deg,#e8faff,#c5eaff)','important');banner.innerHTML='<img alt="あおびー" style="height:100%;width:64px;object-fit:contain"><strong style="color:#07529c;font:900 15px system-ui">AOBEE MIX POWER</strong>';banner.querySelector('img').src=urls.front;banner.style.display='flex';banner.style.alignItems='center';banner.style.gap='8px'}
    win.dispatchEvent(new win.CustomEvent('aobee-identity-ready',{detail:{urls,atlas}}));
   }
   install(window);return api;
