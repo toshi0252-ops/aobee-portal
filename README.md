@@ -1,6 +1,6 @@
 # あおびーポータル
 
-Downloads/あおびーゲーム最新版に集めた11作品を収録した静的ポータル。元のHTMLは編集せずコピーしています。RPGはZIPのソース版index.htmlを使用します。
+Downloads/あおびーゲーム最新版に集めた11作品を収録した静的ポータル。ゲーム本体をコピーし、共通の「ポータルへ」ボタンを読み込むスクリプトを追加しています。RPGはZIPのソース版index.htmlを使用します。
 
 ## ローカル確認
 
@@ -21,4 +21,5 @@ GitHub公式手順: https://docs.github.com/en/pages/getting-started-with-github
 
 ## 更新
 
-games内の該当ファイルを差し替え、必要ならportal.jsのリンクを更新します。同じ公開URL・ファイルパスを維持してください。
+games内の該当ファイルを差し替え、必要ならportal.jsのリンクを更新します。差し替えるHTMLには、head内に <script defer src="../assets/portal-return.js"></script> を追加してください（games/rpg内では ../../assets/portal-return.js）。同じ公開URL・ファイルパスを維持してください。
+
