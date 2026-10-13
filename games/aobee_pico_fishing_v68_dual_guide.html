@@ -307,9 +307,13 @@ function loop(now){
 }
 requestAnimationFrame(loop);
 function move(d){if(state!=='aim')return;x=Math.max(8,Math.min(40,x+d));aobee.style.left=x+'%'}
-function bindHold(el,fn){let t;const s=e=>{e.preventDefault();fn();t=setInterval(fn,70)},u=()=>clearInterval(t);el.addEventListener('pointerdown',s);['pointerup','pointercancel','pointerleave'].forEach(k=>el.addEventListener(k,u))}bindHold(document.getElementById('left'),()=>move(-1));bindHold(document.getElementById('right'),()=>move(1));
-cast.addEventListener('pointerdown',e=>{e.preventDefault();if(state==='fight'){reeling=true;cast.textContent='巻いてる！';return}if(state!=='aim')return;charging=true;charge=0;lastChargeSE=-1;setAobee('idle');cast.textContent='ためる…';let it=setInterval(()=>{if(!charging){clearInterval(it);return}charge=Math.min(100,charge+3);let _cs=Math.floor(charge/10);if(_cs!==lastChargeSE){lastChargeSE=_cs;AOBEE_AUDIO.charge(charge)}cast.style.filter=`brightness(${1+charge/150})`;cast.textContent=`ためる… ${Math.round(charge)}%`},35)});
-function release(){if(state==='fight'){reeling=false;cast.textContent='巻く！';return}if(!charging)return;charging=false;cast.style.filter='';doCast()}cast.addEventListener('pointerup',release);cast.addEventListener('pointercancel',release);
+function bindHold(el,fn){let t=null,active=null;const stop=()=>{clearInterval(t);t=null;active=null};el.addEventListener('pointerdown',e=>{if(active!==null)return;e.preventDefault();active=e.pointerId;el.setPointerCapture?.(active);fn();t=setInterval(fn,70)});el.addEventListener('pointerup',e=>{if(e.pointerId===active)stop()});el.addEventListener('pointercancel',stop);el.addEventListener('lostpointercapture',stop);window.addEventListener('blur',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop()});}bindHold(document.getElementById('left'),()=>move(-1));bindHold(document.getElementById('right'),()=>move(1));
+let castPointer=null;
+cast.addEventListener('pointerdown',e=>{if(castPointer!==null)return;castPointer=e.pointerId;cast.setPointerCapture?.(castPointer);e.preventDefault();if(state==='fight'){reeling=true;cast.textContent='巻いてる！';return}if(state!=='aim')return;charging=true;charge=0;lastChargeSE=-1;setAobee('idle');cast.textContent='ためる…';let it=setInterval(()=>{if(!charging){clearInterval(it);return}charge=Math.min(100,charge+3);let _cs=Math.floor(charge/10);if(_cs!==lastChargeSE){lastChargeSE=_cs;AOBEE_AUDIO.charge(charge)}cast.style.filter=`brightness(${1+charge/150})`;cast.textContent=`ためる… ${Math.round(charge)}%`},35)});
+function release(){if(state==='fight'){reeling=false;cast.textContent='巻く！';return}if(!charging)return;charging=false;cast.style.filter='';doCast()}function cancelFishingHold(){castPointer=null;charging=false;reeling=false;cast.style.filter='';if(state==='aim')cast.textContent='投げる！';else if(state==='fight')cast.textContent='巻く！';}
+cast.addEventListener('pointerup',e=>{if(e.pointerId!==castPointer)return;castPointer=null;release()});
+cast.addEventListener('pointercancel',cancelFishingHold);cast.addEventListener('lostpointercapture',()=>{if(castPointer!==null)cancelFishingHold()});
+window.addEventListener('blur',cancelFishingHold);document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelFishingHold()});
 function doCast(){
  AOBEE_AUDIO.cast();
  castSnapStart=performance.now();
@@ -1320,8 +1324,8 @@ window.AOBEE_BUILD='v6.3-full-sprite-rebuild';
 
   function FUN_bindBrace(id,dir){
     const el=document.getElementById(id);
-    el.addEventListener('pointerdown',e=>{if(FUN_controlMode==='hunt'&&state==='fight'){e.preventDefault();e.stopImmediatePropagation();FUN_braceDir=dir}},true);
-    ['pointerup','pointercancel','pointerleave'].forEach(k=>el.addEventListener(k,()=>{if(FUN_braceDir===dir)FUN_braceDir=0},true));
+    el.addEventListener('pointerdown',e=>{if(FUN_controlMode==='hunt'&&state==='fight'){e.preventDefault();e.stopImmediatePropagation();el.setPointerCapture?.(e.pointerId);FUN_braceDir=dir}},true);
+    ['pointerup','pointercancel','lostpointercapture'].forEach(k=>el.addEventListener(k,()=>{if(FUN_braceDir===dir)FUN_braceDir=0},true));window.addEventListener('blur',()=>{FUN_braceDir=0});document.addEventListener('visibilitychange',()=>{if(document.hidden)FUN_braceDir=0});
   }
   FUN_bindBrace('left',-1);FUN_bindBrace('right',1);
 
