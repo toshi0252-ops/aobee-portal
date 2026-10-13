@@ -3247,4 +3247,4 @@ const festivalLines47={harvest:['いつか、この牧場で収穫祭を開き�
 const talk46to47=talkNPC;talkNPC=function(){const n=nearNPC(),before=JSON.stringify(eventFlags);talk46to47();if(!n||JSON.stringify(eventFlags)!==before||endingRecords36.festival)return;const stage=storyStage47(),line=festivalLines47[n.id]?.[[0,1,3,5].indexOf(stage)];if(line){msg.textContent=n.name+'「'+line+'」 仲良し度 '+friendships[n.id]+'/100';dialogueEvent42=null;updateSpeaker42()}};
 document.getElementById('talk').onclick=talkNPC;document.getElementById('quicktalk').onclick=talkNPC;
 document.title='あおびー牧場 — 星のしずく牧場 v47';refreshUI();saveFarm();
-</script><script>document.title='あおびー牧場 — 星のしずく牧場 v48';</script></body></html>
+</script><script>document.title='あおびー牧場 — 星のしずく牧場 v48';</script><script src="../assets/farm-next-step.js?v=1"></script></body></html>
