@@ -581,7 +581,9 @@ function wrongChoices(x){
  return shuffle(all).slice(0,3);
 }
 function setupRun(){const tb=document.querySelector('.timebtn.sel');timeLimit=tb?Number(tb.getAttribute('data-time'))||0:0;window.__AOBEE_TIME_LIMIT=timeLimit;stopTimer();pool=selectedGenre==='all'?bank:bank.filter(x=>x.g===selectedGenre);pool=difficultyPool(pool);let mm={'10':10,'20':20,'50':50};endless=mode[0]==='e';missLimit=endless?+mode.slice(1):0;limit=endless?pool.length:Math.min(mm[mode],pool.length);qs=shuffle(pool);idx=points=misses=corrects=0;screen('game');show()}
+let quizPaused=false;
 function stopTimer(){
+ quizPaused=false;document.getElementById("quizPauseLayer")?.setAttribute("hidden","");
  if(timerId){cancelAnimationFrame(timerId);clearInterval(timerId);timerId=null}
  let t=$('#quizTimer');
  if(t){t.style.display='none';t.innerHTML='';}
@@ -591,7 +593,7 @@ function startTimer(){
  const t=$('#quizTimer');
  if(!t)return;
  if(!timeLimit){t.style.display='none';return}
- const total=timeLimit*1000, started=performance.now();
+ const total=timeLimit*1000;let remaining=total,lastFrame=performance.now();
  timeLeft=timeLimit;
  t.className='quizTimer';
  /* decorative background gauge is ignored; this is the actual live gauge */
@@ -599,7 +601,7 @@ function startTimer(){
  t.innerHTML='<div id="quizTimerFill" style="position:absolute;left:0;top:0;bottom:0;width:100%;background:#39d76b;border-radius:999px;transform-origin:left center;will-change:transform"></div><div id="quizTimerText" style="position:absolute;left:0;right:0;top:-27px;text-align:center;color:#17386e;font-weight:1000;font-size:16px;text-shadow:0 1px 2px white">残り '+timeLimit+'秒</div>';
  function frame(now){
    if(locked){stopTimer();return}
-   const remain=Math.max(0,total-(now-started));
+   const elapsed=Math.max(0,now-lastFrame);lastFrame=now;if(!quizPaused&&!document.hidden)remaining=Math.max(0,remaining-elapsed);const remain=remaining;
    timeLeft=Math.ceil(remain/1000);
    const ratio=remain/total;
    const fill=$('#quizTimerFill'),txt=$('#quizTimerText');
@@ -614,9 +616,9 @@ function startTimer(){
  timerId=requestAnimationFrame(frame);
 }
 function timeoutAnswer(){if(locked)return;locked=true;misses++;let x=qs[idx];document.querySelectorAll('.ans').forEach(b=>{b.disabled=true;if(b.textContent===x.a){b.classList.add('good');b.textContent='⭕ '+b.textContent}});$('#msg').textContent='時間切れ！ 正解は「'+x.a+'」';$('#feedbackStamp').textContent='⏰ 時間切れ';$('#feedbackStamp').className='feedbackStamp ng';$('#next').classList.remove('hidden');let t=$('#quizTimer');t.textContent='⏰ 0';t.classList.remove('warn');t.classList.add('danger')}
-function show(){if(idx>=qs.length)return finish();locked=false;$('#next').classList.add('hidden');$('#msg').textContent='';$('#feedbackStamp').className='feedbackStamp hidden';$('#feedbackStamp').textContent='';let x=qs[idx];$('#quizMeta').textContent=genreLabel+' ・ '+({easy:'かんたん',normal:'ふつう',hard:'むずかしい'}[difficulty])+(window.__DBG?' ['+difficultyScore(x)+']':'');$('#quizCount').textContent=endless?`Q ${idx+1} ♥${Math.max(0,missLimit-misses)}`:`${idx+1} / ${limit}問`;$('#question').textContent=x.q;let wrong=wrongChoices(x),opts=shuffle([x.a,...wrong]),box=$('#answers');box.innerHTML='';opts.forEach(v=>{let b=document.createElement('button');b.className='ans';b.textContent=v;b.addEventListener('click',()=>answer(b,v,x.a));box.appendChild(b)});startTimer()}
-function answer(btn,v,a){if(locked)return;stopTimer();locked=true;document.querySelectorAll('.ans').forEach(b=>{b.disabled=true;if(b.textContent===a){b.classList.add('good');b.textContent='⭕ '+b.textContent}});if(v===a){points+=100;corrects++;$('#msg').textContent='正解！';$('#feedbackStamp').textContent='⭕ 正解！';$('#feedbackStamp').className='feedbackStamp ok'}else{misses++;btn.classList.add('bad');btn.textContent='❌ '+btn.textContent;$('#msg').textContent='正解は「'+a+'」';$('#feedbackStamp').textContent='❌ 不正解';$('#feedbackStamp').className='feedbackStamp ng'}$('#next').classList.remove('hidden')}
-function next(){idx++;if((!endless&&idx>=limit)||(endless&&misses>=missLimit))finish();else show()}
+function show(){quizPaused=false;document.getElementById('quizPauseLayer')?.setAttribute('hidden','');if(idx>=qs.length)return finish();locked=false;$('#next').classList.add('hidden');$('#msg').textContent='';$('#feedbackStamp').className='feedbackStamp hidden';$('#feedbackStamp').textContent='';let x=qs[idx];$('#quizMeta').textContent=genreLabel+' ・ '+({easy:'かんたん',normal:'ふつう',hard:'むずかしい'}[difficulty])+(window.__DBG?' ['+difficultyScore(x)+']':'');$('#quizCount').textContent=endless?`Q ${idx+1} ♥${Math.max(0,missLimit-misses)}`:`${idx+1} / ${limit}問`;$('#question').textContent=x.q;let wrong=wrongChoices(x),opts=shuffle([x.a,...wrong]),box=$('#answers');box.innerHTML='';opts.forEach(v=>{let b=document.createElement('button');b.className='ans';b.textContent=v;b.addEventListener('click',()=>answer(b,v,x.a));box.appendChild(b)});startTimer()}
+function answer(btn,v,a){if(locked||quizPaused)return;stopTimer();locked=true;document.querySelectorAll('.ans').forEach(b=>{b.disabled=true;if(b.textContent===a){b.classList.add('good');b.textContent='⭕ '+b.textContent}});if(v===a){points+=100;corrects++;$('#msg').textContent='正解！';$('#feedbackStamp').textContent='⭕ 正解！';$('#feedbackStamp').className='feedbackStamp ok'}else{misses++;btn.classList.add('bad');btn.textContent='❌ '+btn.textContent;$('#msg').textContent='正解は「'+a+'」';$('#feedbackStamp').textContent='❌ 不正解';$('#feedbackStamp').className='feedbackStamp ng'}$('#next').classList.remove('hidden')}
+function next(){if(!locked||quizPaused)return;idx++;if((!endless&&idx>=limit)||(endless&&misses>=missLimit))finish();else show()}
 function key(){return `aobee_best_${selectedGenre}_${difficulty}_${mode}`}
 function finish(){
  stopTimer();screen('result');
@@ -659,6 +661,12 @@ document.querySelectorAll('.timebtn').forEach(b=>{
  b.addEventListener('click',e=>{e.preventDefault();selectTimeButton(b)});
 });
 
+const pauseLayer=document.createElement('div');pauseLayer.id='quizPauseLayer';pauseLayer.hidden=true;pauseLayer.innerHTML='<div><h2>一時停止</h2><p>制限時間は止まっています。</p><button type="button" id="quizResume">▶ 再開</button></div>';document.body.append(pauseLayer);
+const pauseButton=document.createElement('button');pauseButton.id='quizPause';pauseButton.type='button';pauseButton.textContent='Ⅱ ポーズ';document.getElementById('game').append(pauseButton);
+function pauseQuiz(){if(locked)return;quizPaused=true;pauseLayer.hidden=false;document.getElementById('quizResume').focus();}
+pauseButton.onclick=pauseQuiz;document.getElementById('quizResume').onclick=()=>{if(document.hidden)return;quizPaused=false;pauseLayer.hidden=true;pauseButton.focus();};
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&document.getElementById('game').classList.contains('on'))pauseQuiz();});
+const pauseStyle=document.createElement('style');pauseStyle.textContent='#quizPause{position:absolute;right:12px;top:8px;z-index:20;min-height:44px;padding:8px 12px;border:2px solid white;border-radius:12px;background:#075a9c;color:white;font-weight:800}#quizPauseLayer{position:fixed;inset:48px 0 0;z-index:20000;background:#083354eF;display:grid;place-items:center;text-align:center;color:white}#quizPauseLayer[hidden]{display:none}#quizResume{min-height:48px;padding:12px 28px;border:0;border-radius:12px;background:#ffda39;color:#07385a;font-weight:800}';document.head.append(pauseStyle);
 $('#start').onclick=()=>{renderGenres();screen('genre')};$('#genreBack').onclick=()=>screen('title');$('#settingsBack').onclick=()=>screen('genre');$('#begin').onclick=setupRun;$('#next').onclick=next;$('#quizBack').onclick=()=>{stopTimer();screen('settings')};$('#retry').onclick=setupRun;$('#change').onclick=()=>screen('settings');$('#home').onclick=()=>screen('title');
 document.querySelectorAll('.diff').forEach(b=>b.onclick=()=>{document.querySelectorAll('.diff').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');difficulty=b.dataset.v});
 document.querySelectorAll('.mode').forEach(b=>b.onclick=()=>{document.querySelectorAll('.mode').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');mode=b.dataset.v});
