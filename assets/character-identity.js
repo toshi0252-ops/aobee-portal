@@ -36,7 +36,7 @@
     if(pose&&urls[pose]&&img.src!==urls[pose])img.src=urls[pose];
    }
    function attachFrame(frame){
-    if(frame.dataset.aobeeIdentityBound)return;frame.dataset.aobeeIdentityBound='1';
+    if(frame.dataset.aobeeIdentityBound||frame.dataset.aobeePreserveAnimation==='1')return;frame.dataset.aobeeIdentityBound='1';
     const attach=()=>{try{install(frame.contentWindow)}catch{}};
     frame.addEventListener('load',attach);attach();
     const src=frame.getAttribute('src')||'';
