@@ -63,3 +63,5 @@ dialog{width:min(640px,calc(100% - 26px));max-height:calc(100dvh - 32px);border:
 
 /* 長い地名でもメニュー・目標と重ならない。方角は北を上に固定。 */
 #hud>div{min-width:0;max-width:calc(100% - 105px)}#hud strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#hud .eyebrow{letter-spacing:.08em;white-space:nowrap}
+
+#objective{pointer-events:auto;min-height:44px;max-width:calc(100% - 36px);text-align:left;border:1px solid #b6cba566;line-height:1.5;font-family:inherit;cursor:pointer}#objective:disabled{cursor:default;opacity:.85}#objective:focus-visible{outline:3px solid #ffe5a5;outline-offset:3px}
