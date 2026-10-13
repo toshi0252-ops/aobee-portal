@@ -14,7 +14,6 @@
   resetAim=function(...args){outcome='';previousReset(...args);};
   startGame=function(...args){outcome='';previousStart(...args);};
   start.addEventListener('click',()=>{outcome='';});
-  cast.addEventListener('pointerdown',event=>{if(!cast.disabled)cast.setPointerCapture?.(event.pointerId)});
   function renderCue(){
     const cue=window.AobeeFishingCue({state,charging,charge,phase:fishPhase,reeling,mode:localStorage.getItem('aobeeControlMode')||'classic',outcome});
     const key=JSON.stringify(cue);
