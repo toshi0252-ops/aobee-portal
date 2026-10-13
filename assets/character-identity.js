@@ -6,7 +6,7 @@
  const loaded=new Promise((resolve,reject)=>{atlas.onload=resolve;atlas.onerror=reject});
  atlas.src=new URL('characters/aobee-atlas-v1.png',base).href;
  const poses={front:0,back:1,left:2,right:3,cheer:4,catch:5,runLeft:6,runRight:7};
- const signature=src=>src.length+':'+src.slice(0,90)+':'+src.slice(-90);
+ const signature=src=>{const asset=src.match(/\/rhythm-media\/([a-f0-9]+\.[a-z0-9]+)(?:[?#]|$)/);return asset?'asset:'+asset[1]:src.length+':'+src.slice(0,90)+':'+src.slice(-90)};
  api.ready=Promise.all([loaded,fetch(new URL('characters/manifest-v1.json',base)).then(r=>{if(!r.ok)throw Error('Character manifest');return r.json()})]).then(([,manifest])=>{
   const cw=atlas.naturalWidth/4,ch=atlas.naturalHeight/2,urls={};
   for(const [name,index]of Object.entries(poses)){
