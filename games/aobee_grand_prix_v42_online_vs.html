@@ -113,7 +113,7 @@ details.settings .race-options{justify-content:space-between}
         <button type="button" id="createRoom">ルーム作成</button>
         <div class="online-join"><input id="roomCodeInput" inputmode="numeric" maxlength="6" placeholder="6桁"><button type="button" id="joinRoom">参加</button></div>
       </div>
-      <div id="roomCodeDisplay"></div>
+      <div id="roomCodeDisplay"></div><button type="button" id="copyRoomCode" disabled style="min-height:44px">部屋番号をコピー</button><span id="copyRoomNotice" role="status" style="display:block;font-size:12px"></span>
       <div id="onlineStatus">ルームを作るか、相手の6桁コードを入力して参加。</div>
       <div id="onlinePlayers"><span class="net-chip" id="localChip">自分：未接続</span><span class="net-chip" id="remoteChip">相手：未接続</span></div>
       <button type="button" id="readyBtn" disabled>READY</button>
@@ -483,7 +483,7 @@ function setNetStatus(msg, bad = false) {
 }
 function netSend(data) { if (netConn && netConn.open) { try { netConn.send(data); } catch (e) {} } }
 function closeNetwork(silent = false) {
-  netEpoch++; clearTimeout(netTimer); netClosing = true;
+  netEpoch++; clearTimeout(netTimer); document.getElementById('copyRoomNotice').textContent=''; netClosing = true;
   try { if (netConn) netConn.close(); } catch (e) {}
   try { if (netPeer) netPeer.destroy(); } catch (e) {}
   netConn = null; netPeer = null; netConnected = false; netReady = false; netRemoteReady = false; netRole = ''; netRoom = ''; remoteTarget = null;
@@ -496,6 +496,7 @@ function syncOnlineLobby() {
   el.onlineLobby.style.display = online ? 'block' : 'none';
   if (!online) return;
   el.roomCodeDisplay.textContent = netRoom ? `ROOM ${netRoom}` : '';
+  document.getElementById('copyRoomCode').disabled=!netRoom||!netPeer?.open;
   const me = netRole === 'host' ? 'あおびー' : netRole === 'guest' ? 'わるびー' : '未接続';
   const opp = netRole === 'host' ? 'わるびー' : netRole === 'guest' ? 'あおびー' : '未接続';
   el.localChip.textContent = `自分：${me}${netReady ? ' ✓READY' : ''}`;
@@ -562,6 +563,10 @@ function startNetwork(role,code) {
  peer.on('error',err=>{if(!current())return;const type=err?.type||'unknown';if(type==='peer-unavailable'&&netConn){const conn=netConn;netConn=null;try{conn.close()}catch(e){}}clearTimeout(netTimer);if(netConnected&&type==='network'){setNetStatus('接続サーバーとの通信が切れました。対戦通信は継続中。',true);return;}closeNetwork(true);const messages={'peer-unavailable':'そのルームが見つかりません。ホストの画面と6桁の番号を確認してください。','unavailable-id':'番号が重複しました。もう一度ルーム作成を押してください。','network':'接続サーバーに届きません。回線を確認して再接続してください。','browser-incompatible':'このブラウザーは対戦通信に対応していません。最新のChrome・Safariで開いてください。'};setNetStatus(messages[type]||'接続エラー（'+type+'）。もう一度接続してください。',true);});
  peer.on('disconnected',()=>{if(!current())return;if(!netConnected){closeNetwork(true);setNetStatus('接続サーバーから切断されました。ルームを作り直してください。',true)}else{setNetStatus('サーバーとの接続を復旧中…');try{peer.reconnect()}catch(e){}}});
 }
+document.getElementById('copyRoomCode').addEventListener('click',async()=>{
+ const code=netRoom;if(!code)return;const notice=document.getElementById('copyRoomNotice');
+ try{await navigator.clipboard.writeText(code);notice.textContent='コピーしました。相手に6桁の番号を伝えてください。';}catch(e){notice.textContent='コピーできませんでした。表示されている6桁の番号を伝えてください。';}
+});
 function createOnlineRoom(){startNetwork('host',String(Math.floor(100000+Math.random()*900000)))}
 function joinOnlineRoom(){const code=(el.roomCodeInput.value||'').replace(/\D/g,'').slice(0,6);if(code.length!==6){setNetStatus('6桁のルーム番号を入力してください。',true);return;}startNetwork('guest',code)}
 function sendNetState(nowMs) {
