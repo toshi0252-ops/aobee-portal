@@ -1,6 +1,6 @@
 const fs=require('fs');let s=fs.readFileSync('games/aobee_grand_prix_v46_turn_relay.html','utf8');
 function r(a,b){if(!s.includes(a))throw Error(a.slice(0,90));s=s.replace(a,b)}
-r('</head>','<link rel="stylesheet" href="../assets/gp-race-menu-v47.css?v=47"></head>');
+r('</head>','<link rel="stylesheet" href="../assets/gp-race-menu-v47.css?v=47b"></head>');
 s=s.replaceAll('v4.6','v4.7');
 r('<div class="titleBadge">','<div class="race-layout"><div class="race-intro"><picture id="raceTitleArt"><source type="image/webp" srcset="../assets/title-covers/race-v2.webp"><img src="../assets/title-covers/race-v2.jpg" width="1672" height="941" alt="あおびー GRAND PRIX — あおびーとわるびーのカート対決"></picture><div class="titleBadge">');
 r('<div id="recordLine">','</div><div class="race-setup"><div id="recordLine">');
@@ -30,7 +30,7 @@ r(`c.drawImage(AOBEE_RENA_REAR, -35, -78, 70, 88);
 r('<details class="settings">','<details class="settings"><summary>操作・あそび方</summary><p>スマホ：左親指で左右、右親指でアクセル。DRIFT長押しでミニターボ！ ITEMでアイテムを使おう。</p><p>PC：↑ アクセル ／ ← → ハンドル ／ Space ドリフト ／ E アイテム ／ ↓ ブレーキ。</p><p>海岸と星空はコース外への落下に注意。グランプリは3コースの合計ポイントで競うよ。</p></details><details class="settings">');
 const diagnostic=s.match(/<details id="connectionDetails">[\s\S]*?<\/details>/)[0];s=s.replace(diagnostic,'');s=s.replace('<div class="net-note">',diagnostic+'<div class="net-note">');
 fs.writeFileSync('games/aobee_grand_prix_v47_visual_lobby.html',s);
-let w=fs.readFileSync('games/aobee_grand_prix_v41_portal.html','utf8').replace('aobee_grand_prix_v46_turn_relay.html?v=v46','aobee_grand_prix_v47_visual_lobby.html?v=v47');fs.writeFileSync('games/aobee_grand_prix_v41_portal.html',w);
+let w=fs.readFileSync('games/aobee_grand_prix_v41_portal.html','utf8').replace('aobee_grand_prix_v46_turn_relay.html?v=v46','aobee_grand_prix_v47_visual_lobby.html?v=v47b');fs.writeFileSync('games/aobee_grand_prix_v41_portal.html',w);
 let p=fs.readFileSync('portal.js','utf8').replace('"オンラインVS対応","race"','"オンラインVS対応","race-v2"');fs.writeFileSync('portal.js',p);
 let idx=fs.readFileSync('index.html','utf8').replace(/portal.js\?v=[^"']+/, 'portal.js?v=race47');fs.writeFileSync('index.html',idx);
 let t=fs.readFileSync('tools/check-gp-v46.cjs','utf8').replace('aobee_grand_prix_v46_turn_relay.html','aobee_grand_prix_v47_visual_lobby.html').replace("style:{},classList", "style:{},dataset:{},classList");fs.writeFileSync('tools/check-gp-v47.cjs',t);
