@@ -1,0 +1,14 @@
+#panel{top:3%;left:3%;width:94%;max-height:94%;padding:14px;border-color:#87cde7;background:linear-gradient(145deg,#143b60fa,#081c35fc)}
+#raceTitleArt{display:block;margin:0 auto 12px;max-width:570px}#raceTitleArt img{display:block;width:100%;height:auto;object-fit:contain;border-radius:14px}
+#panel:not(.result-panel) #panelTitle{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+#panel p{font-size:13px}#panel .titleBadge{font-size:10px;letter-spacing:.08em;margin-bottom:8px}
+.race-options{justify-content:space-between;max-width:470px}.race-options select{max-width:72%;min-height:44px}
+#onlineLobby{padding:12px;border-color:#477799;background:#071d33}.online-actions{grid-template-columns:1fr;gap:12px}
+.online-join{position:relative}#roomCodeInput{flex:1}#joinRoom{flex:0 0 76px}#createRoom{background:linear-gradient(#246f9c,#155070)}
+.connection-steps{display:flex;gap:6px;list-style:none;padding:0;margin:0 0 12px;font-size:12px;font-weight:800}.connection-steps li{flex:1;padding:7px 2px;background:#17354f;border-radius:7px;color:#9cb5ca}
+#onlineLobby[data-stage=waiting] .connection-steps li:first-child,#onlineLobby[data-stage=connected] .connection-steps li:nth-child(-n+2),#onlineLobby[data-stage=ready] .connection-steps li{background:#256c62;color:#e5fff1}
+#onlineStatus{padding:8px 0;min-height:0}#roomNumberRow{padding:7px;background:#17364f;border-radius:10px;margin:8px 0}#roomNumberRow[hidden],#retryConnection[hidden]{display:none}
+#panel #copyRoomCode,#panel #retryConnection,#panel #copyConnectionReport{height:44px;font-size:12px;padding:5px 12px;border-width:1px;background:#193a54;box-shadow:none}
+#readyBtn{width:100%;max-width:none;height:48px}#connectionDetails{margin-top:12px;font-size:12px;color:#b9cede;text-align:left}#connectionDetails summary{cursor:pointer;padding:8px}
+#panel #start{height:54px;max-width:470px;width:100%;margin:4px 0 8px}.result-panel #raceTitleArt{display:none}details.settings{font-size:13px}
+@media(min-width:620px) and (max-height:540px){.race-layout{display:grid;grid-template-columns:43% 1fr;gap:18px;align-items:start}.race-intro{position:sticky;top:0}#panel{top:2%;max-height:96%;padding:12px}.race-intro #panelBody{font-size:12px}.result-panel .race-layout{display:block}#recordLine{font-size:12px}.race-options{margin:5px auto}.titleBadge{padding:3px 5px}}
