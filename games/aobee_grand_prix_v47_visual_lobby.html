@@ -115,13 +115,13 @@ details.settings .race-options{justify-content:space-between}
       </div>
       <div id="roomNumberRow" hidden><div id="roomCodeDisplay"></div><button type="button" id="copyRoomCode" disabled style="min-height:44px">部屋番号をコピー</button><span id="copyRoomNotice" role="status" style="display:block;font-size:12px"></span>
       </div><div id="onlineStatus" role="status" aria-live="polite">ルームを作るか、相手の6桁コードを入力して参加。</div>
-      <button type="button" id="retryConnection" style="min-height:44px">接続をやり直す</button><details id="connectionDetails"><summary>接続診断（v4.7）</summary><p style="font-size:11px">失敗したら、2台それぞれで診断をコピーして玲奈に伝えてください。IPアドレス・部屋番号は含みません。</p><textarea id="connectionReport" readonly aria-label="接続診断の内容" style="box-sizing:border-box;width:100%;height:160px;font-size:11px;background:#071c30;color:#deefff"></textarea><button type="button" id="copyConnectionReport" style="min-height:44px">診断をコピー</button><span id="connectionCopyNotice" role="status"></span></details><div id="onlinePlayers"><span class="net-chip" id="localChip">自分：未接続</span><span class="net-chip" id="remoteChip">相手：未接続</span></div>
+      <button type="button" id="retryConnection" style="min-height:44px">接続をやり直す</button><div id="onlinePlayers"><span class="net-chip" id="localChip">自分：未接続</span><span class="net-chip" id="remoteChip">相手：未接続</span></div>
       <button type="button" id="readyBtn" disabled>READY</button>
-      <div class="net-note">ホスト：あおびー ／ 参加者：わるびー<br>2人ともREADYになったら、ホストがスタート。</div>
+      <details id="connectionDetails"><summary>接続診断（v4.7）</summary><p style="font-size:11px">失敗したら、2台それぞれで診断をコピーして玲奈に伝えてください。IPアドレス・部屋番号は含みません。</p><textarea id="connectionReport" readonly aria-label="接続診断の内容" style="box-sizing:border-box;width:100%;height:160px;font-size:11px;background:#071c30;color:#deefff"></textarea><button type="button" id="copyConnectionReport" style="min-height:44px">診断をコピー</button><span id="connectionCopyNotice" role="status"></span></details><div class="net-note">ホスト：あおびー ／ 参加者：わるびー<br>2人ともREADYになったら、ホストがスタート。</div>
     </div>
     <div class="race-options" id="difficultyRow"><label for="difficulty">ライバルの強さ</label>
       <select id="difficulty"><option value="easy">やさしい</option><option value="normal" selected>ふつう</option><option value="hard">むずかしい</option></select></div>
-    <details class="settings">
+    <details class="settings"><summary>操作・あそび方</summary><p>スマホ：左親指で左右、右親指でアクセル。DRIFT長押しでミニターボ！ ITEMでアイテムを使おう。</p><p>PC：↑ アクセル ／ ← → ハンドル ／ Space ドリフト ／ E アイテム ／ ↓ ブレーキ。</p><p>海岸と星空はコース外への落下に注意。グランプリは3コースの合計ポイントで競うよ。</p></details><details class="settings">
       <summary>⚙ せってい</summary>
       <div class="race-options"><label for="setVolume">音量</label>
         <select id="setVolume"><option value="0">OFF</option><option value="0.5">小</option><option value="1">大</option></select></div>
