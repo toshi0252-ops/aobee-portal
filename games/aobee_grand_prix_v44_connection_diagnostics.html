@@ -161,7 +161,7 @@ details.settings .race-options{justify-content:space-between}
   </div>
 </div>
 
-<script src="../assets/gp-connection-diagnostics.js?v=44"></script><script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script src="../assets/gp-connection-diagnostics.js?v=44a"></script><script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
 (() => {
 'use strict';
@@ -534,7 +534,7 @@ function attachNetConnection(conn) {
  const epoch=netEpoch;netConn=conn;
  const current=()=>epoch===netEpoch&&netConn===conn;
  const lost=()=>{if(current())failNetAttempt('相手との接続が切れました。');};
- netDiagnostics.record('相手','応答あり');
+ netDiagnostics.newAttempt();netDiagnostics.record('相手','応答あり');
  waitForNetwork('相手を発見 → 対戦通信を接続中…',epoch);
  conn.on('open',()=>{if(!current())return;
   netDiagnostics.record('通信路','open');setNetStatus('通信路が開きました → ゲームの応答を確認中…');

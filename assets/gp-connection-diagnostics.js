@@ -6,6 +6,7 @@
   function report(){return ['AOBEE GP v4.4', '役割: '+role,...Object.entries(environment).map(([k,v])=>k+': '+v),...lines].join('\n');}
   function record(key,value){value=String(value);if(states[key]===value)return;states[key]=value;lines.push(((now()-started)/1000).toFixed(1)+'s '+key+': '+value);if(lines.length>45)lines.shift();render(report());}
   function reset(newRole,env={}){stopMonitor();started=now();lines=[];states={};role=newRole;environment=env;record('開始','接続を開始');}
+  function newAttempt(){states={};record('対戦通信','新しい接続試行');record('サーバー','接続済み');}
   function reason(){
    if(states['通信路']==='open')return '通信路は開きましたが、ゲームの応答確認が完了しませんでした。';
    if(['connected','completed'].includes(states.ICE))return '通信経路は確立しましたが、データ通信路が開きませんでした。';
@@ -33,7 +34,7 @@
    }
    const timer=setInterval(sample,500);stopMonitor=()=>{active=false;clearInterval(timer);for(const off of cleanups)off();};sample();return stopMonitor;
   }
-  return {record,reset,report,reason,monitor,stop:()=>stopMonitor()};
+  return {record,reset,newAttempt,report,reason,monitor,stop:()=>stopMonitor()};
  }
  if(typeof module==='object'&&module.exports)module.exports={create};else root.GPConnectionDiagnostics={create};
 })(typeof window==='undefined'?{}:window);
