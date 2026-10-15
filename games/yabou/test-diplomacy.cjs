@@ -1,4 +1,4 @@
-const assert=require('node:assert/strict');require('./data.js');require('./diplomacy.js');require('./engine.js');const E=Yabou,D=YabouDiplomacy,M=YABOU_DATA,R=YABOU_RULES;
+const assert=require('node:assert/strict');require('./data.js');require('./diplomacy.js');require('./battle.js');require('./military.js');require('./engine.js');const E=Yabou,D=YabouDiplomacy,M=YABOU_DATA,R=YABOU_RULES;
 let s=E.createInitialState(M,'F01',999);const q={type:'goodwill',factionId:'F01',targetFactionId:'F02',castleId:'C01',officerId:'G001'};
 const original=JSON.stringify(s);s=D.queue(s,q,R);assert.equal(JSON.parse(original).castles[0].gold,500);assert.throws(()=>E.queueCommand(s,{type:'commerce',factionId:'F01',castleId:'C01',officerId:'G001'},R));
 const n=E.advanceMonth(s,M,R);assert.equal(n.castles[0].gold,510);assert(n.diplomacy[D.pair('F01','F02')].relation>=10);assert.equal(s.castles[0].gold,500);assert.deepEqual(E.loadSave(E.serializeSave(n,M,R),M,R),n);
@@ -6,6 +6,6 @@ s=E.createInitialState(M,'F01',8);assert(D.can(s,{...q,type:'alliance'},R));s.di
 const reserved=E.clone(s);reserved.castles[0].gold=100;reserved.diplomacyCommands.push(q);assert(E.canIssueCommand(reserved,{type:'commerce',factionId:'F01',castleId:'C01',officerId:'G002'},R));
 s.offers=[{id:'test',from:'F02',to:'F01',expiresTurn:3}];let accepted=D.respond(s,'test',true);assert(D.active(accepted,'F01','F02'));assert.equal(accepted.offers.length,0);assert.equal(s.offers.length,1);accepted.turn=13;assert(!D.active(accepted,'F01','F02'));
 s=E.createInitialState(M,'F01',1);for(const id of ['F02','F03'])s.diplomacy[D.pair('F01',id)].allianceUntil=13;s.offers=[{id:'third',from:'F04',to:'F01',expiresTurn:2}];assert.throws(()=>D.respond(s,'third',true));
-const old=E.createInitialState(M,'F01',8);old.buildContract='domestic-prototype-1';delete old.diplomacy;delete old.diplomacyCommands;delete old.offers;assert.equal(E.loadSave(JSON.stringify(old),M,R).buildContract,'diplomacy-prototype-2');assert.equal(old.buildContract,'domestic-prototype-1');
+const old=E.createInitialState(M,'F01',8);old.buildContract='domestic-prototype-1';delete old.diplomacy;delete old.diplomacyCommands;delete old.offers;assert.equal(E.loadSave(JSON.stringify(old),M,R).buildContract,'battle-prototype-3');assert.equal(old.buildContract,'domestic-prototype-1');
 const bad=E.clone(n);bad.diplomacy[D.pair('F01','F02')].relation=101;assert.throws(()=>E.loadSave(JSON.stringify(bad),M,R));
 console.log('PASS: shared officer/action/resource limits, gift expense, relations, alliance threshold/cap/expiry, response, immutable migration, diplomacy save validation');
