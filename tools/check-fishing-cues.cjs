@@ -2,7 +2,7 @@ const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
 const scope={window:{}};vm.runInNewContext(fs.readFileSync('assets/fishing-cues.js','utf8'),scope);
 const cue=scope.window.AobeeFishingCue;
 assert.equal(cue({state:'aim',charging:true,charge:68}).button,'離して投げる · 68%');
-assert.equal(cue({state:'cast'}).disabled,true);
+assert.equal(cue({state:'cast'}).disabled,false);
 assert.equal(cue({state:'fight',phase:'pull'}).kind,'release');
 assert.equal(cue({state:'fight',phase:'rest',reeling:true}).button,'巻いてる！');
 assert.equal(cue({state:'fight',phase:'left',mode:'hunt'}).direction,'right');

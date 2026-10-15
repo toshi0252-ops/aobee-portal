@@ -14,7 +14,23 @@
   resetAim=function(...args){outcome='';previousReset(...args);};
   startGame=function(...args){outcome='';previousStart(...args);};
   start.addEventListener('click',()=>{outcome='';});
+  // Each cast owns its flight and delayed bite callbacks; resetting invalidates them.
+  let recallPressed=false;
+  cast.addEventListener('pointerdown',()=>{recallPressed=state==='cast';},true);
+  cast.addEventListener('pointercancel',()=>{recallPressed=false;});
+  cast.addEventListener('click',event=>{
+    const recall=event.detail===0||recallPressed;recallPressed=false;
+    if(!recall||state!=='cast')return;
+    resetAim();msg.textContent='回収したよ。もう一度、狙って投げよう！';
+  });
+  let waitingCast=-1,waitingMs=0,previousFrame=performance.now();
   function renderCue(){
+    const now=performance.now(),elapsed=Math.max(0,Math.min(100,now-previousFrame));previousFrame=now;
+    if(state==='cast'){
+      if(waitingCast!==fishingCastId){waitingCast=fishingCastId;waitingMs=0;}
+      if(!document.hidden)waitingMs+=elapsed;
+      if(waitingMs>=25000){resetAim();msg.textContent='食いつかなかったので回収したよ。場所を変えてみよう！';}
+    }else{waitingCast=-1;waitingMs=0;}
     const cue=window.AobeeFishingCue({state,charging,charge,phase:fishPhase,reeling,mode:localStorage.getItem('aobeeControlMode')||'classic',outcome});
     const key=JSON.stringify(cue);
     if(cast.textContent!==cue.button)cast.textContent=cue.button;

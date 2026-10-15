@@ -295,7 +295,7 @@ function updateFish(f,dt){if(state==='aim'||state==='cast'){
   if(bait&&f.c.curious>0){let d=Math.hypot(f.x-bait.x,(f.y-bait.y)*.75);if(d<18&&Math.random()<f.c.curious*dt*.9){f.mode='approach';f.timer=0;f.nibbles=0}}
  }else if(f.mode==='approach'&&bait){let dx=bait.x-f.x,dy=bait.y-f.y,d=Math.hypot(dx,dy)||1;let sp=5.5+(f.c.name==='アジ'?2:0);f.x+=dx/d*sp*dt;f.y+=dy/d*sp*dt;f.v=dx>=0?Math.abs(f.v):-Math.abs(f.v);if(d<4.2){f.mode='inspect';f.timer=.45+Math.random()*.55}}
  else if(f.mode==='inspect'&&bait){f.timer-=dt;let ang=performance.now()/350+(fish.indexOf(f)*1.7);f.x=bait.x+Math.cos(ang)*3.2;f.y=bait.y+Math.sin(ang)*1.7;if(f.timer<=0){f.mode='nibble';f.timer=.22;f.nibbles=1+Math.floor(Math.random()*3);AOBEE_AUDIO.nibble();msg.textContent='ツン…';bobber.classList.add('nibble');setTimeout(()=>bobber.classList.remove('nibble'),330)}}
- else if(f.mode==='nibble'&&bait){f.timer-=dt;let dx=bait.x-f.x,dy=bait.y-f.y;f.x+=dx*dt*6;f.y+=dy*dt*6;if(f.timer<=0){f.nibbles--;if(f.nibbles>0){f.timer=.28+Math.random()*.25;msg.textContent='ツン、ツン…';bobber.classList.add('nibble');setTimeout(()=>bobber.classList.remove('nibble'),330)}else if(Math.random()<.18){f.mode='spook';f.timer=.8;msg.textContent='……離れた';}else{target=f;f.mode='bite';bobber.classList.add('sink');msg.textContent='パクッ！';setTimeout(startFight,260)}}
+ else if(f.mode==='nibble'&&bait){f.timer-=dt;let dx=bait.x-f.x,dy=bait.y-f.y;f.x+=dx*dt*6;f.y+=dy*dt*6;if(f.timer<=0){f.nibbles--;if(f.nibbles>0){f.timer=.28+Math.random()*.25;msg.textContent='ツン、ツン…';bobber.classList.add('nibble');setTimeout(()=>bobber.classList.remove('nibble'),330)}else if(Math.random()<.18){f.mode='spook';f.timer=.8;msg.textContent='……離れた';}else{target=f;f.mode='bite';bobber.classList.add('sink');msg.textContent='パクッ！';const biteCastId=fishingCastId;setTimeout(()=>{if(state==='cast'&&fishingCastId===biteCastId&&target===f)startFight()},260)}}
  else if(f.mode==='spook'){f.timer-=dt;f.x-=Math.sign((bait?.x||f.x)-f.x||1)*8*dt;if(f.timer<=0){f.mode='swim';msg.textContent=''}}
  }
  let fi=f.el.querySelector('img');if(fi)fi.src=catchSrc(f.c,'swim');f.el.style.left=f.x+'%';f.el.style.top=f.y+'%';f.el.style.transform=f.v<0?'scaleX(-1)':''}
@@ -314,7 +314,9 @@ function release(){if(state==='fight'){reeling=false;cast.textContent='巻く！
 cast.addEventListener('pointerup',e=>{if(e.pointerId!==castPointer)return;castPointer=null;release()});
 cast.addEventListener('pointercancel',cancelFishingHold);cast.addEventListener('lostpointercapture',()=>{if(castPointer!==null)cancelFishingHold()});
 window.addEventListener('blur',cancelFishingHold);document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelFishingHold()});
+let fishingCastId=0;
 function doCast(){
+ const castId=++fishingCastId;
  AOBEE_AUDIO.cast();
  castSnapStart=performance.now();
  state='cast';
@@ -326,6 +328,7 @@ function doCast(){
  castTrail.style.display='block';
  if(navigator.vibrate)navigator.vibrate(charge>70?35:15);
  function fly(now){
+  if(state!=='cast'||castId!==fishingCastId||!bait)return;
   let t=Math.max(0,Math.min(1,(now-t0)/dur)),ease=1-Math.pow(1-t,2.5);
   bait.x=sx+(ex-sx)*ease;
   bait.y=sy+(ey-sy)*ease-Math.sin(Math.PI*t)*(18+charge*.10);
@@ -342,9 +345,9 @@ function doCast(){
    if(navigator.vibrate)navigator.vibrate(25);
    setTimeout(()=>bobber.classList.remove('splash'),500);
    AOBEE_AUDIO.splash();msg.textContent=charge>70?'ザバッ!!':'ポチャン!';
-   setTimeout(()=>{msg.textContent='魚が気づくかな…';
-    setTimeout(()=>{if(state==='cast'&&!fish.some(f=>['approach','inspect','nibble','bite'].includes(f.mode))){
-      msg.textContent='反応なし…';setTimeout(resetAim,900)}},3200)
+   setTimeout(()=>{if(state!=='cast'||castId!==fishingCastId)return;msg.textContent='魚が気づくかな…';
+    setTimeout(()=>{if(state==='cast'&&castId===fishingCastId&&!fish.some(f=>['approach','inspect','nibble','bite'].includes(f.mode))){
+      msg.textContent='反応なし…';setTimeout(()=>{if(state==='cast'&&castId===fishingCastId)resetAim()},900)}},3200)
    },500)
   }
  }
@@ -354,6 +357,7 @@ function setPhase(){if(!target)return;let r=Math.random();if(target.c.name==='�
 function startFight(){if(state==='fight'||!target)return;state='fight';setAobee('hit');bobber.classList.remove('sink');AOBEE_AUDIO.hit();msg.textContent='HIT!!';fight.style.display='block';cast.textContent='巻く！';tension=38;stamina=100;slack=55;setPhase();setTimeout(()=>msg.textContent='',500);fightTimer=setInterval(()=>{phaseTicks--;if(phaseTicks<=0)setPhase();let pulling=fishPhase==='pull'||fishPhase==='fake';fighttxt.textContent=pulling?'💥 引いてる！　離して耐えろ！':'💨 今や！　巻け！';setAobee(pulling?'pull':(reeling?'reel':'hit'));if(pulling){let force=(target.c.diff*2.6)+(fishPhase==='fake'?4:0)+Math.random()*2.8;if(reeling){tension+=force+7.2;stamina-=.15;}else{tension+=(72-tension)*.12;slack-=.4;}}else{tension+=reeling?-3.8:-2.4;slack+=reeling?-4.8:3.5;if(reeling)stamina-=3.0/Math.max(.65,target.c.diff);else stamina+=.05;}tension=Math.max(4,Math.min(108,tension));slack=Math.max(0,Math.min(105,slack));needle.style.left=Math.min(97,tension)+'%';if(tension>=100)end(false,'ブチッ！\n巻きすぎて糸が切れた！');else if(slack>=100)end(false,'スルッ…\n糸を緩めすぎて逃げられた！');else if(stamina<=0)end(true)},90)}
 function end(ok,why){clearInterval(fightTimer);fight.style.display='none';reeling=false;if(!ok){setAobee('fail');failCount++;updateRecords();msg.innerHTML=why.replace('\n','<br>');setTimeout(resetAim,1100);return}state='result';setAobee('success');let c=target.c,size=c.max?(c.min+Math.random()*(c.max-c.min)).toFixed(1):null;score+=c.pts;catchCount++;if(size&&Number(size)>biggestSize){biggestSize=Number(size);biggestName=c.name}updateRecords();document.getElementById('score').textContent=String(score).padStart(6,'0');let ce=document.getElementById('catch'),cs=catchSrc(c,'swim');ce.innerHTML=cs?`<img class="catchArt" src="${cs}" alt="${c.name}">`:c.icon;document.getElementById('rname').textContent=c.name==='長靴'?'……あれ？ '+c.name:c.name+'を釣り上げた！';document.getElementById('rinfo').textContent=size?`${size} cm　+${c.pts}点`:`+${c.pts}点`;result.style.display='block'}
 function resetAim(){
+ fishingCastId++;cancelFishingHold();castTrail.style.display='none';bobber.classList.remove('splash');
  state='aim';lastChargeSE=-1;
  const _m=document.getElementById('aobeeGameSprite');if(_m)_m.style.transform='none';setAobee('idle');bait=null;target=null;msg.textContent='';
  fight.style.display='none';cast.textContent='キャスト!';
@@ -371,6 +375,7 @@ function updateRecords(){
  document.getElementById('biggestCatch').textContent=biggestSize?`${biggestName} ${biggestSize.toFixed(1)}cm`:'—';
 }
 function showMenu(){
+ fishingCastId++;
  clearInterval(fightTimer);fightTimer=null;reeling=false;state='menu';bait=null;target=null;
  result.style.display='none';fight.style.display='none';msg.textContent='';topReturn.style.display='none';
  document.querySelectorAll('.panelScreen').forEach(p=>p.classList.add('hidden'));
@@ -1256,7 +1261,7 @@ window.AOBEE_BUILD='v6.3-full-sprite-rebuild';
 
   doCast=function(){
     if(FUN_controlMode!=='hunt'){FUN_oldDoCast();return;}
-    AOBEE_AUDIO.cast();castSnapStart=performance.now();state='cast';FUN_aim.classList.remove('visible');
+    const castId=++fishingCastId;AOBEE_AUDIO.cast();castSnapStart=performance.now();state='cast';FUN_aim.classList.remove('visible');
     const sx=35.5,sy=16.8;
     const sweet=1-Math.min(1,Math.abs(charge-68)/48);FUN_castQuality=.72+sweet*.55;
     let ex=FUN_aimX,ey=FUN_aimY;
@@ -1265,6 +1270,7 @@ window.AOBEE_BUILD='v6.3-full-sprite-rebuild';
     msg.textContent=sweet>.82?'✨ PERFECT CAST!':sweet>.5?'シュッ！':'狙いが甘い！';
     castTrail.style.display='block';
     function fly(now){
+  if(state!=='cast'||castId!==fishingCastId||!bait)return;
       const t=Math.max(0,Math.min(1,(now-t0)/dur)),ease=1-Math.pow(1-t,2.5);
       bait.x=sx+(ex-sx)*ease;bait.y=sy+(ey-sy)*ease-Math.sin(Math.PI*t)*(18+charge*.10);
       bobber.style.left=`calc(${bait.x}% - 7px)`;bobber.style.top=bait.y+'%';
@@ -1272,7 +1278,7 @@ window.AOBEE_BUILD='v6.3-full-sprite-rebuild';
       if(t<1)requestAnimationFrame(fly);else{
         castTrail.style.display='none';bait.x=ex;bait.y=ey;bobber.classList.add('splash');AOBEE_AUDIO.splash();
         setTimeout(()=>bobber.classList.remove('splash'),450);msg.textContent='魚の動きを読め…';
-        setTimeout(()=>{if(state==='cast'&&!fish.some(f=>['approach','inspect','nibble','bite'].includes(f.mode))){msg.textContent='反応なし…狙い直せ！';setTimeout(resetAim,650)}},3000);
+        setTimeout(()=>{if(state==='cast'&&castId===fishingCastId&&!fish.some(f=>['approach','inspect','nibble','bite'].includes(f.mode))){msg.textContent='反応なし…狙い直せ！';setTimeout(()=>{if(state==='cast'&&castId===fishingCastId)resetAim()},650)}},3000);
       }
     }
     requestAnimationFrame(fly);
@@ -1356,4 +1362,4 @@ window.AOBEE_BUILD='v6.3-full-sprite-rebuild';
 })();
 
 </script>
-<script src='../assets/fishing-cues.js?v=1'></script><script src='../assets/fishing-polish.js?v=2'></script></body></html>
+<script src='../assets/fishing-cues.js?v=2'></script><script src='../assets/fishing-polish.js?v=3'></script></body></html>

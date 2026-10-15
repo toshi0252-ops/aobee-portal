@@ -5,7 +5,7 @@
     if(state==='aim')return charging
       ? {button:`離して投げる · ${Math.round(charge)}%`,hint:mode==='hunt'?'約68%で離すと、PERFECT CASTを狙える！':'遠くへ投げたいときは、長めにためよう。',kind:'charge',disabled:false}
       : {button:'長押しでキャスト',hint:mode==='hunt'?'水中をタップして狙いを決め、キャストを長押し。':'左右で立ち位置を合わせ、キャストを長押し。',kind:'cast',disabled:false};
-    if(state==='cast')return {button:'食いつきを待つ…',hint:'魚が餌を調べているよ。HITまで待とう。',kind:'wait',disabled:true};
+    if(state==='cast')return {button:'回収して投げ直す',hint:'食いつきを待とう。反応がなければ、ボタンで回収して狙い直せるよ。',kind:'wait',disabled:false};
     if(state==='fight'){
       const pulling=['pull','fake','left','right'].includes(phase);
       if(pulling){
