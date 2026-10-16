@@ -36,13 +36,13 @@ const poorNext=E.advanceMonth(poor,M,R);assert.equal(poorNext.officers.find(o=>o
 const zero=E.clone(poor);zero.officers.find(o=>o.id==='G002').loyalty=1;assert.equal(E.advanceMonth(zero,M,R).officers.find(o=>o.id==='G002').loyalty,0);
 const dutiful=fresh(),veteran=dutiful.officers.find(o=>o.id==='N016');assert.equal(veteran.duty,80);dutiful.castles.find(c=>c.id===veteran.locationCastleId).food=0;
 assert.equal(E.advanceMonth(dutiful,M,R).officers.find(o=>o.id===veteran.id).loyalty,78);
-const stable=fresh();stable.turn=3;stable.month=3;stable.officers.find(o=>o.id==='G002').loyalty=79;
+const stable=fresh();stable.turn=3;stable.month=3;stable.events.pending=null;stable.officers.find(o=>o.id==='G002').loyalty=79;
 assert.equal(E.advanceMonth(stable,M,R).officers.find(o=>o.id==='G002').loyalty,80);
 
 const old=E.clone(pending);delete old.personnel.loyalty;const oldText=JSON.stringify(old),migrated=E.loadSave(oldText,M,R);
 assert.equal(JSON.stringify(old),oldText);assert.deepEqual(migrated.officers,old.officers);assert.deepEqual(migrated.commands,old.commands);assert.deepEqual(migrated.personnel.loyalty,{version:1,bonds:{}});
 assert.deepEqual(E.advanceMonth(migrated,M,R),next);
-for(const change of [x=>x.personnel.loyalty=null,x=>x.personnel.loyalty.version=99,x=>x.personnel.loyalty.bonds['G001:G002'].value=101,x=>x.personnel.loyalty.bonds['G001:G002'].tags=['unknown'],x=>x.personnel.loyalty.bonds['G001:G002'].lastTurn=x.turn,x=>{x.personnel.loyalty.bonds['G002:G001']=x.personnel.loyalty.bonds['G001:G002'];},x=>x.personnel.loyalty.bonds['G001:missing']={value:0,tags:[],lastTurn:1}]){const bad=E.clone(next);change(bad);assert.throws(()=>E.loadSave(JSON.stringify(bad),M,R));}
+for(const change of [x=>x.personnel.loyalty=null,x=>x.personnel.loyalty.version=99,x=>x.personnel.loyalty.bonds['G001:G002'].value=101,x=>x.personnel.loyalty.bonds['G001:G002'].tags=['unknown'],x=>x.personnel.loyalty.bonds['G001:G002'].lastTurn=x.turn+1,x=>{x.personnel.loyalty.bonds['G002:G001']=x.personnel.loyalty.bonds['G001:G002'];},x=>x.personnel.loyalty.bonds['G001:missing']={value:0,tags:[],lastTurn:1}]){const bad=E.clone(next);change(bad);assert.throws(()=>E.loadSave(JSON.stringify(bad),M,R));}
 const bounded=fresh();L.addBond(bounded,'G001','G002',-500);assert.equal(E.bond(bounded,'G001','G002'),-100);L.addBond(bounded,'G002','G001',500);assert.equal(E.bond(bounded,'G001','G002'),100);assert.equal(Object.keys(bounded.personnel.loyalty.bonds).length,1);
 let long=next;for(let i=1;i<100&&!long.ending;i++){const roundTrip=E.loadSave(E.serializeSave(long,M,R),M,R);long=E.advanceMonth(long,M,R);assert.deepEqual(long,E.advanceMonth(roundTrip,M,R));}
 assert.equal(long.turn,101);assert.equal(new Set(long.officers.map(o=>o.id)).size,54);assert(long.personnel.log.length<=200);assert(long.officers.every(o=>o.loyalty>=0&&o.loyalty<=100));

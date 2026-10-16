@@ -53,7 +53,7 @@ function validate(s){
  if(Object.keys(v.bonds).length>ids.size*(ids.size-1)/2)fail();
  for(const [key,b]of Object.entries(v.bonds)){
   const [a,c]=key.split(':');
-  if(!ids.has(a)||!ids.has(c)||a===c||key!==pair(a,c)||!b||!Number.isInteger(b.value)||b.value< -100||b.value>100||!Array.isArray(b.tags)||new Set(b.tags).size!==b.tags.length||b.tags.some(t=>!tags.includes(t))||!Number.isInteger(b.lastTurn)||b.lastTurn<1||b.lastTurn>=s.turn)fail();
+  if(!ids.has(a)||!ids.has(c)||a===c||key!==pair(a,c)||!b||!Number.isInteger(b.value)||b.value< -100||b.value>100||!Array.isArray(b.tags)||new Set(b.tags).size!==b.tags.length||b.tags.some(t=>!tags.includes(t))||!Number.isInteger(b.lastTurn)||b.lastTurn<1||b.lastTurn>s.turn)fail();
  }
 }
 root.YabouLoyalty={rewards,label,init,bond,addBond,canReward,reward,month,validate};
