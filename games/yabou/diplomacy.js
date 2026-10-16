@@ -18,7 +18,7 @@ function can(s,q,rules){
  if(W().usedOfficers(s).includes(q.officerId)||[...s.commands,...s.diplomacyCommands].some(x=>x.officerId===q.officerId))return '使者は今月の任務を予約済みです';
  if([...s.commands,...s.diplomacyCommands].filter(x=>x.castleId===c.id).length+W().count(s,c.id)>=2)return '出発城の命令枠が不足しています';
  if(s.diplomacyCommands.some(x=>x.factionId===q.factionId&&x.targetFactionId===q.targetFactionId))return '同じ相手への外交は月1回です';
- if(q.type==='goodwill'){const domestic=s.commands.filter(x=>x.castleId===c.id).reduce((a,x)=>a+(x.type==='search'?({careful:100,normal:250,large:500}[x.mode]):x.type==='hire'?x.offer:rules.commands[x.type].cost.gold),0);if(c.gold-domestic-reserved(s,c.id)<COST)return '贈物の金50が不足しています';if(s.diplomacy[pair(q.factionId,q.targetFactionId)].relation>=100)return '関係はすでに上限です';}
+ if(q.type==='goodwill'){const domestic=s.commands.filter(x=>x.castleId===c.id).reduce((a,x)=>a+(root.Yabou.commandRule(x,rules).cost.gold||0),0);if(c.gold-domestic-reserved(s,c.id)<COST)return '贈物の金50が不足しています';if(s.diplomacy[pair(q.factionId,q.targetFactionId)].relation>=100)return '関係はすでに上限です';}
  if(q.type==='alliance'){if(active(s,q.factionId,q.targetFactionId))return 'すでに同盟中です';if(s.diplomacy[pair(q.factionId,q.targetFactionId)].relation<30)return '同盟交渉には関係30以上が必要です';if(allies(s,q.factionId)>=2||allies(s,q.targetFactionId)>=2)return '同盟は各家2勢力までです';}
  return null;
 }

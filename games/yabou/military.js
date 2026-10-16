@@ -18,7 +18,7 @@ function can(s,q,m,r){
  if(!Array.isArray(q.units)||q.units.length<1||q.units.length>3||new Set(q.units.map(u=>u.officerId)).size!==q.units.length)return '1〜3部隊・武将の重複なしで編成してください';
  for(const u of q.units){const o=s.officers.find(o=>o.id===u.officerId);if(!o||o.status!=='active'||o.factionId!==q.factionId||o.locationCastleId!==source.id)return '出陣武将の配置が不正です';if(usedOfficers(s).includes(o.id)||[...s.commands,...s.diplomacyCommands].some(x=>x.officerId===o.id))return '出陣武将は任務予約済みです';if(!Object.hasOwn(B().RULES.types,u.type)||!Number.isInteger(u.troops)||u.troops<100||u.troops>3000||u.troops%100!==0)return '1部隊100〜3000兵・100兵単位で指定してください';}
  const troops=q.units.reduce((a,u)=>a+u.troops,0);if(source.troops-troops<100)return '出発城には守備兵100以上を残してください';
- const reserved=s.commands.filter(x=>x.castleId===source.id).reduce((a,x)=>a+(r.commands[x.type].cost.food||0),0),required=q.units.reduce((a,u)=>a+Math.ceil(u.troops/100)*12,0);
+ const reserved=s.commands.filter(x=>x.castleId===source.id).reduce((a,x)=>a+(root.Yabou.commandRule(x,r).cost.food||0),0),required=q.units.reduce((a,u)=>a+Math.ceil(u.troops/100)*12,0);
  if(!Number.isSafeInteger(q.food)||q.food<required||q.food>source.food-reserved)return '12ラウンド分の兵糧が必要です（内政予約分は使用不可）';
  if(target.ownerFactionId!==q.factionId){if(D().active(s,q.factionId,target.ownerFactionId))return '同盟中の勢力は攻撃できません';if(s.diplomacyCommands.some(x=>x.factionId===q.factionId&&x.targetFactionId===target.ownerFactionId))return '同じ相手への外交と出陣は同月に予約できません';if(!atWar(s,q.factionId,target.ownerFactionId)&&q.declareWar!==true)return '未交戦の相手には宣戦の確認が必要です';}
  return null;

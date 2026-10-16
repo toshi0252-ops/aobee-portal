@@ -3,9 +3,10 @@
 const CONTRACT='battle-prototype-3';
 const W=root.YabouMilitary,B=root.YabouBattle;
 const D=root.YabouDiplomacy;
+const L=root.YabouLoyalty||(typeof require==='function'?require('./loyalty.js'):null);
 const clone=x=>JSON.parse(JSON.stringify(x));
-const types=['cultivate','commerce','fortify','recruit','search','hire'];
-const labels={cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉'};
+const types=['cultivate','commerce','fortify','recruit','search','hire','reward'];
+const labels={cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉',reward:'家臣への褒賞'};
 const fail=m=>{throw new Error(m)};
 function validateMaster(m){
  const errors=[];
@@ -28,7 +29,7 @@ function createInitialState(m,factionId,seed=12345){
  if(!m.factions.some(f=>f.id===factionId))fail('勢力が存在しません');
  const s={schemaVersion:'1.2.0',buildContract:CONTRACT,scenarioId:'S01',year:1,month:1,turn:1,seed:seed>>>0,rngState:(seed>>>0)||1,playerFactionId:factionId,factions:clone(m.factions),castles:clone(m.castles),officers:clone(m.officers),commands:[],reports:[],aiLog:[],eventFlags:{},annualReports:[]};
  for(const f of s.factions){const os=s.officers.filter(o=>o.factionId===f.id);const second=s.castles.find(c=>c.ownerFactionId===f.id&&c.id!==f.capitalCastleId);os.forEach((o,i)=>{o.locationCastleId=i<2?f.capitalCastleId:second.id;o.loyalty=o.role==='大名'?100:80;o.status='active';});}
- for(const o of s.officers.filter(o=>o.id.startsWith('N'))){if(o.factionId){o.locationCastleId=s.factions.find(f=>f.id===o.factionId).capitalCastleId;o.status='active';o.loyalty=80;}else{o.locationCastleId=null;o.status='ronin';o.loyalty=50;}}s.personnel={known:{},attempts:{},log:[]};return W.init(D.init(s));
+ for(const o of s.officers.filter(o=>o.id.startsWith('N'))){if(o.factionId){o.locationCastleId=s.factions.find(f=>f.id===o.factionId).capitalCastleId;o.status='active';o.loyalty=80;}else{o.locationCastleId=null;o.status='ronin';o.loyalty=50;}}s.personnel={known:{},attempts:{},log:[]};return W.init(D.init(L.init(s)));
 }
 function random(s){let x=s.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;s.rngState=x>>>0;return s.rngState/4294967296;}
 function canIssueCommand(s,q,rules){
@@ -39,6 +40,7 @@ function canIssueCommand(s,q,rules){
  if(c.ownerFactionId!==q.factionId||o.factionId!==q.factionId||o.locationCastleId!==c.id||o.status!=='active')return '所属・配置が一致しません';
  if(q.type==='search'&&(!['careful','normal','large'].includes(q.mode)))return '探索規模が不正です';
  if(q.type==='hire'){const t=s.officers.find(t=>t.id===q.targetId);if(!t||t.status!=='ronin'||!s.personnel?.known[q.factionId]?.includes(t.id))return '発見済みの浪人を選んでください';if(s.commands.some(x=>x.type==='hire'&&x.targetId===t.id))return '交渉予約済みです';if(!Number.isInteger(q.offer)||q.offer<0||q.offer>300)return '待遇金は0〜300です';}
+ if(q.type==='reward'){const error=L.canReward(s,q);if(error)return error;}
  if(W.usedOfficers(s).includes(o.id)||[...s.commands,...s.diplomacyCommands].some(x=>x.officerId===o.id))return '担当武将は今月の任務を予約済みです';
  const pending=s.commands.filter(x=>x.castleId===c.id);
  if(pending.length+s.diplomacyCommands.filter(x=>x.castleId===c.id).length+W.count(s,c.id)>=2)return 'この城の命令枠は使用済みです';
@@ -48,7 +50,7 @@ function canIssueCommand(s,q,rules){
  for(const [k,cost]of Object.entries(rule.cost)){const reserved=pending.reduce((a,x)=>a+(commandRule(x,rules).cost[k]||0),0);if(c[k]-reserved-(k==='gold'?D.reserved(s,c.id):k==='food'?W.food(s,c.id):0)<cost)return (k==='gold'?'金':'兵糧')+'が不足しています';}
  return null;
 }
-function commandRule(q,rules){return q.type==='search'?{cost:{gold:{careful:100,normal:250,large:500}[q.mode]},delta:{}}:q.type==='hire'?{cost:{gold:q.offer},delta:{}}:rules.commands[q.type];}
+function commandRule(q,rules){return q.type==='search'?{cost:{gold:{careful:100,normal:250,large:500}[q.mode]},delta:{}}:['hire','reward'].includes(q.type)?{cost:{gold:q.offer},delta:{}}:rules.commands[q.type];}
 function queueCommand(s,q,rules){const error=canIssueCommand(s,q,rules);if(error)fail(error);const n=clone(s);n.commands.push(clone(q));return n;}
 function validateState(s,m,rules){
  if(!s||s.schemaVersion!=='1.2.0'||s.buildContract!==CONTRACT)fail('このセーブの版には対応していません');
@@ -78,7 +80,7 @@ function validateState(s,m,rules){
  for(const x of s.personnel.log)if(!x||!Number.isInteger(x.turn)||x.turn<1||x.turn>=s.turn||!fs.includes(x.factionId)||!s.castles.some(c=>c.id===x.castleId)||typeof x.text!=='string'||x.text.length>300)fail('人材報告が不正です');
  for(const o of s.officers.filter(o=>o.id.startsWith('N')))for(const k of ['placement','regionCastleId','duty','ambition','affinity','concealment'])if(o[k]!==m.officers.find(t=>t.id===o.id)[k])fail('人材設定が不正です');
  for(const [f,ids] of Object.entries(s.personnel.known))if(!fs.includes(f)||!Array.isArray(ids)||new Set(ids).size!==ids.length||ids.some(id=>!s.officers.some(o=>o.id===id)))fail('発見情報が不正です');
- D.validate(s,m,rules);W.validate(s,m,rules);
+ L.validate(s);D.validate(s,m,rules);W.validate(s,m,rules);
  const trial=clone(s);trial.commands=[];for(const q of s.commands){if(q.factionId!==s.playerFactionId)fail('他勢力の命令です');const e=canIssueCommand(trial,q,rules);if(e)fail(e);trial.commands.push(q);}
  return true;
 }
@@ -86,7 +88,7 @@ function planAI(s,rules){
  for(const f of [...s.factions].sort((a,b)=>a.id.localeCompare(b.id))){if(f.id===s.playerFactionId||!W.aliveFaction(s,f.id))continue;
   for(const c of s.castles.filter(c=>c.ownerFactionId===f.id).sort((a,b)=>a.id.localeCompare(b.id))){
    for(const o of s.officers.filter(o=>o.locationCastleId===c.id&&o.status==='active'&&o.factionId===f.id).sort((a,b)=>b.stats.politics-a.stats.politics||a.id.localeCompare(b.id))){
-    const candidates=types.filter(t=>!['search','hire'].includes(t)).map(type=>{let score=0,reason='';
+    const candidates=types.filter(t=>!['search','hire','reward'].includes(t)).map(type=>{let score=0,reason='';
      if(type==='cultivate'){score=45-c.farm*.3+(c.food/Math.max(1,Math.ceil(c.troops/100))<3?100:0)+(f.trait==='agriculture'?15:0);reason='備蓄と秋収穫を確保';}
      if(type==='commerce'){score=55-c.commerce*.35+(f.trait==='commerce'?15:0);reason='継続収入を増やす';}
      if(type==='fortify'){score=18-c.defense*.1;reason='城防を整備';}
@@ -108,18 +110,19 @@ function nextBattle(tx){return W.nextBattle(tx,random);}
 function finishMonth(tx,m,rules){
  if(tx.armies.length||tx.current)fail('未解決の合戦があります');const s=clone(tx.state),report=clone(tx.report);W.reconcile(s);
  for(const c of s.castles){const f=s.factions.find(f=>f.id===c.ownerFactionId);const use=Math.ceil(c.troops/100),shortage=Math.max(0,use-c.food);c.food=Math.max(0,c.food-use);const income=Math.floor(c.commerce*1.5*(f.trait==='commerce'?1.1:1));c.gold+=income;const harvest=s.month===9?Math.floor(c.farm*8*(f.trait==='agriculture'?1.1:1)):0;c.food+=harvest;report.entries.push({castleId:c.id,factionId:c.ownerFactionId,income,use,shortage,harvest});}
- report.diplomacy=D.resolve(s,random);s.reports.push(report);if(s.month===12)s.annualReports.push({year:s.year,reports:clone(s.reports.slice(-12))});
+ report.diplomacy=D.resolve(s,random);L.month(s,report);s.reports.push(report);if(s.month===12)s.annualReports.push({year:s.year,reports:clone(s.reports.slice(-12))});
  s.commands=[];s.turn++;s.month=(s.turn-1)%12+1;s.year=Math.floor((s.turn-1)/12)+1;s.aiLog=s.aiLog.slice(-1000);s.reports=s.reports.slice(-120);s.annualReports=s.annualReports.slice(-10);validateState(s,m,rules);return s;
 }
 function advanceMonth(state,m,rules){const tx=beginMonth(state,m,rules);let b;while((b=nextBattle(tx)))W.settle(tx,B.auto(b));return finishMonth(tx,m,rules);}
 function resolvePersonnel(s,report){
  const p=s.personnel;report.personnel=[];
- for(const q of s.commands.filter(q=>['search','hire'].includes(q.type))){const o=s.officers.find(x=>x.id===q.officerId);let text;
- if(q.type==='search'){const candidates=s.officers.filter(t=>t.status==='ronin'&&t.placement!=='locked'&&(!t.regionCastleId||t.regionCastleId===q.castleId||t.placement==='wanderer')&&!(p.known[q.factionId]||[]).includes(t.id));const t=candidates[Math.floor(random(s)*candidates.length)];const rate=t?Math.max(5,Math.min(90,35+(o.stats.intellect-50)*.3+({careful:-15,normal:0,large:20}[q.mode])-(t.concealment||0))):0;if(t&&random(s)*100<rate){(p.known[q.factionId]??=[]).push(t.id);text=t.name+'を発見。登用は別の月に交渉できます。';}else text='探索したが人材は見つからなかった。';
- }else{const t=s.officers.find(x=>x.id===q.targetId),key=q.factionId+':'+q.targetId;const past=p.attempts[key]||0;p.attempts[key]=past+1;if(t.status!=='ronin'){text='交渉相手はすでに仕官している。';}else{const rate=Math.max(5,Math.min(90,25+o.stats.charisma*.25+o.stats.politics*.15+q.offer/15-(t.duty||50)*.15+(t.ambition||50)*.05-Math.abs((o.affinity||50)-(t.affinity||50))*.15));if(random(s)*100<rate){t.status='active';t.factionId=q.factionId;t.locationCastleId=q.castleId;t.loyalty=70;text=t.name+'を登用した。';}else text=t.name+'は登用を断った。再交渉できます。';if(past)text+='（再交渉）';}}
+ for(const q of s.commands.filter(q=>['search','hire','reward'].includes(q.type))){const o=s.officers.find(x=>x.id===q.officerId);let text;
+ if(q.type==='reward'){text=L.reward(s,q);}
+ else if(q.type==='search'){const candidates=s.officers.filter(t=>t.status==='ronin'&&t.placement!=='locked'&&(!t.regionCastleId||t.regionCastleId===q.castleId||t.placement==='wanderer')&&!(p.known[q.factionId]||[]).includes(t.id));const t=candidates[Math.floor(random(s)*candidates.length)];const rate=t?Math.max(5,Math.min(90,35+(o.stats.intellect-50)*.3+({careful:-15,normal:0,large:20}[q.mode])-(t.concealment||0))):0;if(t&&random(s)*100<rate){(p.known[q.factionId]??=[]).push(t.id);text=t.name+'を発見。登用は別の月に交渉できます。';}else text='探索したが人材は見つからなかった。';
+ }else{const t=s.officers.find(x=>x.id===q.targetId),key=q.factionId+':'+q.targetId;const past=p.attempts[key]||0;p.attempts[key]=past+1;if(t.status!=='ronin'){text='交渉相手はすでに仕官している。';}else{const rate=Math.max(5,Math.min(90,25+o.stats.charisma*.25+o.stats.politics*.15+q.offer/15-(t.duty||50)*.15+(t.ambition||50)*.05-Math.abs((o.affinity||50)-(t.affinity||50))*.15));if(random(s)*100<rate){t.status='active';t.factionId=q.factionId;t.locationCastleId=q.castleId;t.loyalty=70;L.addBond(s,o.id,t.id,5);text=t.name+'を登用した。';}else text=t.name+'は登用を断った。再交渉できます。';if(past)text+='（再交渉）';}}
  const entry={turn:s.turn,factionId:q.factionId,castleId:q.castleId,text};p.log.push(entry);report.personnel.push(entry);
  }p.log=p.log.slice(-200);
 }
-function migratePersonnel(s,m){if(s.personnel)return s;for(const o of m.officers.filter(o=>o.id.startsWith('N')))if(!s.officers.some(x=>x.id===o.id)){s.officers.push({...clone(o),factionId:null,status:'ronin',locationCastleId:null,loyalty:50});}s.personnel={known:{},attempts:{},log:[]};return s;}
-root.Yabou={labels,types,clone,validateMaster,createInitialState,canIssueCommand,queueCommand,advanceMonth,beginMonth,nextBattle,finishMonth,validateState,serializeSave:(s,m,r)=>{validateState(s,m,r);return JSON.stringify(s)},loadSave:(t,m,r)=>{const s=migratePersonnel(W.migrate(JSON.parse(t)),m);validateState(s,m,r);return s}};
+function migratePersonnel(s,m){if(s.personnel)return L.init(s);for(const o of m.officers.filter(o=>o.id.startsWith('N')))if(!s.officers.some(x=>x.id===o.id)){s.officers.push({...clone(o),factionId:null,status:'ronin',locationCastleId:null,loyalty:50});}s.personnel={known:{},attempts:{},log:[]};return L.init(s);}
+root.Yabou={labels,types,clone,commandRule,loyaltyLabel:L.label,bond:L.bond,validateMaster,createInitialState,canIssueCommand,queueCommand,advanceMonth,beginMonth,nextBattle,finishMonth,validateState,serializeSave:(s,m,r)=>{validateState(s,m,r);return JSON.stringify(s)},loadSave:(t,m,r)=>{const s=migratePersonnel(W.migrate(JSON.parse(t)),m);validateState(s,m,r);return s}};
 })(globalThis);
