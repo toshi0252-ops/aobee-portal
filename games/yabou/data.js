@@ -1080,3 +1080,5 @@ YABOU_DATA.officers.push(...YABOU_NEW_OFFICERS);
 Object.assign(YABOU_RULES.commands,{search:{cost:{gold:250},delta:{}},hire:{cost:{gold:0},delta:{}}});
 
 YABOU_RULES.commands.reward={cost:{gold:100},delta:{}};
+
+YABOU_RULES.commands.poach={cost:{gold:100},delta:{}};
