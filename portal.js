@@ -1,6 +1,6 @@
 const games=[
- ['あおびーの冒険','冒険へ、\n出発！','アクション','あおびーと冒険の世界へ。','aobee_adventure_v641_portal.html','#438fe8','#84d5fa'],
- ['あおびー牧場','のんびり\n牧場時間','くらし','あおびーの牧場で、自分のペースで遊ぼう。','aobee_farm_v48_soil_water.html','#3a967b','#a2df9b'],
+ ['あおびーの冒険','冒険へ、\n出発！','アクション','あおびーと冒険の世界へ。','aobee_adventure_v641_portal.html?v=ui49','#438fe8','#84d5fa'],
+ ['あおびー牧場','のんびり\n牧場時間','くらし','あおびーの牧場で、自分のペースで遊ぼう。','aobee_farm_v48_soil_water.html?v=ui49','#3a967b','#a2df9b'],
  ['あおびー RPG','星を忘れた\n世界へ','RPG','星と記憶をめぐる、あおびーたちの物語。','rpg/index.html','#5058a4','#aba4df'],
  ['あおびー GRAND PRIX','走り出せ、\nグランプリ！','レース','あおびーとレースに挑戦しよう。','aobee_grand_prix_v41_portal.html','#ed8451','#ffd38a'],
  ['AOBEE MIX POWER','MIX\nPOWER!','バラエティ','あおびーのMIX POWERを楽しもう。','AOBEE_MIX_POWER_v2.32_4GAUGE.html','#bb65b4','#f2abd5'],
