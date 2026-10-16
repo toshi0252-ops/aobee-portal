@@ -12,3 +12,6 @@ select{font:inherit;color:var(--ink);background:#102b30;border:1px solid #81988e
 @media(max-height:550px) and (orientation:landscape){.battleScreen h2{font-size:1.1rem}.battleHeader p{font-size:.8rem}.battleLayout{grid-template-columns:374px minmax(200px,1fr)}.battleBoard{width:374px}.battleCell{height:44px;aspect-ratio:auto}.battleHeader .eyebrow{font-size:.65rem}.battleFooter{padding:5px 0}}
 
 .battleCell span{font-size:12px}.battlePrediction{background:#0b2529;border-left:2px solid #d5b875;padding:8px;font-size:.85rem;line-height:1.6}
+
+/* Keep the personnel dialog actions outside its scrolling content. */
+dialog[open]:has(#personOfficer){display:flex;flex-direction:column;overflow:hidden;max-height:90dvh}dialog:has(#personOfficer) #dialogContent{overflow:auto;min-height:0;flex:1}dialog:has(#personOfficer) #closeModal{position:static;flex-shrink:0;align-self:flex-start;margin-top:12px}
