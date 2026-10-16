@@ -63,13 +63,13 @@ function nextBattle(tx,random){
  }tx.current=null;return null;
 }
 function settle(tx,battle){
- const s=tx.state,current=tx.current;if(!current||!battle.result||battle.id!==current.battle.id)throw new Error('合戦結果が一致しません');const {army,defender,reserve}=current,t=s.castles.find(c=>c.id===army.targetCastleId),attack=battle.units.filter(u=>u.side==='attack'),defend=battle.units.filter(u=>u.side==='defend');
+ const s=tx.state,before=clone(s),current=tx.current;if(!current||!battle.result||battle.id!==current.battle.id)throw new Error('合戦結果が一致しません');const {army,defender,reserve}=current,t=s.castles.find(c=>c.id===army.targetCastleId),attack=battle.units.filter(u=>u.side==='attack'),defend=battle.units.filter(u=>u.side==='defend');
  if(battle.result.winner==='attack'){
   t.ownerFactionId=army.factionId;t.troops=0;t.food=0;returnArmy(s,army,attack.filter(B().alive),battle.food.attack,t.id);returnArmy(s,army,attack.filter(u=>!B().alive(u)),0,army.castleId);
   const home=safeCastle(s,defender);if(home){home.troops+=reserve+defend.reduce((a,u)=>a+u.troops,0);home.food+=battle.food.defend;}
   for(const o of s.officers.filter(o=>o.factionId===defender&&o.status==='active'&&o.locationCastleId===t.id)){if(home)o.locationCastleId=home.id;else{o.status='prisoner';o.captorFactionId=army.factionId;o.locationCastleId=t.id;}}
  }else{t.troops=reserve+defend.reduce((a,u)=>a+u.troops,0);t.food=battle.food.defend;returnArmy(s,army,attack,battle.food.attack,army.castleId);}
- const record={id:battle.id,turn:s.turn,castleId:t.id,attacker:army.factionId,defender,winner:battle.result.winner,reason:battle.result.reason,rounds:battle.round-1,log:clone(battle.log),attackLosses:attack.reduce((a,u)=>a+u.initial-u.troops,0),defendLosses:defend.reduce((a,u)=>a+u.initial-u.troops,0),surrendered:!safeCastle(s,defender)&&battle.result.winner==='attack'?reserve+defend.reduce((a,u)=>a+u.troops,0):0};s.battleHistory.push(record);tx.report.battles.push(record);tx.current=null;
+ const record={id:battle.id,turn:s.turn,castleId:t.id,attacker:army.factionId,defender,winner:battle.result.winner,reason:battle.result.reason,rounds:battle.round-1,log:clone(battle.log),attackLosses:attack.reduce((a,u)=>a+u.initial-u.troops,0),defendLosses:defend.reduce((a,u)=>a+u.initial-u.troops,0),surrendered:!safeCastle(s,defender)&&battle.result.winner==='attack'?reserve+defend.reduce((a,u)=>a+u.troops,0):0};record.participants={attack:[...new Set(attack.map(u=>u.officerId).filter(Boolean))],defend:[...new Set(defend.map(u=>u.officerId).filter(Boolean))]};root.YabouBiography?.battle(s,record);root.YabouBiography?.changes(before,s,'battle:'+record.id);s.battleHistory.push(record);tx.report.battles.push(record);tx.current=null;
 }
 function reconcile(s){
  for(const f of s.factions){const home=safeCastle(s,f.id,f.capitalCastleId);f.capitalCastleId=home?.id||null;}
@@ -83,7 +83,7 @@ function reconcile(s){
  if(!aliveFaction(s,s.playerFactionId))s.ending={type:'defeat',turn:s.turn};else if(s.castles.every(c=>c.ownerFactionId===s.playerFactionId))s.ending={type:'victory',turn:s.turn};
  s.battleHistory=s.battleHistory.slice(-120);
 }
-function release(s,id){const n=clone(s),o=n.officers.find(o=>o.id===id);if(!o||o.status!=='prisoner'||o.captorFactionId!==s.playerFactionId)throw new Error('自家の捕虜ではありません');const home=safeCastle(n,o.factionId);o.status=home?'active':'ronin';o.locationCastleId=home?.id||null;if(!home)o.factionId=null;delete o.captorFactionId;return n;}
+function release(s,id){const n=clone(s),o=n.officers.find(o=>o.id===id);if(!o||o.status!=='prisoner'||o.captorFactionId!==s.playerFactionId)throw new Error('自家の捕虜ではありません');const home=safeCastle(n,o.factionId);o.status=home?'active':'ronin';o.locationCastleId=home?.id||null;if(!home)o.factionId=null;delete o.captorFactionId;root.YabouBiography?.changes(s,n,'release:'+n.turn+':'+id);return n;}
 function migrate(s){s=D().migrate(s);if(s.buildContract==='diplomacy-prototype-2'){s=clone(s);init(s);s.buildContract='battle-prototype-3';}return s;}
 function validateRecord(h,m){if(!h||typeof h.id!=='string'||!m.castles.some(c=>c.id===h.castleId)||!m.factions.some(f=>f.id===h.attacker)||!m.factions.some(f=>f.id===h.defender)||!['attack','defend'].includes(h.winner)||typeof h.reason!=='string'||!Array.isArray(h.log)||h.log.some(x=>typeof x!=='string')||!Number.isInteger(h.rounds)||h.rounds<0||h.rounds>12||['attackLosses','defendLosses','surrendered'].some(k=>!Number.isSafeInteger(h[k])||h[k]<0))throw new Error('合戦報告が不正です');}
 root.YabouMilitary={validateRecord,init,atWar,aliveFaction,usedOfficers,count,food,can,queue,validate,planAI,launch,nextBattle,settle,reconcile,release,migrate};

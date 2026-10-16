@@ -14,7 +14,7 @@ select{font:inherit;color:var(--ink);background:#102b30;border:1px solid #81988e
 .battleCell span{font-size:12px}.battlePrediction{background:#0b2529;border-left:2px solid #d5b875;padding:8px;font-size:.85rem;line-height:1.6}
 
 /* Keep the personnel dialog actions outside its scrolling content. */
-dialog[open]:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:has(.allegianceScreen)){display:flex;flex-direction:column;overflow:hidden;max-height:90dvh}dialog:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:has(.allegianceScreen)) #dialogContent{overflow:auto;min-height:0;flex:1}dialog:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:has(.allegianceScreen)) #closeModal{position:static;flex-shrink:0;align-self:flex-start;margin-top:12px}
+dialog[open]:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:has(.allegianceScreen),:has(.biographyScreen)){display:flex;flex-direction:column;overflow:hidden;max-height:90dvh}dialog:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:has(.allegianceScreen),:has(.biographyScreen)) #dialogContent{overflow:auto;min-height:0;flex:1}dialog:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:has(.allegianceScreen),:has(.biographyScreen)) #closeModal{position:static;flex-shrink:0;align-self:flex-start;margin-top:12px}
 
 .loyaltyControls{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0}.loyaltyControls label{display:flex;align-items:center;gap:8px}.loyaltyRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,220px);gap:16px;padding:16px 0;border-bottom:1px solid var(--line);align-items:center}.loyaltyRow p{margin:6px 0}.loyaltyRow meter{width:min(100%,260px);height:14px}.loyaltyRow small{display:block;line-height:1.6;margin-top:8px}.loyaltyConcern{border-left:3px solid #e6af71;padding-left:12px}.loyaltyRow button{width:100%}.loyaltyRow>div{min-width:0}@media(max-width:520px){.loyaltyRow{grid-template-columns:minmax(0,1fr);gap:6px}.loyaltyControls label{flex-wrap:wrap}}
 
@@ -25,3 +25,5 @@ dialog[open]:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:h
 .allegianceScreen h2{font-size:1.3rem;margin:0 0 10px}.allegianceScreen>.muted{font-size:.85rem;line-height:1.7}.allegianceScreen details{padding:12px 0}.allegianceScreen .loyaltyRow{font-size:.9rem}
 
 .allegianceScreen .loyaltyControls{margin:10px 0}.allegianceScreen .loyaltyRow:first-child{padding-top:8px}
+
+.chronicle{padding-left:24px}.chronicle li{padding:10px 0;border-bottom:1px solid #ffffff20}.chronicle p{margin:5px 0}.biographyScreen select{max-width:100%;min-height:44px}
