@@ -148,6 +148,6 @@ function validate(s){
  for(const [key,n]of Object.entries(v.hireBonuses)){const [f,id]=key.split(':');if(key!==f+':'+id||!s.factions.some(x=>x.id===f)||!ids.has(id)||![5,10].includes(n))fail();}
  if(v.pending!==null){const p=v.pending;if(!isObj(p)||!byId[p.id]||p.turn!==s.turn||p.uid!==p.id+':'+p.turn+':'+p.castleId||!cs.has(p.castleId)||!Array.isArray(p.officerIds)||p.officerIds.length>2||new Set(p.officerIds).size!==p.officerIds.length||p.officerIds.some(id=>!ids.has(id))||(p.rulerId!==null&&!ids.has(p.rulerId))||(p.discoverId!==null&&!ids.has(p.discoverId))||v.flags[p.id]?.lastOffered!==p.turn||(byId[p.id].unique&&v.flags[p.id]?.resolvedCount>0)||v.history.some(h=>h.uid===p.uid)||s.ending)fail();}
 }
-root.YabouEvents={defs,byId,init,start,month,options,canChoose,choose,dismiss,preview,hireBonus,validateReport,validate};
+root.YabouEvents={available,defs,byId,init,start,month,options,canChoose,choose,dismiss,preview,hireBonus,validateReport,validate};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.YabouEvents;
 })(globalThis);
