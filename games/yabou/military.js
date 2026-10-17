@@ -20,13 +20,13 @@ function can(s,q,m,r){
  const troops=q.units.reduce((a,u)=>a+u.troops,0);if(source.troops-troops<100)return '出発城には守備兵100以上を残してください';
  const reserved=s.commands.filter(x=>x.castleId===source.id).reduce((a,x)=>a+(root.Yabou.commandRule(x,r).cost.food||0),0),required=q.units.reduce((a,u)=>a+Math.ceil(u.troops/100)*12,0);
  if(!Number.isSafeInteger(q.food)||q.food<required||q.food>source.food-reserved)return '12ラウンド分の兵糧が必要です（内政予約分は使用不可）';
- if(target.ownerFactionId!==q.factionId){if(D().active(s,q.factionId,target.ownerFactionId))return '同盟中の勢力は攻撃できません';if(s.diplomacyCommands.some(x=>x.factionId===q.factionId&&x.targetFactionId===target.ownerFactionId))return '同じ相手への外交と出陣は同月に予約できません';if(!atWar(s,q.factionId,target.ownerFactionId)&&q.declareWar!==true)return '未交戦の相手には宣戦の確認が必要です';}
+ if(target.ownerFactionId!==q.factionId){if(D().truce(s,q.factionId,target.ownerFactionId))return '停戦中の勢力は攻撃できません';if(D().active(s,q.factionId,target.ownerFactionId))return '同盟中の勢力は攻撃できません';if(s.diplomacyCommands.some(x=>x.factionId===q.factionId&&x.targetFactionId===target.ownerFactionId))return '同じ相手への外交と出陣は同月に予約できません';if(!atWar(s,q.factionId,target.ownerFactionId)&&q.declareWar!==true)return '未交戦の相手には宣戦の確認が必要です';}
  return null;
 }
 function queue(s,q,m,r){const error=can(s,q,m,r);if(error)throw new Error(error);const n=clone(s);n.militaryCommands.push(clone(q));return n;}
 function validate(s,m,r){
  if(!Array.isArray(s.militaryCommands)||!s.wars||typeof s.wars!=='object'||Array.isArray(s.wars)||!Array.isArray(s.battleHistory)||!(s.ending===null||['defeat','victory'].includes(s.ending?.type)))throw new Error('軍事データが不正です');
- for(const [key,w]of Object.entries(s.wars))if(!m.factions.some(f=>f.id===w.a)||!m.factions.some(f=>f.id===w.b)||w.a===w.b||key!==D().pair(w.a,w.b)||typeof w.active!=='boolean'||!Number.isInteger(w.sinceTurn)||w.sinceTurn<1||w.sinceTurn>=s.turn||(w.active&&(!aliveFaction(s,w.a)||!aliveFaction(s,w.b)||D().active(s,w.a,w.b))))throw new Error('戦争状態が不正です');
+ for(const [key,w]of Object.entries(s.wars))if(!m.factions.some(f=>f.id===w.a)||!m.factions.some(f=>f.id===w.b)||w.a===w.b||key!==D().pair(w.a,w.b)||typeof w.active!=='boolean'||!Number.isInteger(w.sinceTurn)||w.sinceTurn<1||w.sinceTurn>=s.turn||(w.active&&(!aliveFaction(s,w.a)||!aliveFaction(s,w.b)||D().active(s,w.a,w.b)||D().truce(s,w.a,w.b))))throw new Error('戦争状態が不正です');
  const trial=clone(s);trial.militaryCommands=[];for(const q of s.militaryCommands){if(q.factionId!==s.playerFactionId)throw new Error('他家の軍事命令です');const error=can(trial,q,m,r);if(error)throw new Error(error);trial.militaryCommands.push(q);}
  if(s.ending&&(!Number.isInteger(s.ending.turn)||s.ending.turn<1||s.ending.turn>=s.turn||(s.ending.type==='defeat'&&aliveFaction(s,s.playerFactionId))||(s.ending.type==='victory'&&!s.castles.every(c=>c.ownerFactionId===s.playerFactionId))))throw new Error('勝敗状態が不正です');
  if(new Set(s.battleHistory.map(h=>h.id)).size!==s.battleHistory.length)throw new Error('合戦履歴IDが重複しています');
