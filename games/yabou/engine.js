@@ -11,6 +11,7 @@ const P=root.YabouRelationships||(typeof require==='function'?require('./relatio
 const Z=root.YabouDrama||(typeof require==='function'?require('./drama.js'):null);
 const U=root.YabouChains||(typeof require==='function'?require('./chains.js'):null);
 const F=root.YabouCamps||(typeof require==='function'?require('./camps.js'):null);
+const J=root.YabouPersonnelAI||(typeof require==='function'?require('./personnel-ai.js'):null);
 const clone=x=>JSON.parse(JSON.stringify(x));
 const types=['cultivate','commerce','fortify','recruit','search','hire','reward','poach'];
 const labels={cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉',reward:'家臣への褒賞',poach:'他家の引き抜き'};
@@ -105,7 +106,7 @@ function planAI(s,rules){
      if(type==='fortify'){score=18-c.defense*.1;reason='城防を整備';}
      if(type==='recruit'){score=c.troops<2200&&c.food>250&&c.publicOrder>=55?20+(f.trait==='military'?35:Object.values(s.wars).some(w=>w.active&&(w.a===f.id||w.b===f.id))?20:0): -100;reason='備蓄の範囲で兵力を確保';}
      return {type,score,reason,q:{type,castleId:c.id,officerId:o.id,factionId:f.id}};
-    }).filter(x=>x.score>0&&!canIssueCommand(s,x.q,rules)).sort((a,b)=>b.score-a.score||a.type.localeCompare(b.type));
+    }).concat(J.candidates(s,f,c,o,rules)).filter(x=>x.score>0&&!canIssueCommand(s,x.q,rules)).sort((a,b)=>b.score-a.score||a.type.localeCompare(b.type));
     if(!candidates.length)continue;const top=candidates.filter(x=>x.score===candidates[0].score);const chosen=top[Math.floor(random(s)*top.length)];s.commands.push(chosen.q);s.aiLog.push({turn:s.turn,factionId:f.id,castleId:c.id,candidates:candidates.slice(0,3).map(x=>({type:x.type,score:x.score})),chosen:chosen.type,reason:chosen.reason});
    }
   }
