@@ -33,8 +33,9 @@ function text(s,p){const [a,b]=p.officerIds.map(id=>s.officers.find(o=>o.id===id
 function record(s,p,choiceId,message){const v=s.personnel.drama;v.history.push({...clone(p),choiceId,text:message});v.history=v.history.slice(-120);}
 function apply(s,p,c){const castle=s.castles.find(x=>x.id===p.castleId),a=s.officers.find(o=>o.id===p.officerIds[0]);if(c.gold)castle.gold+=c.gold;if(c.defense)castle.defense=Math.min(100,castle.defense+c.defense);if(c.loyalty)a.loyalty=Math.min(100,a.loyalty+c.loyalty);if(c.bond)P().change(s,...p.officerIds,c.bond,'drama',p.castleId,p.uid);if(c.targetBond)P().change(s,a.id,p.targetId,c.targetBond,'drama',p.castleId,p.uid);if(c.discover){const known=s.personnel.known[s.playerFactionId]??=[];if(!known.includes(p.targetId))known.push(p.targetId);}
  const message=text(s,p)+' '+c.label+'。'+preview(c)+(c.discover?' / '+s.officers.find(o=>o.id===p.targetId).name+'を発見した。':'');record(s,p,c.id,message);for(const id of p.officerIds)root.YabouBiography.add(s,id,p.uid+':drama','event',message);return message;}
+function expire(s){init(s);const v=s.personnel.drama;if(v.pending&&v.pending.turn<s.turn){record(s,v.pending,'SKIP','判断を見送り、追加の費用・変化は発生しなかった。');v.pending=null;}}
 function month(s,report){init(s);const v=s.personnel.drama;if(v.lastMonth>=s.turn)return;v.lastMonth=s.turn;
- if(v.pending){record(s,v.pending,'SKIP','判断を見送り、追加の費用・変化は発生しなかった。');v.pending=null;}
+ expire(s);
  if(s.ending||s.turn%2||s.events.pending||s.personnel.chains?.pending||(s.personnel.chains?.lastOffered&&s.turn-s.personnel.chains.lastOffered<2))return;
  const pool=candidates(s).filter(p=>s.turn-(v.lastTypes[p.kind]||-12)>=12&&!v.history.some(h=>s.turn-h.turn<4&&h.officerIds.some(id=>p.officerIds.includes(id))));if(!pool.length)return;const weighted=pool.flatMap(p=>Array(root.YabouCamps?.weight(s,p)||1).fill(p)),p=weighted[hash(s,s.turn+19)%weighted.length];p.turn=s.turn;p.uid=p.kind+':'+p.turn+':'+p.castleId;v.lastTypes[p.kind]=s.turn;
  let message;if(automatic.has(p.kind))message=apply(s,p,options(p)[0]);else{v.pending=p;message=titles[p.kind]+'：'+text(s,p)+' 「出来事」で判断できます。';}
@@ -49,5 +50,5 @@ function validate(s){const v=s.personnel.drama,fail=()=>{throw Error('家臣ド�
  if(new Set(v.history.map(h=>h.uid)).size!==v.history.length)fail();let previous=0;for(const h of v.history){if(!valid(h)||h.turn<previous||!['AUTO','A','B','SKIP'].includes(h.choiceId)||(automatic.has(h.kind)?h.choiceId!=='AUTO':h.choiceId==='AUTO')||typeof h.text!=='string'||h.text.length>1200)fail();previous=h.turn;}
  if(v.pending!==null&&(!valid(v.pending)||automatic.has(v.pending.kind)||v.pending.turn!==s.turn||v.lastTypes[v.pending.kind]!==s.turn||v.history.some(h=>h.uid===v.pending.uid)||s.ending))fail();
 }
-root.YabouDrama={titles,init,eligible,candidates,options,preview,text,month,canChoose,choose,dismiss,validate};if(typeof module!=='undefined')module.exports=root.YabouDrama;
+root.YabouDrama={titles,init,expire,eligible,candidates,options,preview,text,month,canChoose,choose,dismiss,validate};if(typeof module!=='undefined')module.exports=root.YabouDrama;
 })(globalThis);
