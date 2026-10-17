@@ -36,7 +36,7 @@ function apply(s,p,c){const castle=s.castles.find(x=>x.id===p.castleId),a=s.offi
 function month(s,report){init(s);const v=s.personnel.drama;if(v.lastMonth>=s.turn)return;v.lastMonth=s.turn;
  if(v.pending){record(s,v.pending,'SKIP','判断を見送り、追加の費用・変化は発生しなかった。');v.pending=null;}
  if(s.ending||s.turn%2||s.events.pending||s.personnel.chains?.pending||(s.personnel.chains?.lastOffered&&s.turn-s.personnel.chains.lastOffered<2))return;
- const pool=candidates(s).filter(p=>s.turn-(v.lastTypes[p.kind]||-12)>=12&&!v.history.some(h=>s.turn-h.turn<4&&h.officerIds.some(id=>p.officerIds.includes(id))));if(!pool.length)return;const p=pool[hash(s,s.turn+19)%pool.length];p.turn=s.turn;p.uid=p.kind+':'+p.turn+':'+p.castleId;v.lastTypes[p.kind]=s.turn;
+ const pool=candidates(s).filter(p=>s.turn-(v.lastTypes[p.kind]||-12)>=12&&!v.history.some(h=>s.turn-h.turn<4&&h.officerIds.some(id=>p.officerIds.includes(id))));if(!pool.length)return;const weighted=pool.flatMap(p=>Array(root.YabouCamps?.weight(s,p)||1).fill(p)),p=weighted[hash(s,s.turn+19)%weighted.length];p.turn=s.turn;p.uid=p.kind+':'+p.turn+':'+p.castleId;v.lastTypes[p.kind]=s.turn;
  let message;if(automatic.has(p.kind))message=apply(s,p,options(p)[0]);else{v.pending=p;message=titles[p.kind]+'：'+text(s,p)+' 「出来事」で判断できます。';}
  (report.personnel??=[]).push({turn:s.turn-1,factionId:s.playerFactionId,castleId:p.castleId,text:message});
 }
