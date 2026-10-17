@@ -35,7 +35,7 @@ function apply(s,p,c){const castle=s.castles.find(x=>x.id===p.castleId),a=s.offi
  const message=text(s,p)+' '+c.label+'。'+preview(c)+(c.discover?' / '+s.officers.find(o=>o.id===p.targetId).name+'を発見した。':'');record(s,p,c.id,message);for(const id of p.officerIds)root.YabouBiography.add(s,id,p.uid+':drama','event',message);return message;}
 function month(s,report){init(s);const v=s.personnel.drama;if(v.lastMonth>=s.turn)return;v.lastMonth=s.turn;
  if(v.pending){record(s,v.pending,'SKIP','判断を見送り、追加の費用・変化は発生しなかった。');v.pending=null;}
- if(s.ending||s.turn%2||s.events.pending)return;
+ if(s.ending||s.turn%2||s.events.pending||s.personnel.chains?.pending||(s.personnel.chains?.lastOffered&&s.turn-s.personnel.chains.lastOffered<2))return;
  const pool=candidates(s).filter(p=>s.turn-(v.lastTypes[p.kind]||-12)>=12&&!v.history.some(h=>s.turn-h.turn<4&&h.officerIds.some(id=>p.officerIds.includes(id))));if(!pool.length)return;const p=pool[hash(s,s.turn+19)%pool.length];p.turn=s.turn;p.uid=p.kind+':'+p.turn+':'+p.castleId;v.lastTypes[p.kind]=s.turn;
  let message;if(automatic.has(p.kind))message=apply(s,p,options(p)[0]);else{v.pending=p;message=titles[p.kind]+'：'+text(s,p)+' 「出来事」で判断できます。';}
  (report.personnel??=[]).push({turn:s.turn-1,factionId:s.playerFactionId,castleId:p.castleId,text:message});

@@ -9,6 +9,7 @@ const A=root.YabouAllegiance||(typeof require==='function'?require('./allegiance
 const H=root.YabouBiography||(typeof require==='function'?require('./biography.js'):null);
 const P=root.YabouRelationships||(typeof require==='function'?require('./relationships.js'):null);
 const Z=root.YabouDrama||(typeof require==='function'?require('./drama.js'):null);
+const U=root.YabouChains||(typeof require==='function'?require('./chains.js'):null);
 const clone=x=>JSON.parse(JSON.stringify(x));
 const types=['cultivate','commerce','fortify','recruit','search','hire','reward','poach'];
 const labels={cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉',reward:'家臣への褒賞',poach:'他家の引き抜き'};
@@ -34,7 +35,7 @@ function createInitialState(m,factionId,seed=12345){
  if(!m.factions.some(f=>f.id===factionId))fail('勢力が存在しません');
  const s={schemaVersion:'1.2.0',buildContract:CONTRACT,scenarioId:'S01',year:1,month:1,turn:1,seed:seed>>>0,rngState:(seed>>>0)||1,playerFactionId:factionId,factions:clone(m.factions),castles:clone(m.castles),officers:clone(m.officers),commands:[],reports:[],aiLog:[],eventFlags:{},annualReports:[]};
  for(const f of s.factions){const os=s.officers.filter(o=>o.factionId===f.id);const second=s.castles.find(c=>c.ownerFactionId===f.id&&c.id!==f.capitalCastleId);os.forEach((o,i)=>{o.locationCastleId=i<2?f.capitalCastleId:second.id;o.loyalty=o.role==='大名'?100:80;o.status='active';});}
- for(const o of s.officers.filter(o=>o.id.startsWith('N'))){if(o.factionId){o.locationCastleId=s.factions.find(f=>f.id===o.factionId).capitalCastleId;o.status='active';o.loyalty=80;}else{o.locationCastleId=null;o.status='ronin';o.loyalty=50;}}s.personnel={known:{},attempts:{},log:[]};return Z.init(P.init(H.init(W.init(D.init(A.init(L.init(X.start(s))))))));
+ for(const o of s.officers.filter(o=>o.id.startsWith('N'))){if(o.factionId){o.locationCastleId=s.factions.find(f=>f.id===o.factionId).capitalCastleId;o.status='active';o.loyalty=80;}else{o.locationCastleId=null;o.status='ronin';o.loyalty=50;}}s.personnel={known:{},attempts:{},log:[]};return U.init(Z.init(P.init(H.init(W.init(D.init(A.init(L.init(X.start(s)))))))));
 }
 function random(s){let x=s.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;s.rngState=x>>>0;return s.rngState/4294967296;}
 function canIssueCommand(s,q,rules){
@@ -89,7 +90,7 @@ function validateState(s,m,rules){
  for(const x of s.personnel.log)if(!x||!Number.isInteger(x.turn)||x.turn<1||x.turn>=s.turn||!fs.includes(x.factionId)||!s.castles.some(c=>c.id===x.castleId)||typeof x.text!=='string'||x.text.length>300)fail('人材報告が不正です');
  for(const o of s.officers.filter(o=>o.id.startsWith('N')))for(const k of ['placement','regionCastleId','duty','ambition','affinity','concealment'])if(o[k]!==m.officers.find(t=>t.id===o.id)[k])fail('人材設定が不正です');
  for(const [f,ids] of Object.entries(s.personnel.known))if(!fs.includes(f)||!Array.isArray(ids)||new Set(ids).size!==ids.length||ids.some(id=>!s.officers.some(o=>o.id===id)))fail('発見情報が不正です');
- A.validate(s);X.validate(s);L.validate(s);P.validate(s);Z.validate(s);D.validate(s,m,rules);W.validate(s,m,rules);
+ A.validate(s);X.validate(s);L.validate(s);P.validate(s);Z.validate(s);U.validate(s);D.validate(s,m,rules);W.validate(s,m,rules);
  const trial=clone(s);trial.commands=[];for(const q of s.commands){if(q.factionId!==s.playerFactionId)fail('他勢力の命令です');const e=canIssueCommand(trial,q,rules);if(e)fail(e);trial.commands.push(q);}
  return true;
 }
@@ -120,7 +121,7 @@ function finishMonth(tx,m,rules){
  if(tx.armies.length||tx.current)fail('未解決の合戦があります');const s=clone(tx.state),report=clone(tx.report);W.reconcile(s);
  for(const c of s.castles){const f=s.factions.find(f=>f.id===c.ownerFactionId);const use=Math.ceil(c.troops/100),shortage=Math.max(0,use-c.food);c.food=Math.max(0,c.food-use);const income=Math.floor(c.commerce*1.5*(f.trait==='commerce'?1.1:1));c.gold+=income;const harvest=s.month===9?Math.floor(c.farm*8*(f.trait==='agriculture'?1.1:1)):0;c.food+=harvest;report.entries.push({castleId:c.id,factionId:c.ownerFactionId,income,use,shortage,harvest});}
  report.diplomacy=D.resolve(s,random);L.month(s,report);A.resolve(s,report);A.month(s,report);X.month(s,report);P.month(s,report);H.changes(tx.state,s,'month:'+s.turn);s.reports.push(report);if(s.month===12)s.annualReports.push({year:s.year,reports:clone(s.reports.slice(-12))});
- s.commands=[];s.turn++;H.followups(tx.state,s);Z.month(s,report);s.month=(s.turn-1)%12+1;s.year=Math.floor((s.turn-1)/12)+1;s.aiLog=s.aiLog.slice(-1000);s.reports=s.reports.slice(-120);s.annualReports=s.annualReports.slice(-10);validateState(s,m,rules);return s;
+ s.commands=[];s.turn++;H.followups(tx.state,s);U.month(s,report);Z.month(s,report);s.month=(s.turn-1)%12+1;s.year=Math.floor((s.turn-1)/12)+1;s.aiLog=s.aiLog.slice(-1000);s.reports=s.reports.slice(-120);s.annualReports=s.annualReports.slice(-10);validateState(s,m,rules);return s;
 }
 function advanceMonth(state,m,rules){const tx=beginMonth(state,m,rules);let b;while((b=nextBattle(tx)))W.settle(tx,B.auto(b));return finishMonth(tx,m,rules);}
 function resolvePersonnel(s,report){
@@ -133,5 +134,5 @@ function resolvePersonnel(s,report){
  }p.log=p.log.slice(-200);
 }
 function migratePersonnel(s,m){if(s.personnel)return L.init(s);for(const o of m.officers.filter(o=>o.id.startsWith('N')))if(!s.officers.some(x=>x.id===o.id)){s.officers.push({...clone(o),factionId:null,status:'ronin',locationCastleId:null,loyalty:50});}s.personnel={known:{},attempts:{},log:[]};return L.init(s);}
-root.Yabou={chooseDrama:(s,uid,id,m,r)=>{validateState(s,m,r);const result=Z.choose(s,uid,id);validateState(result.state,m,r);return result;},dismissDrama:(s,uid,m,r)=>{validateState(s,m,r);const n=Z.dismiss(s,uid);validateState(n,m,r);return n;},labels,types,clone,dismissEvent:(s,uid,m,r)=>{validateState(s,m,r);const n=X.dismiss(s,uid);validateState(n,m,r);return n;},chooseEvent:(s,uid,id,m,r)=>{validateState(s,m,r);const result=X.choose(s,uid,id);H.changes(s,result.state,'event:'+uid);H.event(result.state,s.events.pending,X.byId[s.events.pending.id].title+'：'+result.text);validateState(result.state,m,r);return result;},commandRule,loyaltyLabel:L.label,bond:L.bond,validateMaster,createInitialState,canIssueCommand,queueCommand,advanceMonth,beginMonth,nextBattle,finishMonth,validateState,serializeSave:(s,m,r)=>{validateState(s,m,r);return JSON.stringify(s)},loadSave:(t,m,r)=>{const s=Z.init(P.init(H.init(A.init(X.init(migratePersonnel(W.migrate(JSON.parse(t)),m))))));validateState(s,m,r);return s}};
+root.Yabou={chooseChain:(s,uid,id,m,r)=>{validateState(s,m,r);const result=U.choose(s,uid,id);validateState(result.state,m,r);return result;},dismissChain:(s,uid,m,r)=>{validateState(s,m,r);const n=U.dismiss(s,uid);validateState(n,m,r);return n;},chooseDrama:(s,uid,id,m,r)=>{validateState(s,m,r);const result=Z.choose(s,uid,id);validateState(result.state,m,r);return result;},dismissDrama:(s,uid,m,r)=>{validateState(s,m,r);const n=Z.dismiss(s,uid);validateState(n,m,r);return n;},labels,types,clone,dismissEvent:(s,uid,m,r)=>{validateState(s,m,r);const n=X.dismiss(s,uid);validateState(n,m,r);return n;},chooseEvent:(s,uid,id,m,r)=>{validateState(s,m,r);const result=X.choose(s,uid,id);H.changes(s,result.state,'event:'+uid);H.event(result.state,s.events.pending,X.byId[s.events.pending.id].title+'：'+result.text);validateState(result.state,m,r);return result;},commandRule,loyaltyLabel:L.label,bond:L.bond,validateMaster,createInitialState,canIssueCommand,queueCommand,advanceMonth,beginMonth,nextBattle,finishMonth,validateState,serializeSave:(s,m,r)=>{validateState(s,m,r);return JSON.stringify(s)},loadSave:(t,m,r)=>{const s=U.init(Z.init(P.init(H.init(A.init(X.init(migratePersonnel(W.migrate(JSON.parse(t)),m)))))));validateState(s,m,r);return s}};
 })(globalThis);
