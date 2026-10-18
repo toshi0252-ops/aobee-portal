@@ -1,6 +1,7 @@
 (function(root){
 'use strict';
 const CONTRACT='battle-prototype-3';
+const S=root.YabouScenarios||(typeof require==='function'?require('./scenarios.js'):null);
 const W=root.YabouMilitary,B=root.YabouBattle;
 const D=root.YabouDiplomacy;
 const L=root.YabouLoyalty||(typeof require==='function'?require('./loyalty.js'):null);
@@ -37,12 +38,11 @@ function validateMaster(m){
  do{size=seen.size;for(const r of m.roads){if(seen.has(r.fromCastleId))seen.add(r.toCastleId);if(seen.has(r.toCastleId))seen.add(r.fromCastleId);}}while(seen.size!==size);
  if(seen.size!==12)errors.push('非連結');return errors;
 }
-function createInitialState(m,factionId,seed=12345){
+function createInitialState(m,factionId,seed=12345,scenarioId='S01'){
  const errors=validateMaster(m);if(errors.length)fail(errors.join('・'));
  if(!m.factions.some(f=>f.id===factionId))fail('勢力が存在しません');
- const s={schemaVersion:'1.2.0',buildContract:CONTRACT,scenarioId:'S01',year:1,month:1,turn:1,seed:seed>>>0,rngState:(seed>>>0)||1,playerFactionId:factionId,factions:clone(m.factions),castles:clone(m.castles),officers:clone(m.officers),commands:[],reports:[],aiLog:[],eventFlags:{},annualReports:[]};
- for(const f of s.factions){const os=s.officers.filter(o=>o.factionId===f.id);const second=s.castles.find(c=>c.ownerFactionId===f.id&&c.id!==f.capitalCastleId);os.forEach((o,i)=>{o.locationCastleId=i<2?f.capitalCastleId:second.id;o.loyalty=o.role==='大名'?100:80;o.status='active';});}
- for(const o of s.officers.filter(o=>o.id.startsWith('N'))){if(o.factionId){o.locationCastleId=s.factions.find(f=>f.id===o.factionId).capitalCastleId;o.status='active';o.loyalty=80;}else{o.locationCastleId=null;o.status='ronin';o.loyalty=50;}}s.personnel={known:{},attempts:{},log:[]};I.init(s);Q.init(s);V.init(s);N.init(s);T.init(s);return F.init(U.init(Z.init(P.init(H.init(W.init(D.init(A.init(L.init(X.start(s))))))))));
+ const s={schemaVersion:'1.2.0',buildContract:CONTRACT,scenarioId,year:1,month:1,turn:1,seed:seed>>>0,rngState:(seed>>>0)||1,playerFactionId:factionId,factions:clone(m.factions),castles:clone(m.castles),officers:clone(m.officers),commands:[],reports:[],aiLog:[],eventFlags:{},annualReports:[]};
+ S.apply(s,m,scenarioId);s.personnel={known:{},attempts:{},log:[]};I.init(s);Q.init(s);V.init(s);N.init(s);T.init(s);return F.init(U.init(Z.init(P.init(H.init(W.init(D.init(A.init(L.init(X.start(s))))))))));
 }
 function random(s){let x=s.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;s.rngState=x>>>0;return s.rngState/4294967296;}
 function canIssueCommand(s,q,rules){
@@ -72,7 +72,7 @@ function queueCommand(s,q,rules){const error=canIssueCommand(s,q,rules);if(error
 function validateState(s,m,rules){
  H.validate(s);
  if(!s||s.schemaVersion!=='1.2.0'||s.buildContract!==CONTRACT)fail('このセーブの版には対応していません');
- if(s.scenarioId!=='S01'||!Number.isInteger(s.turn)||s.turn<1||s.year!==Math.floor((s.turn-1)/12)+1||s.month!==(s.turn-1)%12+1)fail('年月が不正です');
+ if(!S.has(s.scenarioId)||!Number.isInteger(s.turn)||s.turn<1||s.year!==Math.floor((s.turn-1)/12)+1||s.month!==(s.turn-1)%12+1)fail('年月が不正です');
  for(const k of ['seed','rngState'])if(!Number.isInteger(s[k])||s[k]<0||s[k]>4294967295||(k==='rngState'&&s[k]===0))fail('乱数状態が不正です');
  N.validate(s,m);if(s.factions.length!==m.factions.length+s.personnel.independence.foundings.length||new Set(s.factions.map(f=>f.id)).size!==s.factions.length||m.factions.some(f=>!s.factions.some(x=>x.id===f.id)))fail('勢力ID参照が不正です');
  for(const k of ['castles','officers']){if(!Array.isArray(s[k])||s[k].length!==m[k].length||new Set(s[k].map(x=>x.id)).size!==m[k].length||s[k].some(x=>!m[k].some(y=>y.id===x.id)))fail('ID参照が不正です');}

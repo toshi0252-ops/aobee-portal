@@ -1,0 +1,92 @@
+[
+  {
+    "factionId": "F01",
+    "seed": 1,
+    "hash": "8b715f26a4858a0bcfcc26eccf63de462a94fe0638fafcd2f719f24ce46133be"
+  },
+  {
+    "factionId": "F01",
+    "seed": 77,
+    "hash": "7f4b5f8de59bd23006495e98876e4e9ee96b53d3e974e05c737d6a030ec026d7"
+  },
+  {
+    "factionId": "F01",
+    "seed": 12345,
+    "hash": "132d2fd71c218fafb2b9a2d456cceca9e94c498566ede505970c5f09f694fdfa"
+  },
+  {
+    "factionId": "F02",
+    "seed": 1,
+    "hash": "15fd59ab7aab181b550065102fd2d3365e79d103e55bda16f439e432c3bd9928"
+  },
+  {
+    "factionId": "F02",
+    "seed": 77,
+    "hash": "be810ac921cbd25e881487aadc372ebc8a9aaf579af39c55b017c7932c33135b"
+  },
+  {
+    "factionId": "F02",
+    "seed": 12345,
+    "hash": "0a7e41316b24e2e65dedba5e69b9354dbd87691a23a32b3274196e4637cb1c43"
+  },
+  {
+    "factionId": "F03",
+    "seed": 1,
+    "hash": "406c041bed865b17fc5c78225fab58bb130fc80dc36d18f51864deac04eaf1cb"
+  },
+  {
+    "factionId": "F03",
+    "seed": 77,
+    "hash": "af1144788c361fef0efeff3e6d7f364075fecb05f4dc717aa06c146f14527cba"
+  },
+  {
+    "factionId": "F03",
+    "seed": 12345,
+    "hash": "051a3c5e2f3a2e5292b329e044b97dfd1575db83a50f53260a15e0af31923e80"
+  },
+  {
+    "factionId": "F04",
+    "seed": 1,
+    "hash": "ccfaf11c184d77962bb01f04cb1dcbecadb264f4ec1fc9233536fe7f230687ef"
+  },
+  {
+    "factionId": "F04",
+    "seed": 77,
+    "hash": "8624f3ed8d3c3f6c0e81bb1468dcceb16fb56ab9a109110fa43bda965417f34c"
+  },
+  {
+    "factionId": "F04",
+    "seed": 12345,
+    "hash": "8b32d3558cc5db708f58fffda451f4c3c4b14db92a2632b1d2dbe87b23750e32"
+  },
+  {
+    "factionId": "F05",
+    "seed": 1,
+    "hash": "420032032bdb1cec0814214b0328f13530b6579ed164057014b925e8376ed397"
+  },
+  {
+    "factionId": "F05",
+    "seed": 77,
+    "hash": "804ea49d2ea0a68e71496be6462d67953d795e6d9eff606be04b33a9eb762a58"
+  },
+  {
+    "factionId": "F05",
+    "seed": 12345,
+    "hash": "ff9b56015e7bcbae0ea7f15c505bddfb5901f97bce4ccc1f55b56c31d0f4514a"
+  },
+  {
+    "factionId": "F06",
+    "seed": 1,
+    "hash": "5a323041e0fd7b87dfa4c9e1a05545c00a38915c19a6177afee0e56b6d43f867"
+  },
+  {
+    "factionId": "F06",
+    "seed": 77,
+    "hash": "9e32de91930f8db8f97e356040b4b53ac325367e0be315c08c9614fc9b9c836c"
+  },
+  {
+    "factionId": "F06",
+    "seed": 12345,
+    "hash": "9c95a29670f45ebf65bffa40e88157b107b42b933bf696e5a859db5362917497"
+  }
+]
