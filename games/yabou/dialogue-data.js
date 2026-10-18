@@ -38,5 +38,14 @@ templates.push(...Object.entries(councilBanks).flatMap(([scene,groups])=>Object.
 
 // Existing names/designs stay intact. These are scene-specific lines, not new biographies.
 const unique={N002:{hireOffer:'国を守るために何を選ぶのか。まず、その考えを聞かせてください。',hireAccepted:'策だけでなく、守るべきものを確かめながら仕えましょう。',hireRefused:'今はまだ、私の進む道と重なりません。今回は見送ります。'},N001:{hireAccepted:'引き受けたぞ。老将とて、任された務めからは逃げん。',rewardReceived:'働きがまだ役に立つなら何よりじゃ。褒賞、ありがたく頂こう。'},N006:{hireOffer:'小さな働きも見てくれる家なら、詳しくお話を聞きたいです。',rewardReceived:'務めを見てくださったんですね。励みにして、次も頑張ります。'},N005:{hireOffer:'大きな約束より、任せる仕事を聞かせてもらおう。',hireRefused:'今は受けられない。それが今回の返事だ。'},N019:{rewardReceived:'働きに報いてくださったこと、感謝する。次の務めにも向き合おう。'},N025:{hireOffer:'条件だけでなく、互いに譲れないものも確かめましょう。'}};
+// Additional voices for the existing personal-event protagonists. Existing IDs/text stay intact.
+Object.assign(unique,{
+ N003:{hireOffer:'俺の腕を必要としているなら、任せる仕事と報酬を聞かせてくれ。',hireAccepted:'引き受けた。雇ったことを悔やませぬよう、腕で応えてやる。',hireRefused:'今の条件では動けん。俺が力を振るう場所は、自分で選ぶ。',rewardOffer:'働きの話なら聞こう。俺の腕をどう役立てたいか、考えも聞かせてくれ。',rewardReceived:'報いは受け取った。次の働きでも、俺の力を示してやる。'},
+ N009:{hireOffer:'争いの先に、どのような暮らしを残すのでしょう。そのお考えを伺いたいのです。',hireAccepted:'お仕えします。言葉と交渉で守れるものを、一つずつ増やしましょう。',hireRefused:'今回はお受けできません。私が力を尽くすべき道を、もう少し考えさせてください。',rewardOffer:'お気遣いに感謝します。これから私に望まれる役目も、お聞かせください。',rewardReceived:'褒賞、ありがとうございます。人と人を結ぶ務めに、引き続き力を尽くします。'},
+ N012:{hireOffer:'私の力を求めるのなら、それに見合う舞台を用意できるかしら。',hireAccepted:'いいでしょう。この家で、私の力がどこまで届くか示してあげる。',hireRefused:'今は受けないわ。私が望む舞台とは、まだ少し違うようね。',rewardOffer:'私の働きを、どう評価したのかしら。聞かせてもらいましょう。',rewardReceived:'褒賞は受け取ったわ。この先の働きにも、目を離さないことね。'},
+ N028:{hireOffer:'俺の刃をどこへ向けるつもりだ。その話から聞かせてくれ。',hireAccepted:'仕えよう。引き受けた役目には、俺なりのけじめをつける。',hireRefused:'今は首を縦には振れない。俺が進む道も、まだ見定めたい。',rewardOffer:'俺の働きに、何を見た。褒賞の前に、その言葉を聞きたい。',rewardReceived:'受け取った。任された務めに応えることで、返していく。'},
+ N021:{hireOffer:'家の将来を語るお席でしょう。私に何を任せるおつもりか、伺えますか。',hireAccepted:'謹んでお受けします。名に恥じぬ働きで、この家に私の居場所を築きましょう。',hireRefused:'お招きには感謝いたします。ただ、今回のお話は見送らせていただきます。',rewardOffer:'私の働きに目を向けてくださったのですね。ご評価を伺いましょう。',rewardReceived:'ありがたく頂戴します。この評価にふさわしい成果を、さらに積み重ねましょう。'},
+ N030:{hireOffer:'失ったものを思う者にも、ここで果たせる役目はあるか。その考えを聞きたい。',hireAccepted:'この家に仕えよう。背負う思いを忘れず、今の務めを果たす。',hireRefused:'今は受けられぬ。私が掲げるものと、この道が重なるか見極めたい。',rewardOffer:'務めへの評価か。私の働きが何につながったのか、聞かせてもらおう。',rewardReceived:'褒賞は受け取った。過去を背負いながらも、今の役目から目はそらさぬ。'}
+});
 root.YABOU_DIALOGUE_DATA={templates,unique};if(typeof module!=='undefined')module.exports=root.YABOU_DIALOGUE_DATA;
 })(globalThis);
