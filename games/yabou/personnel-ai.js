@@ -3,7 +3,7 @@
 // Personnel preferences only; existing military/diplomatic traits remain intact.
 const profiles={F01:{name:'人材',hire:14,search:12,reward:5},F02:{name:'知略',hire:7,search:10,reward:0},F03:{name:'覇道',hire:8,search:0,reward:3},F04:{name:'外交',hire:6,search:2,reward:8},F05:{name:'堅実',hire:0,search:0,reward:12},F06:{name:'野心',hire:10,search:5,reward:0}};
 function candidates(s,f,c,o,rules){
- const profile=profiles[f.id],local=s.officers.filter(t=>t.status==='active'&&t.factionId===f.id&&t.locationCastleId===c.id),war=Object.values(s.wars).some(w=>w.active&&(w.a===f.id||w.b===f.id));
+ const profile=profiles[f.id]||profiles.F03,local=s.officers.filter(t=>t.status==='active'&&t.factionId===f.id&&t.locationCastleId===c.id),war=Object.values(s.wars).some(w=>w.active&&(w.a===f.id||w.b===f.id));
  const used=s.commands.filter(q=>q.castleId===c.id).reduce((n,q)=>n+(root.Yabou.commandRule(q,rules).cost.gold||0),0)+root.YabouDiplomacy.reserved(s,c.id),gold=c.gold-used,reserve=war?200:100;
  const shortage=Math.max(0,4-local.length),out=[],base={castleId:c.id,officerId:o.id,factionId:f.id};
  const add=(type,score,reason,extra)=>out.push({type,score,reason:profile.name+'：'+reason,q:{...base,type,...extra}});

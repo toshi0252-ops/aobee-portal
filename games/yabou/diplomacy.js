@@ -42,12 +42,12 @@ function can(s,q,rules){
 function queue(s,q,rules){const error=can(s,q,rules);if(error)throw new Error(error);const n=clone(s);n.diplomacyCommands.push(clone(q));return n;}
 function chance(s,q){if(q.type==='surrender')return Math.max(10,Math.min(75,20+(power(s,q.factionId)/Math.max(100,power(s,q.targetFactionId))-3)*8+s.officers.find(o=>o.id===q.officerId).stats.intellect*.1));if(q.type==='truce'){const power=id=>s.castles.filter(c=>c.ownerFactionId===id).reduce((n,c)=>n+c.troops,0),w=s.wars[pair(q.factionId,q.targetFactionId)];return Math.max(20,Math.min(85,40+(power(q.factionId)/Math.max(100,power(q.targetFactionId))-1)*20+Math.min(20,(s.turn-(w?.sinceTurn||s.turn))*2)));}const actor=s.officers.find(o=>o.id===q.officerId),target=s.officers.find(o=>o.factionId===q.targetFactionId&&o.role==='大名');return Math.max(20,Math.min(85,45+(actor.stats.intellect-target.stats.intellect)*.2+s.diplomacy[pair(q.factionId,q.targetFactionId)].relation*.25));}
 function validate(s,m,rules){
- if(!s.diplomacy||typeof s.diplomacy!=='object'||Array.isArray(s.diplomacy)||Object.keys(s.diplomacy).length!==15||!Array.isArray(s.diplomacyCommands)||!Array.isArray(s.offers))throw new Error('外交データが不正です');
+ if(!s.diplomacy||typeof s.diplomacy!=='object'||Array.isArray(s.diplomacy)||Object.keys(s.diplomacy).length!==s.factions.length*(s.factions.length-1)/2||!Array.isArray(s.diplomacyCommands)||!Array.isArray(s.offers))throw new Error('外交データが不正です');
  for(let i=0;i<s.factions.length;i++)for(let j=i+1;j<s.factions.length;j++){const d=s.diplomacy[pair(s.factions[i].id,s.factions[j].id)];if(!d||!Number.isInteger(d.relation)||d.relation< -100||d.relation>100||!Number.isInteger(d.allianceUntil)||d.allianceUntil<0)throw new Error('関係・条約期限が不正です');}
  for(const d of Object.values(s.diplomacy))if(d.truceUntil!==undefined&&(!Number.isSafeInteger(d.truceUntil)||d.truceUntil<0))throw new Error('停戦期限が不正です');
  if(s.factions.some(f=>allies(s,f.id)>2))throw new Error('同盟数が上限を超えています');
  if(new Set(s.offers.map(o=>o.id)).size!==s.offers.length)throw new Error('提案IDが重複しています');
- for(const o of s.offers)if(!m.factions.some(f=>f.id===o.from)||o.to!==s.playerFactionId||o.from===o.to||!Number.isInteger(o.expiresTurn)||typeof o.id!=='string'||(o.type!==undefined&&!['alliance','truce'].includes(o.type)))throw new Error('外交提案が不正です');
+ for(const o of s.offers)if(!s.factions.some(f=>f.id===o.from)||o.to!==s.playerFactionId||o.from===o.to||!Number.isInteger(o.expiresTurn)||typeof o.id!=='string'||(o.type!==undefined&&!['alliance','truce'].includes(o.type)))throw new Error('外交提案が不正です');
  const trial=clone(s);trial.diplomacyCommands=[];for(const q of s.diplomacyCommands){if(q.factionId!==s.playerFactionId)throw new Error('他家の外交命令です');const error=can(trial,q,rules);if(error)throw new Error(error);trial.diplomacyCommands.push(q);}
 }
 function planAI(s,m,rules){

@@ -15,6 +15,7 @@ const J=root.YabouPersonnelAI||(typeof require==='function'?require('./personnel
 const I=root.YabouIntrigue||(typeof require==='function'?require('./intrigue.js'):null);
 const Q=root.YabouInsiders||(typeof require==='function'?require('./insiders.js'):null);
 const V=root.YabouUnrest||(typeof require==='function'?require('./unrest.js'):null);
+const N=root.YabouIndependence||(typeof require==='function'?require('./independence.js'):null);
 const clone=x=>JSON.parse(JSON.stringify(x));
 const types=['cultivate','commerce','fortify','recruit','search','hire','reward','poach','scheme','counterplot','mediate'];
 const labels={cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉',reward:'家臣への褒賞',poach:'他家の引き抜き',scheme:'離間・流言',counterplot:'工作の対処',mediate:'内紛の仲裁'};
@@ -40,7 +41,7 @@ function createInitialState(m,factionId,seed=12345){
  if(!m.factions.some(f=>f.id===factionId))fail('勢力が存在しません');
  const s={schemaVersion:'1.2.0',buildContract:CONTRACT,scenarioId:'S01',year:1,month:1,turn:1,seed:seed>>>0,rngState:(seed>>>0)||1,playerFactionId:factionId,factions:clone(m.factions),castles:clone(m.castles),officers:clone(m.officers),commands:[],reports:[],aiLog:[],eventFlags:{},annualReports:[]};
  for(const f of s.factions){const os=s.officers.filter(o=>o.factionId===f.id);const second=s.castles.find(c=>c.ownerFactionId===f.id&&c.id!==f.capitalCastleId);os.forEach((o,i)=>{o.locationCastleId=i<2?f.capitalCastleId:second.id;o.loyalty=o.role==='大名'?100:80;o.status='active';});}
- for(const o of s.officers.filter(o=>o.id.startsWith('N'))){if(o.factionId){o.locationCastleId=s.factions.find(f=>f.id===o.factionId).capitalCastleId;o.status='active';o.loyalty=80;}else{o.locationCastleId=null;o.status='ronin';o.loyalty=50;}}s.personnel={known:{},attempts:{},log:[]};I.init(s);Q.init(s);V.init(s);return F.init(U.init(Z.init(P.init(H.init(W.init(D.init(A.init(L.init(X.start(s))))))))));
+ for(const o of s.officers.filter(o=>o.id.startsWith('N'))){if(o.factionId){o.locationCastleId=s.factions.find(f=>f.id===o.factionId).capitalCastleId;o.status='active';o.loyalty=80;}else{o.locationCastleId=null;o.status='ronin';o.loyalty=50;}}s.personnel={known:{},attempts:{},log:[]};I.init(s);Q.init(s);V.init(s);N.init(s);return F.init(U.init(Z.init(P.init(H.init(W.init(D.init(A.init(L.init(X.start(s))))))))));
 }
 function random(s){let x=s.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;s.rngState=x>>>0;return s.rngState/4294967296;}
 function canIssueCommand(s,q,rules){
@@ -72,9 +73,10 @@ function validateState(s,m,rules){
  if(!s||s.schemaVersion!=='1.2.0'||s.buildContract!==CONTRACT)fail('このセーブの版には対応していません');
  if(s.scenarioId!=='S01'||!Number.isInteger(s.turn)||s.turn<1||s.year!==Math.floor((s.turn-1)/12)+1||s.month!==(s.turn-1)%12+1)fail('年月が不正です');
  for(const k of ['seed','rngState'])if(!Number.isInteger(s[k])||s[k]<0||s[k]>4294967295||(k==='rngState'&&s[k]===0))fail('乱数状態が不正です');
- for(const k of ['factions','castles','officers']){if(!Array.isArray(s[k])||s[k].length!==m[k].length||new Set(s[k].map(x=>x.id)).size!==m[k].length||s[k].some(x=>!m[k].some(y=>y.id===x.id)))fail('ID参照が不正です');}
+ N.validate(s,m);if(s.factions.length!==m.factions.length+s.personnel.independence.foundings.length||new Set(s.factions.map(f=>f.id)).size!==s.factions.length||m.factions.some(f=>!s.factions.some(x=>x.id===f.id)))fail('勢力ID参照が不正です');
+ for(const k of ['castles','officers']){if(!Array.isArray(s[k])||s[k].length!==m[k].length||new Set(s[k].map(x=>x.id)).size!==m[k].length||s[k].some(x=>!m[k].some(y=>y.id===x.id)))fail('ID参照が不正です');}
  const fs=s.factions.map(f=>f.id);if(!fs.includes(s.playerFactionId))fail('操作勢力が不正です');
- for(const f of s.factions)if((W.aliveFaction(s,f.id)?!s.castles.some(c=>c.id===f.capitalCastleId&&c.ownerFactionId===f.id):f.capitalCastleId!==null)||f.trait!==m.factions.find(x=>x.id===f.id).trait)fail('勢力情報が不正です');
+ for(const f of s.factions)if((W.aliveFaction(s,f.id)?!s.castles.some(c=>c.id===f.capitalCastleId&&c.ownerFactionId===f.id):f.capitalCastleId!==null)||(m.factions.some(x=>x.id===f.id)&&f.trait!==m.factions.find(x=>x.id===f.id).trait))fail('勢力情報が不正です');
  for(const c of s.castles){if(!fs.includes(c.ownerFactionId))fail('城所属が不正です');for(const k of ['gold','food','troops','farm','commerce','defense','publicOrder'])if(!Number.isSafeInteger(c[k])||c[k]<0||(['farm','commerce','defense','publicOrder'].includes(k)&&c[k]>100))fail('資源が不正です');const original=m.castles.find(x=>x.id===c.id);if(c.x!==original.x||c.y!==original.y)fail('座標が不正です');}
  for(const o of s.officers){
  const valid=o.status==='active'?fs.includes(o.factionId)&&s.castles.some(c=>c.id===o.locationCastleId&&c.ownerFactionId===o.factionId):o.status==='prisoner'?fs.includes(o.factionId)&&fs.includes(o.captorFactionId)&&s.castles.some(c=>c.id===o.locationCastleId&&c.ownerFactionId===o.captorFactionId):o.status==='ronin'?o.factionId===null&&o.locationCastleId===null:false;
@@ -85,7 +87,7 @@ function validateState(s,m,rules){
  for(const x of report.entries)if(!m.castles.some(c=>c.id===x.castleId)||!fs.includes(x.factionId)||['income','use','shortage','harvest'].some(k=>!Number.isSafeInteger(x[k])||x[k]<0))fail('収支履歴が不正です');
  if(report.events!==undefined)X.validateReport(report.events,s);
  if(report.diplomacy!==undefined&&(!Array.isArray(report.diplomacy)||report.diplomacy.some(q=>!fs.includes(q.factionId)||!fs.includes(q.targetFactionId)||typeof q.result!=='string')))fail('外交履歴が不正です');
- if(report.battles!==undefined){if(!Array.isArray(report.battles))fail('合戦報告が不正です');for(const h of report.battles)W.validateRecord(h,m);}
+ if(report.battles!==undefined){if(!Array.isArray(report.battles))fail('合戦報告が不正です');for(const h of report.battles)W.validateRecord(h,m,s.factions);}
  if(report.military!==undefined&&(!Array.isArray(report.military)||report.military.some(h=>!m.castles.some(c=>c.id===h.castleId)||!fs.includes(h.factionId)||typeof h.result!=='string')))fail('進軍報告が不正です');
  for(const q of report.commands)if(!types.includes(q.type)||!m.castles.some(c=>c.id===q.castleId)||!m.officers.some(o=>o.id===q.officerId)||!fs.includes(q.factionId))fail('命令履歴が不正です');
  }
@@ -111,7 +113,7 @@ function planAI(s,rules){
      if(type==='fortify'){score=18-c.defense*.1;reason='城防を整備';}
      if(type==='recruit'){score=c.troops<2200&&c.food>250&&c.publicOrder>=55?20+(f.trait==='military'?35:Object.values(s.wars).some(w=>w.active&&(w.a===f.id||w.b===f.id))?20:0): -100;reason='備蓄の範囲で兵力を確保';}
      return {type,score,reason,q:{type,castleId:c.id,officerId:o.id,factionId:f.id}};
-    }).concat(J.candidates(s,f,c,o,rules),I.candidates(s,f,c,o),V.candidates(s,f,c,o)).filter(x=>x.score>0&&!canIssueCommand(s,x.q,rules)).sort((a,b)=>b.score-a.score||a.type.localeCompare(b.type));
+    }).concat(J.candidates(s,f,c,o,rules),I.candidates(s,f,c,o),V.candidates(s,f,c,o),N.candidates(s,f,c,o)).filter(x=>x.score>0&&!canIssueCommand(s,x.q,rules)).sort((a,b)=>b.score-a.score||a.type.localeCompare(b.type));
     if(!candidates.length)continue;const top=candidates.filter(x=>x.score===candidates[0].score);const chosen=top[Math.floor(random(s)*top.length)];s.commands.push(chosen.q);s.aiLog.push({turn:s.turn,factionId:f.id,castleId:c.id,candidates:candidates.slice(0,3).map(x=>({type:x.type,score:x.score})),chosen:chosen.type,reason:chosen.reason});
    }
   }
@@ -121,13 +123,13 @@ function beginMonth(state,m,rules){
  validateState(state,m,rules);if(state.ending)fail('この戦記は終了しています');const s=clone(state);W.planAI(s,m,rules);D.planAI(s,m,rules);planAI(s,rules);
  const report={turn:s.turn,year:s.year,month:s.month,entries:[],commands:clone(s.commands),military:[],battles:[]};
  for(const q of s.commands){const c=s.castles.find(c=>c.id===q.castleId),r=commandRule(q,rules);for(const [k,v]of Object.entries(r.cost))c[k]-=v;for(const[k,v]of Object.entries(r.delta)){c[k]+=v;if(r.cap&&v>0)c[k]=Math.min(r.cap,c[k]);if(r.floor&&k in r.floor)c[k]=Math.max(r.floor[k],c[k]);}}
- resolvePersonnel(s,report);I.launch(s,report);V.mediate(s,report);H.changes(state,s,'personnel:'+s.turn);return {state:s,report,armies:W.launch(s),current:null};
+ resolvePersonnel(s,report);I.launch(s,report);V.mediate(s,report);N.mediate(s,report);H.changes(state,s,'personnel:'+s.turn);return {state:s,report,armies:W.launch(s),current:null};
 }
 function nextBattle(tx){return W.nextBattle(tx,random);}
 function finishMonth(tx,m,rules){
  if(tx.armies.length||tx.current)fail('未解決の合戦があります');const s=clone(tx.state),report=clone(tx.report);W.reconcile(s);
  for(const c of s.castles){const f=s.factions.find(f=>f.id===c.ownerFactionId);const use=Math.ceil(c.troops/100),shortage=Math.max(0,use-c.food);c.food=Math.max(0,c.food-use);const income=Math.floor(c.commerce*1.5*(f.trait==='commerce'?1.1:1));c.gold+=income;const harvest=s.month===9?Math.floor(c.farm*8*(f.trait==='agriculture'?1.1:1)):0;c.food+=harvest;report.entries.push({castleId:c.id,factionId:c.ownerFactionId,income,use,shortage,harvest});}
- report.diplomacy=D.resolve(s,random);L.month(s,report);I.resolve(s,report);Q.month(s,report);A.resolve(s,report);A.month(s,report);V.month(s,report);X.month(s,report);P.month(s,report);H.changes(tx.state,s,'month:'+s.turn);s.reports.push(report);if(s.month===12)s.annualReports.push({year:s.year,reports:clone(s.reports.slice(-12))});
+ report.diplomacy=D.resolve(s,random);L.month(s,report);I.resolve(s,report);Q.month(s,report);A.resolve(s,report);A.month(s,report);V.month(s,report);N.month(s,report);X.month(s,report);P.month(s,report);H.changes(tx.state,s,'month:'+s.turn);s.reports.push(report);if(s.month===12)s.annualReports.push({year:s.year,reports:clone(s.reports.slice(-12))});
  s.commands=[];s.turn++;H.followups(tx.state,s);Z.expire(s);U.month(s,report);Z.month(s,report);F.refresh(s,report);s.month=(s.turn-1)%12+1;s.year=Math.floor((s.turn-1)/12)+1;s.aiLog=s.aiLog.slice(-1000);s.reports=s.reports.slice(-120);s.annualReports=s.annualReports.slice(-10);validateState(s,m,rules);return s;
 }
 function advanceMonth(state,m,rules){const tx=beginMonth(state,m,rules);let b;while((b=nextBattle(tx)))W.settle(tx,B.auto(b));return finishMonth(tx,m,rules);}
@@ -141,5 +143,5 @@ function resolvePersonnel(s,report){
  }p.log=p.log.slice(-200);
 }
 function migratePersonnel(s,m){if(s.personnel)return L.init(s);for(const o of m.officers.filter(o=>o.id.startsWith('N')))if(!s.officers.some(x=>x.id===o.id)){s.officers.push({...clone(o),factionId:null,status:'ronin',locationCastleId:null,loyalty:50});}s.personnel={known:{},attempts:{},log:[]};return L.init(s);}
-root.Yabou={chooseChain:(s,uid,id,m,r)=>{validateState(s,m,r);const result=U.choose(s,uid,id);F.refresh(result.state);validateState(result.state,m,r);return result;},dismissChain:(s,uid,m,r)=>{validateState(s,m,r);const n=U.dismiss(s,uid);validateState(n,m,r);return n;},chooseDrama:(s,uid,id,m,r)=>{validateState(s,m,r);const result=Z.choose(s,uid,id);F.refresh(result.state);validateState(result.state,m,r);return result;},dismissDrama:(s,uid,m,r)=>{validateState(s,m,r);const n=Z.dismiss(s,uid);validateState(n,m,r);return n;},labels,types,clone,dismissEvent:(s,uid,m,r)=>{validateState(s,m,r);const n=X.dismiss(s,uid);validateState(n,m,r);return n;},chooseEvent:(s,uid,id,m,r)=>{validateState(s,m,r);const result=X.choose(s,uid,id);H.changes(s,result.state,'event:'+uid);H.event(result.state,s.events.pending,X.byId[s.events.pending.id].title+'：'+result.text);F.refresh(result.state);validateState(result.state,m,r);return result;},commandRule,loyaltyLabel:L.label,bond:L.bond,validateMaster,createInitialState,canIssueCommand,queueCommand,advanceMonth,beginMonth,nextBattle,finishMonth,validateState,serializeSave:(s,m,r)=>{validateState(s,m,r);return JSON.stringify(s)},loadSave:(t,m,r)=>{const s=F.init(U.init(Z.init(P.init(H.init(A.init(X.init(migratePersonnel(W.migrate(JSON.parse(t)),m))))))));I.init(s);Q.init(s);V.init(s);validateState(s,m,r);return s}};
+root.Yabou={chooseChain:(s,uid,id,m,r)=>{validateState(s,m,r);const result=U.choose(s,uid,id);F.refresh(result.state);validateState(result.state,m,r);return result;},dismissChain:(s,uid,m,r)=>{validateState(s,m,r);const n=U.dismiss(s,uid);validateState(n,m,r);return n;},chooseDrama:(s,uid,id,m,r)=>{validateState(s,m,r);const result=Z.choose(s,uid,id);F.refresh(result.state);validateState(result.state,m,r);return result;},dismissDrama:(s,uid,m,r)=>{validateState(s,m,r);const n=Z.dismiss(s,uid);validateState(n,m,r);return n;},labels,types,clone,dismissEvent:(s,uid,m,r)=>{validateState(s,m,r);const n=X.dismiss(s,uid);validateState(n,m,r);return n;},chooseEvent:(s,uid,id,m,r)=>{validateState(s,m,r);const result=X.choose(s,uid,id);H.changes(s,result.state,'event:'+uid);H.event(result.state,s.events.pending,X.byId[s.events.pending.id].title+'：'+result.text);F.refresh(result.state);validateState(result.state,m,r);return result;},commandRule,loyaltyLabel:L.label,bond:L.bond,validateMaster,createInitialState,canIssueCommand,queueCommand,advanceMonth,beginMonth,nextBattle,finishMonth,validateState,serializeSave:(s,m,r)=>{validateState(s,m,r);return JSON.stringify(s)},loadSave:(t,m,r)=>{const s=F.init(U.init(Z.init(P.init(H.init(A.init(X.init(migratePersonnel(W.migrate(JSON.parse(t)),m))))))));I.init(s);Q.init(s);V.init(s);N.init(s);validateState(s,m,r);return s}};
 })(globalThis);
