@@ -80,7 +80,7 @@ function respond(s,id,accept){const n=clone(s),o=n.offers.find(o=>o.id===id);if(
  if(n.diplomacyCommands.some(q=>pair(q.factionId,q.targetFactionId)===pair(o.from,o.to)))throw new Error('相手への外交予約を取り消してから受諾してください');
  if(o.type==='truce'){if(!W().atWar(n,o.from,o.to))throw new Error('すでに交戦していません');signTruce(n,o.from,o.to,n.turn+6);}
  else{if(W().atWar(n,o.from,o.to))throw new Error('戦況の変化により提案は無効です');if(allies(n,o.from)>=2||allies(n,o.to)>=2)throw new Error('同盟数の上限に達しています');n.diplomacy[pair(o.from,o.to)].allianceUntil=n.turn+12;}
- }n.offers=n.offers.filter(x=>x.id!==id);return n;}
+ }n.offers=n.offers.filter(x=>x.id!==id);root.YabouDialogue?.offerResponse(s,n,o,accept);return n;}
 function migrate(s){if(s.buildContract==='domestic-prototype-1'){s=clone(s);init(s);s.buildContract='diplomacy-prototype-2';}return s;}
 root.YabouDiplomacy={pair,init,active,truce,labels,price,aidReason,surrenderReason,allies,reserved,can,queue,chance,validate,planAI,resolve,respond,migrate};
 })(globalThis);
