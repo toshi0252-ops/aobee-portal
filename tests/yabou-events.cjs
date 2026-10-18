@@ -41,7 +41,8 @@ assert.equal(X.hireBonus(kon,'F02','N002'),0);
 const legacy=fresh();delete legacy.events;const legacyText=JSON.stringify(legacy),migrated=E.loadSave(legacyText,M,R);assert.equal(JSON.stringify(legacy),legacyText);assert.deepEqual(migrated.officers,legacy.officers);assert.equal(migrated.events.pending,null);
 const sample=E.chooseEvent(fixture('GE04'),'GE04:13:C01','A',M,R).state;
 for(const corrupt of [s=>s.events.version=9,s=>s.events.history.push(s.events.history[0]),s=>s.events.followups[0].dueTurn=s.turn,s=>s.events.hireBonuses['F01:missing']=10,s=>s.events.flags.unknown={lastOffered:1,resolvedCount:0},s=>s.events.history[0].text='x'.repeat(1600),s=>s.events.pending={id:'unknown'},s=>s.events=null]){const bad=E.clone(sample);corrupt(bad);assert.throws(()=>E.loadSave(JSON.stringify(bad),M,R));}
-let long=fresh(),offered=0,previousRng;
+// Defend the long-run event fixture so offer-frequency checks run for 100 months.
+let long=fresh(),offered=0,previousRng;for(const c of long.castles.filter(c=>c.ownerFactionId===long.playerFactionId)){c.troops=100000;c.food=100000;}
 for(let i=0;i<100&&!long.ending;i++){
  if(long.events.pending){offered++;const p=long.events.pending;const choice=X.options(long).find(c=>!X.canChoose(long,p.uid,c.id));if(choice){previousRng=long.rngState;long=E.chooseEvent(long,p.uid,choice.id,M,R).state;assert.equal(long.rngState,previousRng);}else long=E.dismissEvent(long,p.uid,M,R);}
  const restored=E.loadSave(E.serializeSave(long,M,R),M,R);long=E.advanceMonth(long,M,R);assert.deepEqual(long,E.advanceMonth(restored,M,R));
