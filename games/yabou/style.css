@@ -83,3 +83,5 @@ dialog[open]:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:h
 .scenarioIntro{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;color:var(--gold);font-size:.85rem}.scenarioIntro button{font-size:.75rem;min-height:44px;padding:6px 10px;white-space:nowrap}.scenarioScreen h2{font-size:1.3rem}.scenarioScreen p{font-size:.85rem;line-height:1.8}.scenarioScreen .muted{font-size:.75rem}@media(max-height:550px) and (orientation:landscape){.scenarioIntro{margin:6px 0}.scenarioScreen h2{font-size:1.1rem}.scenarioScreen p{margin:8px 0}}
 
 @media(max-height:550px) and (orientation:landscape){.scenarioScreen>.eyebrow{display:none}.scenarioScreen h2{margin:0 0 6px}.scenarioScreen h3{font-size:.9rem;margin:6px 0}.scenarioScreen p{font-size:.78rem;line-height:1.6;margin:6px 0}.scenarioScreen .notice{padding:8px 10px;margin:6px 0}.scenarioScreen .muted{font-size:.65rem}}
+
+.scenarioIntro label{display:flex;flex-direction:column;gap:5px;min-width:0;font-size:.72rem;flex:1}.scenarioIntro select{width:100%;font-size:.85rem;min-width:0}.scenarioIntro{align-items:end}#currentScenario{font-size:.8rem;color:var(--gold)}

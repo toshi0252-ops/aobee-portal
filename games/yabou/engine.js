@@ -40,9 +40,9 @@ function validateMaster(m){
 }
 function createInitialState(m,factionId,seed=12345,scenarioId='S01'){
  const errors=validateMaster(m);if(errors.length)fail(errors.join('・'));
- if(!m.factions.some(f=>f.id===factionId))fail('勢力が存在しません');
+ if(!m.factions.some(f=>f.id===factionId)||!S.playable(scenarioId,m).includes(factionId))fail('このシナリオでは選べない勢力です');
  const s={schemaVersion:'1.2.0',buildContract:CONTRACT,scenarioId,year:1,month:1,turn:1,seed:seed>>>0,rngState:(seed>>>0)||1,playerFactionId:factionId,factions:clone(m.factions),castles:clone(m.castles),officers:clone(m.officers),commands:[],reports:[],aiLog:[],eventFlags:{},annualReports:[]};
- S.apply(s,m,scenarioId);s.personnel={known:{},attempts:{},log:[]};I.init(s);Q.init(s);V.init(s);N.init(s);T.init(s);return F.init(U.init(Z.init(P.init(H.init(W.init(D.init(A.init(L.init(X.start(s))))))))));
+ S.apply(s,m,scenarioId);s.personnel={known:{},attempts:{},log:[]};I.init(s);Q.init(s);V.init(s);N.init(s);T.init(s);return F.init(U.init(Z.init(P.init(H.init(W.init(S.relations(D.init(A.init(L.init(X.start(s)))),scenarioId)))))));
 }
 function random(s){let x=s.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;s.rngState=x>>>0;return s.rngState/4294967296;}
 function canIssueCommand(s,q,rules){
