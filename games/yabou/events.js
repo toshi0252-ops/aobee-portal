@@ -74,6 +74,7 @@ add('UE10','滅びた王国の旗','ゼノが携えた旗には、失われた�
  C('250金を用意し、話し合いの場を開く',{gold:-250},{discover:['N030'],bonus:{id:'N030',value:5}},'ゼノは次の面会に応じると告げた。失われた旗を巡る交渉の窓口が開いた。'),C('歴史を聞き、旅立ちを見送る',{}, {},'ゼノは旗を巻き直して旅立った。国の歴史は城の書庫に残された。')],true);
 add('EV01','最初の評定','家臣たちが最初の評定に集まった。まず、どの助言に耳を傾けよう。',s=>s.playerFactionId==='F01'&&s.turn===1,()=>[C('開墾の助言',{}, {panel:'agriculture'},'最初の評定で聞いた言葉は、国づくりの覚え書きに残された。'),C('外交の助言',{}, {panel:'diplomacy'},'隣国の使者を迎える準備について、家臣たちと話を交わした。')],true);
 add('EV02','黒影からの書状','わるびー家から書状が届いた。返書を送るなら、既存の外交評定から使者を選べる。',s=>s.playerFactionId==='F01'&&s.castles.some(c=>c.ownerFactionId==='F02')&&!root.YabouMilitary.atWar(s,'F01','F02')&&root.YABOU_DATA.roads.some(r=>{const a=s.castles.find(c=>c.id===r.fromCastleId),b=s.castles.find(c=>c.id===r.toCastleId);return [a.ownerFactionId,b.ownerFactionId].sort().join(':')==='F01:F02';}),()=>[C('交渉を検討する',{}, {panel:'diplomacy'},'書状は外交の記録へ収められた。実際の交渉は、使者の予約を経て進められる。'),C('今は保留する',{}, {},'書状は封を戻して保管された。後の外交判断を妨げる約束は結んでいない。')],true);
+add('SE04','疑惑の書状','盟約が破られるという書状が届いた。内容は未確認の噂で、裏切りが起きたという確報ではない。初期同盟は6か月。条約が有効な相手には攻撃や工作を行えず、期限後の判断は各家に委ねられる。',s=>s.scenarioId==='S04'&&s.turn===1,()=>[C('条約と相手国を確認する',{}, {panel:'diplomacy'},'盟約の期限と相手国を確認した。書状の噂を、裏切りの確報には置き換えず記録した。'),C('噂として記録し、判断を保留する',{}, {},'書状を未確認情報として保管した。噂だけを理由に同盟や家臣の忠誠を変えることはなかった。')],true,true);
 const byId=Object.fromEntries(defs.map(d=>[d.id,d]));
 const hash=(s,n)=>{let x=(s.seed^Math.imul(n,2654435761))>>>0;x^=x>>>16;x=Math.imul(x,2246822507);x^=x>>>13;return x>>>0;};
 function init(s){if(!Object.hasOwn(s,'events'))s.events={version:1,pending:null,history:[],flags:{},followups:[],hireBonuses:{}};return s;}
@@ -86,7 +87,7 @@ function offer(s,d,p,turn){
  const flag=s.events.flags[d.id]||{lastOffered:0,resolvedCount:0};flag.lastOffered=turn;s.events.flags[d.id]=flag;
  s.events.pending={uid:d.id+':'+turn+':'+p.castleId,id:d.id,turn,...p};
 }
-function start(s){init(s);if(s.playerFactionId==='F01'){const c=own(s)[0];if(c)offer(s,byId.EV01,context(s,c,1),1);}return s;}
+function start(s){init(s);const opening=root.YabouScenarios?.get(s.scenarioId).openingEventId;if(opening){const c=own(s)[0];if(c){const p={...context(s,c,1),discoverId:null};if(!byId[opening]?.eligible(s,p))throw Error('初期出来事の条件が一致しません');offer(s,byId[opening],p,1);}}else if(s.playerFactionId==='F01'){const c=own(s)[0];if(c)offer(s,byId.EV01,context(s,c,1),1);}return s;}
 function history(s,p,choiceId,text){const h={uid:p.uid,id:p.id,turn:s.turn,castleId:p.castleId,choiceId,text};s.events.history.push(h);s.events.history=s.events.history.slice(-120);return h;}
 function month(s,report){
  const v=s.events,next=s.turn+1;report.events=[];

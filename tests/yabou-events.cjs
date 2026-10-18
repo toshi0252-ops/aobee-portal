@@ -3,6 +3,7 @@ require('../games/yabou/data.js');require('../games/yabou/diplomacy.js');require
 const E=Yabou,X=YabouEvents,M=YABOU_DATA,R=YABOU_RULES,W=YabouMilitary;
 const fresh=()=>E.createInitialState(M,'F01',77);
 function fixture(id){
+ if(id==='SE04')return E.createInitialState(M,'F01',77,'S04');
  const s=fresh();s.events={version:1,pending:null,history:[],flags:{},followups:[],hireBonuses:{}};s.turn=13;s.month=1;s.year=2;
  s.castles.find(c=>c.id==='C02').ownerFactionId='F01';W.reconcile(s);
  for(const id of ['N001','N003','N006','N009','N012','N019','N021','N024'])Object.assign(s.officers.find(o=>o.id===id),{factionId:'F01',status:'active',locationCastleId:'C01',loyalty:55});
