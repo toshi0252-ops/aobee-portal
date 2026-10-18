@@ -1,0 +1,26 @@
+[
+  {
+    "factionId": "F01",
+    "hash": "fef4b2adf4647aa64158dce919380d58ce7116b900fb698af043c22dd9cbabdf"
+  },
+  {
+    "factionId": "F02",
+    "hash": "aa7732724dbadcb256c332ae38eb7e379a3898ef3317aaf0690a68b968538d6a"
+  },
+  {
+    "factionId": "F03",
+    "hash": "e1cbc79875a042d50008660443b2b270ed13876f690f3205d8eac79c947816ee"
+  },
+  {
+    "factionId": "F04",
+    "hash": "a85fb2681d2c6fe779947cf5338db2e4da9f2e998afef3aaff221c9e453c0297"
+  },
+  {
+    "factionId": "F05",
+    "hash": "eed83ce77471ee18bfb2cf6a6726a1de5a97a017d878495e3f494d84ec5aeb77"
+  },
+  {
+    "factionId": "F06",
+    "hash": "c22043892a4c8df7e543fc501f5e4dcd89e7732f23822008447fc0c321a764f9"
+  }
+]
