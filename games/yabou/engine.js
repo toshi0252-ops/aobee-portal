@@ -124,7 +124,7 @@ function beginMonth(state,m,rules){
  validateState(state,m,rules);if(state.ending)fail('この戦記は終了しています');const s=clone(state);W.planAI(s,m,rules);D.planAI(s,m,rules);planAI(s,rules);
  const report={turn:s.turn,year:s.year,month:s.month,entries:[],commands:clone(s.commands),military:[],battles:[]};
  for(const q of s.commands){const c=s.castles.find(c=>c.id===q.castleId),r=commandRule(q,rules);for(const [k,v]of Object.entries(r.cost))c[k]-=v;for(const[k,v]of Object.entries(r.delta)){c[k]+=v;if(r.cap&&v>0)c[k]=Math.min(r.cap,c[k]);if(r.floor&&k in r.floor)c[k]=Math.max(r.floor[k],c[k]);}}
- resolvePersonnel(s,report);I.launch(s,report);V.mediate(s,report);N.mediate(s,report);H.changes(state,s,'personnel:'+s.turn);return {state:s,report,armies:W.launch(s),current:null};
+ resolvePersonnel(s,report);I.launch(s,report);V.mediate(s,report);N.mediate(s,report);H.changes(state,s,'personnel:'+s.turn);T.departures(s);return {state:s,report,armies:W.launch(s),current:null};
 }
 function nextBattle(tx){return W.nextBattle(tx,random);}
 function finishMonth(tx,m,rules){
