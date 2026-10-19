@@ -111,3 +111,5 @@ dialog[open]:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:h
 #castleRoads,.roadNeighbor{-webkit-tap-highlight-color:transparent}@media(max-height:550px) and (orientation:landscape){.roadNeighbor{padding:5px 10px}.roadNeighbor small{margin-top:3px}.castleRoadScreen #roadMilitary{margin-top:4px}.roadNeighborRows{margin-bottom:4px}}
 
 .councilTerrain{font-size:.8rem}.councilTerrain strong{color:var(--gold);font-weight:500}.councilTerrain p{margin:6px 0}.councilTerrain small{font-size:.7rem;color:var(--muted);line-height:1.6}
+
+.castleStaffSummary{font-size:.75rem;line-height:1.6;color:var(--muted);margin:0 0 10px}.castleListRow small.listStaff{color:#d8c99f}@media(max-width:450px){.listCastleStats small.listStaff{display:block;margin-left:0}}
