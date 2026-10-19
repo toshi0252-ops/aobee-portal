@@ -2,7 +2,7 @@
 'use strict';
 const clone=x=>JSON.parse(JSON.stringify(x));
 const RULES={version:'v03-provisional-1',width:8,height:6,roundLimit:12,damage:.055,types:{infantry:{name:'足軽',move:2,range:1,speed:2},bow:{name:'弓',move:2,range:3,speed:2},cavalry:{name:'騎馬',move:3,range:1,speed:3},gun:{name:'鉄砲',move:1,range:3,speed:1}}};
-const CASTLE_TERRAIN={C01:'plain',C02:'forest',C03:'mountain',C04:'forest',C05:'forest',C06:'plain',C07:'mountain',C08:'mountain',C09:'plain',C10:'plain',C11:'forest',C12:'mountain'};
+const CASTLE_TERRAIN={C01:'plain',C02:'forest',C03:'mountain',C04:'forest',C05:'forest',C06:'plain',C07:'mountain',C08:'mountain',C09:'plain',C10:'plain',C11:'forest',C12:'mountain',C13:'mountain',C14:'forest',C15:'mountain',C16:'mountain',C17:'forest',C18:'plain'};
 const TERRAIN_RULES={plain:{name:'平原',bonus:0},forest:{name:'森林',bonus:.1},mountain:{name:'山岳',bonus:.2}};
 const castleTerrain=id=>CASTLE_TERRAIN[id]||'plain';
 const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y),alive=u=>u.troops>0&&u.morale>0&&!u.retreated;

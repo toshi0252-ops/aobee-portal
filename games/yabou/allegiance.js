@@ -3,7 +3,7 @@
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 const hash=(s,id)=>{let n=(s.seed^Math.imul(s.turn,2654435761))>>>0;for(const c of id)n=Math.imul(n^c.charCodeAt(0),16777619)>>>0;return n%100;};
 function init(s){if(s.personnel&&!Object.hasOwn(s.personnel,'allegiance'))s.personnel.allegiance={version:1,records:{},attempts:{},log:[]};return s;}
-function border(s,a,b){return root.YABOU_DATA.roads.some(r=>{const x=s.castles.find(c=>c.id===r.fromCastleId).ownerFactionId,y=s.castles.find(c=>c.id===r.toCastleId).ownerFactionId;return x===a&&y===b||x===b&&y===a;});}
+function border(s,a,b){return (root.YabouMaps?.resolve(s)||root.YABOU_DATA).roads.some(r=>{const x=s.castles.find(c=>c.id===r.fromCastleId).ownerFactionId,y=s.castles.find(c=>c.id===r.toCastleId).ownerFactionId;return x===a&&y===b||x===b&&y===a;});}
 function record(s,o){const v=s.personnel.allegiance.records;let r=v[o.id];if(!r||r.factionId!==o.factionId){const old=r;r=v[o.id]={factionId:o.factionId,lowMonths:0,lastRewardTurn:0,lastTransferTurn:old?.lastTransferTurn||0,warningTurn:0,warningLoyalty:0};}return r;}
 function reward(s,id){const o=s.officers.find(o=>o.id===id),r=record(s,o);r.lastRewardTurn=s.turn;r.lowMonths=0;r.warningTurn=0;r.warningLoyalty=0;}
 function joined(s,id){const o=s.officers.find(o=>o.id===id),r=record(s,o);r.lastTransferTurn=s.turn;r.lowMonths=0;r.warningTurn=0;r.warningLoyalty=0;}

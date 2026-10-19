@@ -1,6 +1,7 @@
 (function(root){
 'use strict';
 const CONTRACT='battle-prototype-3';
+const Maps=root.YabouMaps||(typeof require==='function'?require('./maps.js'):null);
 const S=root.YabouScenarios||(typeof require==='function'?require('./scenarios.js'):null);
 const W=root.YabouMilitary,B=root.YabouBattle;
 const D=root.YabouDiplomacy;
@@ -23,8 +24,8 @@ const types=['cultivate','commerce','fortify','recruit','search','hire','reward'
 const labels={cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉',reward:'家臣への褒賞',poach:'他家の引き抜き',scheme:'離間・流言',counterplot:'工作の対処',mediate:'内紛の仲裁'};
 const fail=m=>{throw new Error(m)};
 function validateMaster(m){
- const errors=[];
- for(const [k,n] of Object.entries({factions:6,castles:12,roads:16,officers:54,events:8})){
+ const errors=[];if(m.mapId!==undefined&&m.mapId!=='expanded18-v1')errors.push('マップ識別');
+ for(const [k,n] of Object.entries({factions:6,castles:m.mapId==='expanded18-v1'?18:12,roads:m.mapId==='expanded18-v1'?27:16,officers:54,events:8})){
   if(!Array.isArray(m[k])||m[k].length!==n) errors.push(k+'件数');
   else if(new Set(m[k].map(x=>x.id)).size!==n)errors.push(k+'ID重複');
  }
@@ -36,12 +37,13 @@ function validateMaster(m){
  for(const r of m.roads){const e=[r.fromCastleId,r.toCastleId].sort().join(':'); if(!cs.has(r.fromCastleId)||!cs.has(r.toCastleId)||r.fromCastleId===r.toCastleId||edges.has(e))errors.push('街道'); edges.add(e);}
  const seen=new Set([m.castles[0].id]);let size;
  do{size=seen.size;for(const r of m.roads){if(seen.has(r.fromCastleId))seen.add(r.toCastleId);if(seen.has(r.toCastleId))seen.add(r.fromCastleId);}}while(seen.size!==size);
- if(seen.size!==12)errors.push('非連結');return errors;
+ if(seen.size!==m.castles.length)errors.push('非連結');return errors;
 }
 function createInitialState(m,factionId,seed=12345,scenarioId='S01',options={}){
  const errors=validateMaster(m);if(errors.length)fail(errors.join('・'));
  if(!m.factions.some(f=>f.id===factionId)||!S.playable(scenarioId,m).includes(factionId))fail('このシナリオでは選べない勢力です');
  const s={schemaVersion:'1.2.0',buildContract:CONTRACT,scenarioId,year:1,month:1,turn:1,seed:seed>>>0,rngState:(seed>>>0)||1,playerFactionId:factionId,factions:clone(m.factions),castles:clone(m.castles),officers:clone(m.officers),commands:[],reports:[],aiLog:[],eventFlags:{},annualReports:[]};
+ if(m.mapId)s.mapId=m.mapId;
  if(options.castleTerrain)s.castleTerrainRules='v18-terrain-1';S.apply(s,m,scenarioId);s.personnel={known:{},attempts:{},log:[]};I.init(s);Q.init(s);V.init(s);N.init(s);T.init(s);return F.init(U.init(Z.init(P.init(H.init(W.init(S.relations(D.init(A.init(L.init(X.start(s)))),scenarioId)))))));
 }
 function random(s){let x=s.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;s.rngState=x>>>0;return s.rngState/4294967296;}
@@ -73,6 +75,7 @@ function validateState(s,m,rules){
  H.validate(s);
  if(s?.castleTerrainRules!==undefined&&s.castleTerrainRules!=='v18-terrain-1')fail('城地形ルールが不正です');
  if(!s||s.schemaVersion!=='1.2.0'||s.buildContract!==CONTRACT)fail('このセーブの版には対応していません');
+ if(s.mapId!==m.mapId||S.get(s.scenarioId).mapId!==m.mapId)fail('マップとシナリオが一致しません');
  if(!S.has(s.scenarioId)||!Number.isInteger(s.turn)||s.turn<1||s.year!==Math.floor((s.turn-1)/12)+1||s.month!==(s.turn-1)%12+1)fail('年月が不正です');
  for(const k of ['seed','rngState'])if(!Number.isInteger(s[k])||s[k]<0||s[k]>4294967295||(k==='rngState'&&s[k]===0))fail('乱数状態が不正です');
  N.validate(s,m);if(s.factions.length!==m.factions.length+s.personnel.independence.foundings.length||new Set(s.factions.map(f=>f.id)).size!==s.factions.length||m.factions.some(f=>!s.factions.some(x=>x.id===f.id)))fail('勢力ID参照が不正です');
@@ -85,7 +88,7 @@ function validateState(s,m,rules){
  if(!valid||!Number.isInteger(o.loyalty)||o.loyalty<0||o.loyalty>100)fail('武将配置が不正です');if(JSON.stringify(o.stats)!==JSON.stringify(m.officers.find(x=>x.id===o.id).stats))fail('能力値が不正です');}
  for(const k of ['commands','reports','annualReports','aiLog'])if(!Array.isArray(s[k]))fail('履歴が不正です');
  for(const report of [...s.reports,...s.annualReports.flatMap(a=>{if(!Number.isInteger(a.year)||a.year<1||!Array.isArray(a.reports)||a.reports.length!==12)fail('年次報告が不正です');return a.reports;})]){
- if(!Number.isInteger(report.turn)||report.turn<1||report.turn>=s.turn||report.year!==Math.floor((report.turn-1)/12)+1||report.month!==(report.turn-1)%12+1||!Array.isArray(report.entries)||report.entries.length!==12||new Set(report.entries.map(x=>x.castleId)).size!==12||!Array.isArray(report.commands))fail('月末報告が不正です');
+ if(!Number.isInteger(report.turn)||report.turn<1||report.turn>=s.turn||report.year!==Math.floor((report.turn-1)/12)+1||report.month!==(report.turn-1)%12+1||!Array.isArray(report.entries)||report.entries.length!==m.castles.length||new Set(report.entries.map(x=>x.castleId)).size!==m.castles.length||!Array.isArray(report.commands))fail('月末報告が不正です');
  for(const x of report.entries)if(!m.castles.some(c=>c.id===x.castleId)||!fs.includes(x.factionId)||['income','use','shortage','harvest'].some(k=>!Number.isSafeInteger(x[k])||x[k]<0))fail('収支履歴が不正です');
  if(report.events!==undefined)X.validateReport(report.events,s);
  if(report.diplomacy!==undefined&&(!Array.isArray(report.diplomacy)||report.diplomacy.some(q=>!fs.includes(q.factionId)||!fs.includes(q.targetFactionId)||typeof q.result!=='string')))fail('外交履歴が不正です');

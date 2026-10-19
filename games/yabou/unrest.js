@@ -15,7 +15,7 @@ function month(s,report){const v=s.personnel.unrest;if(v.lastMonth>=s.turn)retur
 }
 function candidates(s,f,c,o){return s.personnel.unrest.pending.some(p=>p.factionId===f.id&&p.castleId===c.id)?[{type:'mediate',score:110,reason:'内紛の予兆へ仲裁を行い家臣の対立を鎮める',q:{type:'mediate',factionId:f.id,castleId:c.id,officerId:o.id}}]:[];}
 function validate(s){const v=s.personnel.unrest,fail=()=>{throw Error('内紛の保存情報が不正です');},obj=x=>x&&typeof x==='object'&&!Array.isArray(x),fs=new Set(s.factions.map(f=>f.id)),cs=new Set(s.castles.map(c=>c.id)),ids=new Set(s.officers.map(o=>o.id)),turn=n=>Number.isSafeInteger(n)&&n>=0&&n<=s.turn;
- if(!obj(v)||v.version!==1||!turn(v.lastMonth)||!obj(v.records)||Object.keys(v.records).length>12||!Array.isArray(v.pending)||v.pending.length>12||!Array.isArray(v.history)||v.history.length>120)fail();
+ if(!obj(v)||v.version!==1||!turn(v.lastMonth)||!obj(v.records)||Object.keys(v.records).length>s.castles.length||!Array.isArray(v.pending)||v.pending.length>s.castles.length||!Array.isArray(v.history)||v.history.length>120)fail();
  const pair=xs=>Array.isArray(xs)&&xs.length===2&&xs[0]<xs[1]&&xs.every(id=>ids.has(id));
  for(const [id,r]of Object.entries(v.records))if(!cs.has(id)||!r||!fs.has(r.factionId)||!Number.isInteger(r.streak)||r.streak<0||r.streak>2||!turn(r.lastTurn)||!Number.isSafeInteger(r.cooldownUntil)||r.cooldownUntil<0||r.cooldownUntil>s.turn+12||!(r.pairKey===null||typeof r.pairKey==='string'&&pair(r.pairKey.split(':')))||(r.streak>0&&r.pairKey===null))fail();
  const valid=p=>p&&cs.has(p.castleId)&&fs.has(p.factionId)&&pair(p.officerIds)&&turn(p.turn)&&p.turn>0&&p.dueTurn===p.turn+2&&p.id==='unrest:'+p.turn+':'+p.castleId;

@@ -97,3 +97,5 @@ dialog[open]:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:h
 .marchTerrain{margin:9px 0;padding:9px 11px;background:#0b2429;border-left:2px solid #d5b875;line-height:1.65;font-size:.8rem}.marchTerrain strong,.marchTerrain span{display:block}.marchTerrain strong{color:var(--gold);font-weight:500}.marchTerrain span{color:var(--muted)}.marchTarget>div{min-width:0;flex:1}.marchTarget>button{flex-shrink:0}.marchTarget .marchTerrain{font-size:.7rem;margin:6px 0 0;padding:6px 8px}.transferTerrain{border-left-color:#93c9bf}
 
 @media(max-height:550px) and (orientation:landscape){.marchConfirmation{font-size:.82rem}.marchConfirmation h2{font-size:1.2rem;margin:0 0 8px}.marchConfirmation p{margin:8px 0;line-height:1.5}.marchConfirmation .notice{padding:6px 8px;margin:6px 0}.marchConfirmation .marchTerrain{padding:6px 8px;margin:6px 0;font-size:.75rem}.marchConfirmation button{margin-top:6px}}
+
+@media(max-width:600px) and (orientation:portrait){.workspace:not(.mapExpanded) .expandedMap .territoryLegend{display:none}}
