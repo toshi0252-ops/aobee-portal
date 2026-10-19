@@ -2,10 +2,13 @@
 'use strict';
 const clone=x=>JSON.parse(JSON.stringify(x));
 const RULES={version:'v03-provisional-1',width:8,height:6,roundLimit:12,damage:.055,types:{infantry:{name:'足軽',move:2,range:1,speed:2},bow:{name:'弓',move:2,range:3,speed:2},cavalry:{name:'騎馬',move:3,range:1,speed:3},gun:{name:'鉄砲',move:1,range:3,speed:1}}};
+const CASTLE_TERRAIN={C01:'plain',C02:'forest',C03:'mountain',C04:'forest',C05:'forest',C06:'plain',C07:'mountain',C08:'mountain',C09:'plain',C10:'plain',C11:'forest',C12:'mountain'};
+const TERRAIN_RULES={plain:{name:'平原',bonus:0},forest:{name:'森林',bonus:.1},mountain:{name:'山岳',bonus:.2}};
+const castleTerrain=id=>CASTLE_TERRAIN[id]||'plain';
 const distance=(a,b)=>Math.abs(a.x-b.x)+Math.abs(a.y-b.y),alive=u=>u.troops>0&&u.morale>0&&!u.retreated;
 function random(b){let x=b.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;b.rngState=x>>>0;return b.rngState/4294967296;}
-function create({id,attacker,defender,attackUnits,defendUnits,attackFood,defendFood,defense=40,seed=1}){
- const b={id,attacker,defender,round:1,rngState:(seed>>>0)||1,weather:'晴',food:{attack:attackFood,defend:defendFood},defense,units:[],terrain:[],log:[],result:null,rulesVersion:RULES.version};b.weather=random(b)<.25?'雨':'晴';
+function create({id,attacker,defender,attackUnits,defendUnits,attackFood,defendFood,defense=40,seed=1,castleTerrain:region}){
+ const b={id,attacker,defender,round:1,rngState:(seed>>>0)||1,weather:'晴',food:{attack:attackFood,defend:defendFood},defense,units:[],terrain:[],log:[],result:null,rulesVersion:RULES.version};b.weather=random(b)<.25?'雨':'晴';if(region!==undefined){if(!TERRAIN_RULES[region])throw Error('城地形が不正です');b.castleTerrain=region;b.rulesVersion='v18-terrain-1';b.log.push('城地形：'+TERRAIN_RULES[region].name+'／守備側の地形防御＋'+Math.round(TERRAIN_RULES[region].bonus*100)+'%（盤面の地形防御とは高い方を適用）');}
  for(let y=0;y<6;y++)for(let x=0;x<8;x++)b.terrain.push(x===7&&y===3?'castle':x===4&&y!==2?'river':(x===2||x===5)&&y%3===1?'forest':(x===3&&y===0)||(x===6&&y===5)?'mountain':'plain');
  for(const [side,units]of [['attack',attackUnits],['defend',defendUnits]])units.forEach((u,i)=>b.units.push({...clone(u),id:side+'-'+i,side,x:side==='attack'?0:7,y:[3,1,5][i],initial:u.troops,morale:u.initialMorale||70,retreated:false,defending:false,ambush:false,confused:false,bands:0}));
  if(!b.units.some(u=>u.side==='defend'))b.result={winner:'attack',reason:'守備隊なし'};return b;
@@ -29,6 +32,7 @@ function legal(b,u,q){
 function predict(b,u,v,mult=1){
  let factor=1;if(u.type==='cavalry'&&v.type==='bow')factor=1.2;if(u.type==='bow'&&v.type==='gun')factor=1.15;if(u.type==='gun'&&v.type==='cavalry')factor=1.2;
  const t=terrain(b,v);if(t==='mountain')factor/=1.25;if(t==='castle')factor/=1.5;if(t==='river')factor/=.75;if(t==='forest'&&RULES.types[u.type].range>1)factor*=.8;
+ if(b.castleTerrain&&v.side==='defend'){const tile=t==='mountain'||t==='forest'&&RULES.types[u.type].range>1?1.25:t==='castle'?1.5:1;factor*=tile/Math.max(tile,1+TERRAIN_RULES[b.castleTerrain].bonus);}
  if(b.weather==='雨'&&u.type==='gun')factor*=.65;if(v.defending)factor*=.7;if(u.starving)factor*=.8;
  const base=u.troops*RULES.damage*(.75+u.stats.leadership/200)*factor*mult;return{min:Math.min(v.troops,Math.max(1,Math.round(base*.9))),max:Math.min(v.troops,Math.max(1,Math.round(base*1.1)))};
 }
@@ -63,5 +67,5 @@ function advance(b,orders){
  n.round++;finish(n);return n;
 }
 function auto(b){let n=b;while(!n.result)n=advance(n,{...aiOrders(n,'attack'),...aiOrders(n,'defend')});return n;}
-root.YabouBattle={RULES,create,alive,distance,terrain,reachable,legal,predict,aiOrders,advance,auto};
+root.YabouBattle={RULES,TERRAIN_RULES,castleTerrain,create,alive,distance,terrain,reachable,legal,predict,aiOrders,advance,auto};
 })(globalThis);

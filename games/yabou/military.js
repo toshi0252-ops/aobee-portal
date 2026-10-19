@@ -59,7 +59,7 @@ function nextBattle(tx,random){
  const defenders=s.officers.filter(o=>o.status==='active'&&o.locationCastleId===t.id&&o.factionId===t.ownerFactionId).sort((a,b)=>b.stats.leadership-a.stats.leadership||a.id.localeCompare(b.id)).slice(0,3),count=Math.max(1,defenders.length),total=Math.min(t.troops,count*3000);let left=total;
  const units=[];for(let i=0;i<count&&left>0;i++){const troops=Math.min(3000,Math.ceil(left/(count-i))),o=defenders[i];units.push({officerId:o?.id||null,name:o?.name||t.name+'守備隊',type:i===1?'bow':'infantry',troops,stats:clone(o?.stats||{leadership:40,intellect:40}),initialMorale:70});left-=troops;}
  const battleId='battle-'+s.turn+'-'+tx.report.battles.length,insider=root.YabouInsiders?.battle(s,army,t,units,tx.report,battleId);
- tx.current={army,reserve:t.troops-total,defender:t.ownerFactionId,battle:B().create({id:battleId,attacker:army.factionId,defender:t.ownerFactionId,attackUnits:army.units,defendUnits:units,attackFood:army.food,defendFood:t.food,defense:t.defense,seed:Math.floor(random(s)*4294967295)||1})};t.troops=0;t.food=0;
+ tx.current={army,reserve:t.troops-total,defender:t.ownerFactionId,battle:B().create({id:battleId,attacker:army.factionId,defender:t.ownerFactionId,attackUnits:army.units,defendUnits:units,attackFood:army.food,defendFood:t.food,defense:t.defense,...(s.castleTerrainRules?{castleTerrain:B().castleTerrain(t.id)}:{}),seed:Math.floor(random(s)*4294967295)||1})};t.troops=0;t.food=0;
  if(insider)tx.current.battle.log.push(insider);return tx.current.battle;
  }tx.current=null;return null;
 }

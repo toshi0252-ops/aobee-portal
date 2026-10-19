@@ -38,11 +38,11 @@ function validateMaster(m){
  do{size=seen.size;for(const r of m.roads){if(seen.has(r.fromCastleId))seen.add(r.toCastleId);if(seen.has(r.toCastleId))seen.add(r.fromCastleId);}}while(seen.size!==size);
  if(seen.size!==12)errors.push('非連結');return errors;
 }
-function createInitialState(m,factionId,seed=12345,scenarioId='S01'){
+function createInitialState(m,factionId,seed=12345,scenarioId='S01',options={}){
  const errors=validateMaster(m);if(errors.length)fail(errors.join('・'));
  if(!m.factions.some(f=>f.id===factionId)||!S.playable(scenarioId,m).includes(factionId))fail('このシナリオでは選べない勢力です');
  const s={schemaVersion:'1.2.0',buildContract:CONTRACT,scenarioId,year:1,month:1,turn:1,seed:seed>>>0,rngState:(seed>>>0)||1,playerFactionId:factionId,factions:clone(m.factions),castles:clone(m.castles),officers:clone(m.officers),commands:[],reports:[],aiLog:[],eventFlags:{},annualReports:[]};
- S.apply(s,m,scenarioId);s.personnel={known:{},attempts:{},log:[]};I.init(s);Q.init(s);V.init(s);N.init(s);T.init(s);return F.init(U.init(Z.init(P.init(H.init(W.init(S.relations(D.init(A.init(L.init(X.start(s)))),scenarioId)))))));
+ if(options.castleTerrain)s.castleTerrainRules='v18-terrain-1';S.apply(s,m,scenarioId);s.personnel={known:{},attempts:{},log:[]};I.init(s);Q.init(s);V.init(s);N.init(s);T.init(s);return F.init(U.init(Z.init(P.init(H.init(W.init(S.relations(D.init(A.init(L.init(X.start(s)))),scenarioId)))))));
 }
 function random(s){let x=s.rngState;x^=x<<13;x^=x>>>17;x^=x<<5;s.rngState=x>>>0;return s.rngState/4294967296;}
 function canIssueCommand(s,q,rules){
@@ -71,6 +71,7 @@ function commandRule(q,rules){if(q.type==='mediate')return {cost:{gold:100},delt
 function queueCommand(s,q,rules){const error=canIssueCommand(s,q,rules);if(error)fail(error);const n=clone(s);n.commands.push(clone(q));return n;}
 function validateState(s,m,rules){
  H.validate(s);
+ if(s?.castleTerrainRules!==undefined&&s.castleTerrainRules!=='v18-terrain-1')fail('城地形ルールが不正です');
  if(!s||s.schemaVersion!=='1.2.0'||s.buildContract!==CONTRACT)fail('このセーブの版には対応していません');
  if(!S.has(s.scenarioId)||!Number.isInteger(s.turn)||s.turn<1||s.year!==Math.floor((s.turn-1)/12)+1||s.month!==(s.turn-1)%12+1)fail('年月が不正です');
  for(const k of ['seed','rngState'])if(!Number.isInteger(s[k])||s[k]<0||s[k]>4294967295||(k==='rngState'&&s[k]===0))fail('乱数状態が不正です');
