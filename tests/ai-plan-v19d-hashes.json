@@ -1,0 +1,128 @@
+[
+  {
+    "scenarioId": "S01",
+    "player": "F06",
+    "seed": 1,
+    "hash": "dcd706ed5ec17a36e91bdc2348933f947c9f7d6278b9f83757c5cf3f29effc6a"
+  },
+  {
+    "scenarioId": "S01",
+    "player": "F06",
+    "seed": 77,
+    "hash": "759234151cd2f56d86649d058fe220129e821b0596ec91bab4b53b7eb5c590ff"
+  },
+  {
+    "scenarioId": "S01",
+    "player": "F06",
+    "seed": 12345,
+    "hash": "b662572a34749ce330cfce758ba68c21d8887a5630b503f60425ceb639cd5763"
+  },
+  {
+    "scenarioId": "S02",
+    "player": "F01",
+    "seed": 1,
+    "hash": "c973a4f6ca5ec07a0045d2610c746806b70a69a9e04c0ccc0ca54b42e42b5779"
+  },
+  {
+    "scenarioId": "S02",
+    "player": "F01",
+    "seed": 77,
+    "hash": "422a169e97cd781c692e995e6b421fb770dadbdd95c1beafbbc076c60afe5622"
+  },
+  {
+    "scenarioId": "S02",
+    "player": "F01",
+    "seed": 12345,
+    "hash": "0b1b0619ec7815ba520752ecca9a371e1b967ad837b551902ea0866754833354"
+  },
+  {
+    "scenarioId": "S03",
+    "player": "F06",
+    "seed": 1,
+    "hash": "61058d7923e4736240a850155d08e867a838038cdc80e9277e6dc772d4ec81e0"
+  },
+  {
+    "scenarioId": "S03",
+    "player": "F06",
+    "seed": 77,
+    "hash": "c4eb7632a902c197c321e21ecdce9eb2d52225b2f4f317c0f300a8fc33dd2cee"
+  },
+  {
+    "scenarioId": "S03",
+    "player": "F06",
+    "seed": 12345,
+    "hash": "dd0d853cd544e46b92bf1228b2c1508586a194b7d2d8f93101db44bbd507105a"
+  },
+  {
+    "scenarioId": "S04",
+    "player": "F06",
+    "seed": 1,
+    "hash": "ddaed37382dc9eb62a73d730c7b480fccea4a36c9cf99cf99ee86821d8df1c10"
+  },
+  {
+    "scenarioId": "S04",
+    "player": "F06",
+    "seed": 77,
+    "hash": "8a3e53925823a8cf775aa1844df05c21b512b67775e229326c30fa76b8b3d557"
+  },
+  {
+    "scenarioId": "S04",
+    "player": "F06",
+    "seed": 12345,
+    "hash": "67fb7f403f5291914d0a11eefcc9dba3c76db7cc9e8515217098086f6b850695"
+  },
+  {
+    "scenarioId": "S05",
+    "player": "F06",
+    "seed": 1,
+    "hash": "f4f789954749bcf2d4c5a20007e37b4ded474d7331262ef31412bdcce1cc2949"
+  },
+  {
+    "scenarioId": "S05",
+    "player": "F06",
+    "seed": 77,
+    "hash": "71d9807ceeb6208580eca990d417e72dfda2a929d5dd96e638a5a19dfbe5321d"
+  },
+  {
+    "scenarioId": "S05",
+    "player": "F06",
+    "seed": 12345,
+    "hash": "ed6701042a6f6fa1948b1e3da512c9d6c0de7eeb938001c19678e98412ae4175"
+  },
+  {
+    "scenarioId": "S06",
+    "player": "F06",
+    "seed": 1,
+    "hash": "6456ead0f1f8c1228b043c7f794440d18c67a52c143fb7dc141ae8919de04dd4"
+  },
+  {
+    "scenarioId": "S06",
+    "player": "F06",
+    "seed": 77,
+    "hash": "286d15d5350cfb8eca8984d12dd6c29754a30a375d14dddbfacfc483326229f6"
+  },
+  {
+    "scenarioId": "S06",
+    "player": "F06",
+    "seed": 12345,
+    "hash": "1cba7e39921077e67ac19b87096cc26d17d159a13e2470e63ce1b58286aa20e7"
+  },
+  {
+    "scenarioId": "S07",
+    "player": "F06",
+    "seed": 1,
+    "hash": "a49779beada5af34abe4c68ab69ae0171d7ae5fd6d0850643760be81503de807"
+  },
+  {
+    "scenarioId": "S07",
+    "player": "F06",
+    "seed": 77,
+    "hash": "0616b0358947e2e5d3858f851af872fd11694cd1c6acbf609b5b258571098a4d"
+  },
+  {
+    "scenarioId": "S07",
+    "player": "F06",
+    "seed": 12345,
+    "hash": "136d8214e1cd048d77245de0af97a460a339eec11f663f63761105ae1e6091a2"
+  }
+]
