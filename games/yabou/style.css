@@ -119,3 +119,5 @@ dialog[open]:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:h
 @media(max-height:550px) and (orientation:landscape){.orderEntry>div{flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:3px 12px}.orderEntry small,.orderEntry h3{grid-column:1/-1}.orderEntry h3,.orderEntry p{margin:0}.orderEntry p{font-size:.7rem}.orderEntry{padding:7px 10px}}
 
 .recordEntry{padding:.65rem 0;border-bottom:1px solid #ffffff25}.recordSummary{font-size:.9rem;line-height:1.65;overflow-wrap:anywhere;color:var(--muted)}
+
+#recordMap{margin-left:12px}#titleRecordRows h3{font-size:1rem;margin:.3rem 0}#titleRecordRows .recordSummary{margin:.35rem 0}.recordScreen>label{display:flex;align-items:center}
