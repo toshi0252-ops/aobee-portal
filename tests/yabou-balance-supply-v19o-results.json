@@ -1,0 +1,4061 @@
+{
+  "method": {
+    "scenarios": [
+      "S01",
+      "S07"
+    ],
+    "seeds": [
+      77,
+      31415
+    ],
+    "players": 6,
+    "terrain": [
+      false,
+      true
+    ],
+    "horizon": 36,
+    "policy": "Public-state heuristic: one best adjacent attack per month at 1.5x target troops adjusted by castle terrain, retain 400 garrison; recruit border to 2200 with order>=60 and 18-month food cover, fortify border to 60, commerce/farm to 65. Infantry only. Before attacks, transfer 100 infantry and food to adjacent friendly castles short of maintenance through the next September harvest; donor keeps the same maintenance cover and at least one other officer. At most one donor per target per month, ledger accounts for queued incoming/outgoing food. No diplomatic orders, hires, event choices or manual tactics. Existing auto combat. Not a human playtest or optimum strategy."
+  },
+  "summary": [
+    {
+      "scenario": "S01",
+      "terrain": false,
+      "runs": 12,
+      "months": 419,
+      "victories": 0,
+      "defeats": 2,
+      "shortageRuns": 3,
+      "meanCastles": 1.75,
+      "meanMarches": 4.5,
+      "meanTransfers": 0.75,
+      "meanTransferFood": 50.75,
+      "meanRecruit": 9.92,
+      "meanFortify": 15.17,
+      "meanGold": 1988.83,
+      "meanFood": 1530.25
+    },
+    {
+      "scenario": "S01",
+      "terrain": true,
+      "runs": 12,
+      "months": 432,
+      "victories": 0,
+      "defeats": 0,
+      "shortageRuns": 4,
+      "meanCastles": 1.75,
+      "meanMarches": 2.92,
+      "meanTransfers": 0.33,
+      "meanTransferFood": 16.25,
+      "meanRecruit": 9.17,
+      "meanFortify": 12.58,
+      "meanGold": 2328.08,
+      "meanFood": 2125.58
+    },
+    {
+      "scenario": "S07",
+      "terrain": false,
+      "runs": 12,
+      "months": 431,
+      "victories": 0,
+      "defeats": 2,
+      "shortageRuns": 5,
+      "meanCastles": 1.17,
+      "meanMarches": 7.75,
+      "meanTransfers": 1.08,
+      "meanTransferFood": 68.75,
+      "meanRecruit": 14.42,
+      "meanFortify": 22.25,
+      "meanGold": 1014.25,
+      "meanFood": 1856.83
+    },
+    {
+      "scenario": "S07",
+      "terrain": true,
+      "runs": 12,
+      "months": 432,
+      "victories": 0,
+      "defeats": 1,
+      "shortageRuns": 9,
+      "meanCastles": 1.25,
+      "meanMarches": 7.17,
+      "meanTransfers": 0.83,
+      "meanTransferFood": 45.5,
+      "meanRecruit": 13.42,
+      "meanFortify": 20.42,
+      "meanGold": 1251.42,
+      "meanFood": 2408.58
+    }
+  ],
+  "results": [
+    {
+      "scenario": "S01",
+      "player": "F01",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 4,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 9,
+      "fortify": 13,
+      "shortage": 0,
+      "lossMonth": 8,
+      "lowGold": 7,
+      "ending": null,
+      "castles": 1,
+      "gold": 1682,
+      "food": 931,
+      "troops": 2011,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 509,
+          "food": 681,
+          "troops": 2728
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 232,
+          "food": 287,
+          "troops": 2142
+        },
+        {
+          "month": 24,
+          "castles": 1,
+          "gold": 518,
+          "food": 663,
+          "troops": 2011
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 1100,
+          "food": 537,
+          "troops": 2011
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 1682,
+          "food": 931,
+          "troops": 2011
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F01",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 0,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 8,
+      "fortify": 8,
+      "shortage": 0,
+      "lossMonth": null,
+      "lowGold": 9,
+      "ending": null,
+      "castles": 2,
+      "gold": 2971,
+      "food": 1954,
+      "troops": 3600,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 275,
+          "food": 858,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 279,
+          "food": 642,
+          "troops": 3600
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 643,
+          "food": 1346,
+          "troops": 3600
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1807,
+          "food": 1130,
+          "troops": 3600
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 2971,
+          "food": 1954,
+          "troops": 3600
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F01",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 0,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 8,
+      "fortify": 8,
+      "shortage": 0,
+      "lossMonth": null,
+      "lowGold": 9,
+      "ending": null,
+      "castles": 2,
+      "gold": 2971,
+      "food": 1954,
+      "troops": 3600,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 275,
+          "food": 858,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 279,
+          "food": 642,
+          "troops": 3600
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 643,
+          "food": 1346,
+          "troops": 3600
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1807,
+          "food": 1130,
+          "troops": 3600
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 2971,
+          "food": 1954,
+          "troops": 3600
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F01",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 0,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 8,
+      "fortify": 8,
+      "shortage": 0,
+      "lossMonth": null,
+      "lowGold": 9,
+      "ending": null,
+      "castles": 2,
+      "gold": 2971,
+      "food": 1954,
+      "troops": 3600,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 275,
+          "food": 858,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 279,
+          "food": 642,
+          "troops": 3600
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 643,
+          "food": 1346,
+          "troops": 3600
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1807,
+          "food": 1130,
+          "troops": 3600
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 2971,
+          "food": 1954,
+          "troops": 3600
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F02",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 7,
+      "transfers": 1,
+      "transferFood": 40,
+      "recruit": 12,
+      "fortify": 25,
+      "shortage": 83,
+      "lossMonth": 6,
+      "lowGold": 10,
+      "ending": null,
+      "castles": 2,
+      "gold": 2586,
+      "food": 2000,
+      "troops": 2128,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 192,
+          "food": 340,
+          "troops": 2917
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 543,
+          "food": 601,
+          "troops": 2715
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 512,
+          "food": 483,
+          "troops": 2715
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 797,
+          "food": 1537,
+          "troops": 2959
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1105,
+          "food": 1122,
+          "troops": 2626
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 2586,
+          "food": 2000,
+          "troops": 2128
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 14,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 5,
+          "troopsBefore": 1097,
+          "troopsAfter": 1097,
+          "use": 11,
+          "shortage": 6,
+          "departureFood": 0
+        },
+        {
+          "month": 15,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 1097,
+          "troopsAfter": 1097,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 16,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 1097,
+          "troopsAfter": 1097,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 17,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 1097,
+          "troopsAfter": 1097,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 18,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 1097,
+          "troopsAfter": 1097,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 19,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 1097,
+          "troopsAfter": 1097,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 20,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 1097,
+          "troopsAfter": 1097,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 21,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 1097,
+          "troopsAfter": 1097,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S01",
+      "player": "F02",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 10,
+      "transfers": 2,
+      "transferFood": 123,
+      "recruit": 16,
+      "fortify": 24,
+      "shortage": 3,
+      "lossMonth": 7,
+      "lowGold": 8,
+      "ending": null,
+      "castles": 3,
+      "gold": 3230,
+      "food": 1567,
+      "troops": 2206,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 302,
+          "food": 329,
+          "troops": 2998
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 1022,
+          "food": 546,
+          "troops": 2342
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 1407,
+          "food": 334,
+          "troops": 2542
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 961,
+          "food": 1094,
+          "troops": 2992
+        },
+        {
+          "month": 30,
+          "castles": 3,
+          "gold": 2100,
+          "food": 505,
+          "troops": 2836
+        },
+        {
+          "month": 36,
+          "castles": 3,
+          "gold": 3230,
+          "food": 1567,
+          "troops": 2206
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 32,
+          "castleId": "C08",
+          "previousOwner": "F02",
+          "foodBefore": 6,
+          "troopsBefore": 874,
+          "troopsAfter": 874,
+          "use": 9,
+          "shortage": 3,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S01",
+      "player": "F02",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 8,
+      "transfers": 1,
+      "transferFood": 13,
+      "recruit": 8,
+      "fortify": 21,
+      "shortage": 14,
+      "lossMonth": 6,
+      "lowGold": 10,
+      "ending": null,
+      "castles": 2,
+      "gold": 2977,
+      "food": 1975,
+      "troops": 1126,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 192,
+          "food": 325,
+          "troops": 2893
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 543,
+          "food": 585,
+          "troops": 2693
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 243,
+          "food": 359,
+          "troops": 2061
+        },
+        {
+          "month": 24,
+          "castles": 1,
+          "gold": 290,
+          "food": 1047,
+          "troops": 1552
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 354,
+          "food": 877,
+          "troops": 1370
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 2977,
+          "food": 1975,
+          "troops": 1126
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 13,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 6,
+          "troopsBefore": 983,
+          "troopsAfter": 983,
+          "use": 10,
+          "shortage": 4,
+          "departureFood": 0
+        },
+        {
+          "month": 14,
+          "castleId": "C10",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 983,
+          "troopsAfter": 983,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S01",
+      "player": "F02",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 8,
+      "transfers": 2,
+      "transferFood": 128,
+      "recruit": 15,
+      "fortify": 20,
+      "shortage": 12,
+      "lossMonth": 7,
+      "lowGold": 8,
+      "ending": null,
+      "castles": 3,
+      "gold": 2214,
+      "food": 1821,
+      "troops": 2161,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 302,
+          "food": 315,
+          "troops": 3017
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 1022,
+          "food": 544,
+          "troops": 2187
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 1407,
+          "food": 338,
+          "troops": 2387
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 897,
+          "food": 1097,
+          "troops": 2852
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1449,
+          "food": 762,
+          "troops": 2714
+        },
+        {
+          "month": 36,
+          "castles": 3,
+          "gold": 2214,
+          "food": 1821,
+          "troops": 2161
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 9,
+          "castleId": "C08",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 1133,
+          "troopsAfter": 1133,
+          "use": 12,
+          "shortage": 12,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S01",
+      "player": "F03",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 4,
+      "transfers": 2,
+      "transferFood": 163,
+      "recruit": 6,
+      "fortify": 15,
+      "shortage": 0,
+      "lossMonth": 23,
+      "lowGold": 7,
+      "ending": null,
+      "castles": 3,
+      "gold": 2648,
+      "food": 2082,
+      "troops": 2135,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 163,
+          "food": 578,
+          "troops": 3000
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 229,
+          "food": 982,
+          "troops": 3200
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 243,
+          "food": 790,
+          "troops": 3200
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 1427,
+          "food": 1460,
+          "troops": 2752
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1722,
+          "food": 1289,
+          "troops": 2387
+        },
+        {
+          "month": 36,
+          "castles": 3,
+          "gold": 2648,
+          "food": 2082,
+          "troops": 2135
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F03",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 4,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 8,
+      "fortify": 12,
+      "shortage": 0,
+      "lossMonth": 26,
+      "lowGold": 7,
+      "ending": null,
+      "castles": 2,
+      "gold": 1936,
+      "food": 1524,
+      "troops": 2391,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 163,
+          "food": 578,
+          "troops": 3000
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 229,
+          "food": 982,
+          "troops": 3200
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 243,
+          "food": 790,
+          "troops": 3200
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 1057,
+          "food": 1638,
+          "troops": 3200
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 226,
+          "food": 1234,
+          "troops": 2449
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 1936,
+          "food": 1524,
+          "troops": 2391
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F03",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 2,
+      "transfers": 1,
+      "transferFood": 54,
+      "recruit": 7,
+      "fortify": 12,
+      "shortage": 56,
+      "lossMonth": 36,
+      "lowGold": 7,
+      "ending": null,
+      "castles": 3,
+      "gold": 4871,
+      "food": 2791,
+      "troops": 2506,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 163,
+          "food": 578,
+          "troops": 3000
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 229,
+          "food": 982,
+          "troops": 3200
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 243,
+          "food": 790,
+          "troops": 3200
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 1293,
+          "food": 1568,
+          "troops": 3147
+        },
+        {
+          "month": 30,
+          "castles": 3,
+          "gold": 2907,
+          "food": 1390,
+          "troops": 3147
+        },
+        {
+          "month": 36,
+          "castles": 3,
+          "gold": 4871,
+          "food": 2791,
+          "troops": 2506
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 30,
+          "castleId": "C04",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1347,
+          "troopsAfter": 1347,
+          "use": 14,
+          "shortage": 14,
+          "departureFood": 0
+        },
+        {
+          "month": 31,
+          "castleId": "C04",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1347,
+          "troopsAfter": 1347,
+          "use": 14,
+          "shortage": 14,
+          "departureFood": 0
+        },
+        {
+          "month": 32,
+          "castleId": "C04",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1347,
+          "troopsAfter": 1347,
+          "use": 14,
+          "shortage": 14,
+          "departureFood": 0
+        },
+        {
+          "month": 33,
+          "castleId": "C04",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1347,
+          "troopsAfter": 1347,
+          "use": 14,
+          "shortage": 14,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S01",
+      "player": "F03",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 2,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 6,
+      "fortify": 10,
+      "shortage": 0,
+      "lossMonth": 31,
+      "lowGold": 7,
+      "ending": null,
+      "castles": 1,
+      "gold": 436,
+      "food": 1630,
+      "troops": 1927,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 163,
+          "food": 578,
+          "troops": 3000
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 229,
+          "food": 982,
+          "troops": 3200
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 243,
+          "food": 790,
+          "troops": 3200
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 1057,
+          "food": 1638,
+          "troops": 3200
+        },
+        {
+          "month": 30,
+          "castles": 3,
+          "gold": 2757,
+          "food": 1387,
+          "troops": 3084
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 436,
+          "food": 1630,
+          "troops": 1927
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F04",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 3,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 12,
+      "fortify": 16,
+      "shortage": 0,
+      "lossMonth": 34,
+      "lowGold": 9,
+      "ending": null,
+      "castles": 4,
+      "gold": 3680,
+      "food": 3696,
+      "troops": 3899,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 275,
+          "food": 858,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 561,
+          "food": 586,
+          "troops": 3566
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 757,
+          "food": 1848,
+          "troops": 4166
+        },
+        {
+          "month": 30,
+          "castles": 3,
+          "gold": 2253,
+          "food": 1534,
+          "troops": 4366
+        },
+        {
+          "month": 36,
+          "castles": 4,
+          "gold": 3680,
+          "food": 3696,
+          "troops": 3899
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F04",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 2,
+      "transfers": 1,
+      "transferFood": 111,
+      "recruit": 8,
+      "fortify": 14,
+      "shortage": 0,
+      "lossMonth": 33,
+      "lowGold": 9,
+      "ending": null,
+      "castles": 2,
+      "gold": 1959,
+      "food": 1765,
+      "troops": 2428,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 275,
+          "food": 858,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 279,
+          "food": 642,
+          "troops": 3600
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 643,
+          "food": 1346,
+          "troops": 3600
+        },
+        {
+          "month": 30,
+          "castles": 3,
+          "gold": 2253,
+          "food": 1074,
+          "troops": 3572
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 1959,
+          "food": 1765,
+          "troops": 2428
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F04",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 4,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 11,
+      "fortify": 19,
+      "shortage": 0,
+      "lossMonth": 15,
+      "lowGold": 12,
+      "ending": null,
+      "castles": 1,
+      "gold": 1283,
+      "food": 2631,
+      "troops": 2306,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 440,
+          "food": 810,
+          "troops": 3571
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 440,
+          "food": 498,
+          "troops": 3015
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 840,
+          "food": 1816,
+          "troops": 2512
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1285,
+          "food": 1567,
+          "troops": 1868
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 1283,
+          "food": 2631,
+          "troops": 2306
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F04",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 7,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 15,
+      "fortify": 20,
+      "shortage": 44,
+      "lossMonth": 15,
+      "lowGold": 12,
+      "ending": null,
+      "castles": 2,
+      "gold": 2250,
+      "food": 2720,
+      "troops": 2911,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 356,
+          "food": 1320,
+          "troops": 3782
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 773,
+          "food": 794,
+          "troops": 2913
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 809,
+          "food": 2121,
+          "troops": 3170
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 362,
+          "food": 1699,
+          "troops": 3355
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 2250,
+          "food": 2720,
+          "troops": 2911
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 18,
+          "castleId": "C10",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 1092,
+          "troopsAfter": 1092,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 19,
+          "castleId": "C10",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 1092,
+          "troopsAfter": 1092,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 20,
+          "castleId": "C10",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 1092,
+          "troopsAfter": 1092,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 21,
+          "castleId": "C10",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 1092,
+          "troopsAfter": 1092,
+          "use": 11,
+          "shortage": 11,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S01",
+      "player": "F05",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 7,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 13,
+      "fortify": 21,
+      "shortage": 0,
+      "lossMonth": 10,
+      "lowGold": 6,
+      "ending": null,
+      "castles": 1,
+      "gold": 1885,
+      "food": 1334,
+      "troops": 1651,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 597,
+          "food": 966,
+          "troops": 3471
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 1019,
+          "food": 358,
+          "troops": 3019
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 1328,
+          "food": 1140,
+          "troops": 2855
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 1165,
+          "food": 864,
+          "troops": 1651
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 1885,
+          "food": 1334,
+          "troops": 1651
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F05",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 1,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 8,
+      "fortify": 9,
+      "shortage": 0,
+      "lossMonth": 33,
+      "lowGold": 9,
+      "ending": null,
+      "castles": 1,
+      "gold": 1289,
+      "food": 1510,
+      "troops": 2597,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 275,
+          "food": 922,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 279,
+          "food": 706,
+          "troops": 3600
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 643,
+          "food": 1502,
+          "troops": 3600
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1807,
+          "food": 1286,
+          "troops": 3600
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 1289,
+          "food": 1510,
+          "troops": 2597
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F05",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 1,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 8,
+      "fortify": 8,
+      "shortage": 0,
+      "lossMonth": 34,
+      "lowGold": 9,
+      "ending": null,
+      "castles": 1,
+      "gold": 1289,
+      "food": 2943,
+      "troops": 2366,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 275,
+          "food": 922,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 279,
+          "food": 706,
+          "troops": 3600
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 643,
+          "food": 1502,
+          "troops": 3600
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1807,
+          "food": 1286,
+          "troops": 3600
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 1289,
+          "food": 2943,
+          "troops": 2366
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F05",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 1,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 8,
+      "fortify": 9,
+      "shortage": 0,
+      "lossMonth": 33,
+      "lowGold": 9,
+      "ending": null,
+      "castles": 1,
+      "gold": 1289,
+      "food": 1506,
+      "troops": 2651,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 142,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 275,
+          "food": 922,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 279,
+          "food": 706,
+          "troops": 3600
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 643,
+          "food": 1502,
+          "troops": 3600
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1807,
+          "food": 1286,
+          "troops": 3600
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 1289,
+          "food": 1506,
+          "troops": 2651
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F06",
+      "terrain": false,
+      "seed": 77,
+      "months": 34,
+      "marches": 8,
+      "transfers": 1,
+      "transferFood": 36,
+      "recruit": 10,
+      "fortify": 17,
+      "shortage": 20,
+      "lossMonth": 7,
+      "lowGold": 7,
+      "ending": "defeat",
+      "castles": 0,
+      "gold": 0,
+      "food": 0,
+      "troops": 0,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 425,
+          "food": 462,
+          "troops": 3186
+        },
+        {
+          "month": 12,
+          "castles": 1,
+          "gold": 100,
+          "food": 458,
+          "troops": 1854
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 464,
+          "food": 84,
+          "troops": 1731
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 482,
+          "food": 812,
+          "troops": 1692
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 318,
+          "food": 575,
+          "troops": 740
+        },
+        {
+          "month": 34,
+          "castles": 0,
+          "gold": 0,
+          "food": 0,
+          "troops": 0
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 20,
+          "castleId": "C10",
+          "previousOwner": "F06",
+          "foodBefore": 6,
+          "troopsBefore": 1281,
+          "troopsAfter": 1281,
+          "use": 13,
+          "shortage": 7,
+          "departureFood": 0
+        },
+        {
+          "month": 21,
+          "castleId": "C10",
+          "previousOwner": "F06",
+          "foodBefore": 0,
+          "troopsBefore": 1281,
+          "troopsAfter": 1281,
+          "use": 13,
+          "shortage": 13,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S01",
+      "player": "F06",
+      "terrain": false,
+      "seed": 31415,
+      "months": 25,
+      "marches": 4,
+      "transfers": 2,
+      "transferFood": 136,
+      "recruit": 9,
+      "fortify": 8,
+      "shortage": 0,
+      "lossMonth": 7,
+      "lowGold": 8,
+      "ending": "defeat",
+      "castles": 0,
+      "gold": 0,
+      "food": 0,
+      "troops": 0,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 425,
+          "food": 462,
+          "troops": 3186
+        },
+        {
+          "month": 12,
+          "castles": 1,
+          "gold": 149,
+          "food": 472,
+          "troops": 1711
+        },
+        {
+          "month": 18,
+          "castles": 1,
+          "gold": 191,
+          "food": 199,
+          "troops": 1111
+        },
+        {
+          "month": 24,
+          "castles": 1,
+          "gold": 333,
+          "food": 567,
+          "troops": 1111
+        },
+        {
+          "month": 25,
+          "castles": 0,
+          "gold": 0,
+          "food": 0,
+          "troops": 0
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F06",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 0,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 8,
+      "fortify": 8,
+      "shortage": 0,
+      "lossMonth": null,
+      "lowGold": 5,
+      "ending": null,
+      "castles": 2,
+      "gold": 3679,
+      "food": 2078,
+      "troops": 3600,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 308,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 226,
+          "food": 862,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 277,
+          "food": 646,
+          "troops": 3600
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 1111,
+          "food": 1470,
+          "troops": 3600
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 2395,
+          "food": 1254,
+          "troops": 3600
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 3679,
+          "food": 2078,
+          "troops": 3600
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S01",
+      "player": "F06",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 2,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 8,
+      "fortify": 8,
+      "shortage": 0,
+      "lossMonth": 32,
+      "lowGold": 5,
+      "ending": null,
+      "castles": 1,
+      "gold": 1707,
+      "food": 1504,
+      "troops": 3000,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 2,
+          "gold": 308,
+          "food": 522,
+          "troops": 3200
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 226,
+          "food": 862,
+          "troops": 3600
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 277,
+          "food": 646,
+          "troops": 3600
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 1111,
+          "food": 1470,
+          "troops": 3600
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 2395,
+          "food": 1254,
+          "troops": 3600
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 1707,
+          "food": 1504,
+          "troops": 3000
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F01",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 6,
+      "transfers": 3,
+      "transferFood": 187,
+      "recruit": 11,
+      "fortify": 22,
+      "shortage": 25,
+      "lossMonth": 9,
+      "lowGold": 15,
+      "ending": null,
+      "castles": 1,
+      "gold": 209,
+      "food": 2504,
+      "troops": 1585,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 276,
+          "food": 1066,
+          "troops": 4200
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 359,
+          "food": 1375,
+          "troops": 3431
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 415,
+          "food": 1005,
+          "troops": 2963
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 538,
+          "food": 1879,
+          "troops": 1835
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 532,
+          "food": 1765,
+          "troops": 1835
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 209,
+          "food": 2504,
+          "troops": 1585
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 20,
+          "castleId": "C01",
+          "previousOwner": "F01",
+          "foodBefore": 7,
+          "troopsBefore": 1547,
+          "troopsAfter": 1547,
+          "use": 16,
+          "shortage": 9,
+          "departureFood": 0
+        },
+        {
+          "month": 21,
+          "castleId": "C01",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 1547,
+          "troopsAfter": 1547,
+          "use": 16,
+          "shortage": 16,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F01",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 5,
+      "transfers": 1,
+      "transferFood": 79,
+      "recruit": 10,
+      "fortify": 24,
+      "shortage": 36,
+      "lossMonth": 9,
+      "lowGold": 15,
+      "ending": null,
+      "castles": 3,
+      "gold": 4091,
+      "food": 3208,
+      "troops": 2088,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 276,
+          "food": 1066,
+          "troops": 4200
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 359,
+          "food": 1373,
+          "troops": 3419
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 391,
+          "food": 1163,
+          "troops": 3419
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 880,
+          "food": 2193,
+          "troops": 3419
+        },
+        {
+          "month": 30,
+          "castles": 4,
+          "gold": 2677,
+          "food": 1893,
+          "troops": 2943
+        },
+        {
+          "month": 36,
+          "castles": 3,
+          "gold": 4091,
+          "food": 3208,
+          "troops": 2088
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 28,
+          "castleId": "C14",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 538,
+          "troopsAfter": 538,
+          "use": 6,
+          "shortage": 6,
+          "departureFood": 0
+        },
+        {
+          "month": 29,
+          "castleId": "C14",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 538,
+          "troopsAfter": 538,
+          "use": 6,
+          "shortage": 6,
+          "departureFood": 0
+        },
+        {
+          "month": 30,
+          "castleId": "C14",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 538,
+          "troopsAfter": 538,
+          "use": 6,
+          "shortage": 6,
+          "departureFood": 0
+        },
+        {
+          "month": 31,
+          "castleId": "C14",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 538,
+          "troopsAfter": 538,
+          "use": 6,
+          "shortage": 6,
+          "departureFood": 0
+        },
+        {
+          "month": 32,
+          "castleId": "C14",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 538,
+          "troopsAfter": 538,
+          "use": 6,
+          "shortage": 6,
+          "departureFood": 0
+        },
+        {
+          "month": 33,
+          "castleId": "C14",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 538,
+          "troopsAfter": 538,
+          "use": 6,
+          "shortage": 6,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F01",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 6,
+      "transfers": 1,
+      "transferFood": 69,
+      "recruit": 10,
+      "fortify": 20,
+      "shortage": 40,
+      "lossMonth": 11,
+      "lowGold": 14,
+      "ending": null,
+      "castles": 2,
+      "gold": 2613,
+      "food": 2624,
+      "troops": 1717,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 276,
+          "food": 1066,
+          "troops": 4200
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 630,
+          "food": 1380,
+          "troops": 4052
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 356,
+          "food": 1142,
+          "troops": 3462
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 385,
+          "food": 2122,
+          "troops": 2627
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1337,
+          "food": 1960,
+          "troops": 2627
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 2613,
+          "food": 2624,
+          "troops": 1717
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 20,
+          "castleId": "C04",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 1973,
+          "troopsAfter": 1973,
+          "use": 20,
+          "shortage": 20,
+          "departureFood": 0
+        },
+        {
+          "month": 21,
+          "castleId": "C04",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 1973,
+          "troopsAfter": 1973,
+          "use": 20,
+          "shortage": 20,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F01",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 4,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 12,
+      "fortify": 20,
+      "shortage": 30,
+      "lossMonth": 11,
+      "lowGold": 15,
+      "ending": null,
+      "castles": 1,
+      "gold": 802,
+      "food": 2510,
+      "troops": 1502,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 276,
+          "food": 1066,
+          "troops": 4200
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 602,
+          "food": 1550,
+          "troops": 3510
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 391,
+          "food": 1326,
+          "troops": 2967
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 539,
+          "food": 2350,
+          "troops": 2751
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 776,
+          "food": 2096,
+          "troops": 1772
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 802,
+          "food": 2510,
+          "troops": 1502
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 20,
+          "castleId": "C04",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 1471,
+          "troopsAfter": 1471,
+          "use": 15,
+          "shortage": 15,
+          "departureFood": 0
+        },
+        {
+          "month": 21,
+          "castleId": "C04",
+          "previousOwner": "F01",
+          "foodBefore": 0,
+          "troopsBefore": 1471,
+          "troopsAfter": 1471,
+          "use": 15,
+          "shortage": 15,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F02",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 9,
+      "transfers": 1,
+      "transferFood": 36,
+      "recruit": 12,
+      "fortify": 17,
+      "shortage": 0,
+      "lossMonth": 10,
+      "lowGold": 14,
+      "ending": null,
+      "castles": 1,
+      "gold": 785,
+      "food": 1521,
+      "troops": 765,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 4,
+          "gold": 382,
+          "food": 915,
+          "troops": 4173
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 336,
+          "food": 1491,
+          "troops": 3928
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 297,
+          "food": 1006,
+          "troops": 2264
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 1312,
+          "food": 1226,
+          "troops": 1305
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 1215,
+          "food": 1127,
+          "troops": 962
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 785,
+          "food": 1521,
+          "troops": 765
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F02",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 9,
+      "transfers": 1,
+      "transferFood": 36,
+      "recruit": 12,
+      "fortify": 17,
+      "shortage": 0,
+      "lossMonth": 10,
+      "lowGold": 12,
+      "ending": null,
+      "castles": 1,
+      "gold": 1207,
+      "food": 1356,
+      "troops": 808,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 4,
+          "gold": 382,
+          "food": 915,
+          "troops": 4162
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 336,
+          "food": 1490,
+          "troops": 3879
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 297,
+          "food": 898,
+          "troops": 1898
+        },
+        {
+          "month": 24,
+          "castles": 1,
+          "gold": 636,
+          "food": 1167,
+          "troops": 1576
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 577,
+          "food": 890,
+          "troops": 808
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 1207,
+          "food": 1356,
+          "troops": 808
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F02",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 8,
+      "transfers": 1,
+      "transferFood": 91,
+      "recruit": 12,
+      "fortify": 26,
+      "shortage": 5,
+      "lossMonth": 10,
+      "lowGold": 13,
+      "ending": null,
+      "castles": 1,
+      "gold": 1565,
+      "food": 2476,
+      "troops": 1388,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 4,
+          "gold": 382,
+          "food": 906,
+          "troops": 4130
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 336,
+          "food": 1473,
+          "troops": 3875
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 239,
+          "food": 1115,
+          "troops": 3063
+        },
+        {
+          "month": 24,
+          "castles": 1,
+          "gold": 191,
+          "food": 1855,
+          "troops": 2008
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1473,
+          "food": 1429,
+          "troops": 1542
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 1565,
+          "food": 2476,
+          "troops": 1388
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 9,
+          "castleId": "C15",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 447,
+          "troopsAfter": 447,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F02",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 9,
+      "transfers": 2,
+      "transferFood": 133,
+      "recruit": 12,
+      "fortify": 18,
+      "shortage": 20,
+      "lossMonth": 10,
+      "lowGold": 13,
+      "ending": "defeat",
+      "castles": 0,
+      "gold": 0,
+      "food": 0,
+      "troops": 0,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 4,
+          "gold": 382,
+          "food": 901,
+          "troops": 4112
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 336,
+          "food": 1473,
+          "troops": 3856
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 239,
+          "food": 1118,
+          "troops": 3035
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 652,
+          "food": 1830,
+          "troops": 2858
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 781,
+          "food": 1499,
+          "troops": 2239
+        },
+        {
+          "month": 36,
+          "castles": 0,
+          "gold": 0,
+          "food": 0,
+          "troops": 0
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 8,
+          "castleId": "C15",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 435,
+          "troopsAfter": 435,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        },
+        {
+          "month": 9,
+          "castleId": "C15",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 435,
+          "troopsAfter": 435,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        },
+        {
+          "month": 33,
+          "castleId": "C05",
+          "previousOwner": "F02",
+          "foodBefore": 0,
+          "troopsBefore": 959,
+          "troopsAfter": 959,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F03",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 9,
+      "transfers": 1,
+      "transferFood": 59,
+      "recruit": 18,
+      "fortify": 26,
+      "shortage": 0,
+      "lossMonth": 13,
+      "lowGold": 14,
+      "ending": null,
+      "castles": 1,
+      "gold": 865,
+      "food": 2124,
+      "troops": 2401,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 262,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 517,
+          "food": 1578,
+          "troops": 5119
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 363,
+          "food": 912,
+          "troops": 2957
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 321,
+          "food": 1499,
+          "troops": 2590
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 364,
+          "food": 1175,
+          "troops": 2550
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 865,
+          "food": 2124,
+          "troops": 2401
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F03",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 9,
+      "transfers": 1,
+      "transferFood": 70,
+      "recruit": 21,
+      "fortify": 30,
+      "shortage": 128,
+      "lossMonth": 13,
+      "lowGold": 14,
+      "ending": null,
+      "castles": 3,
+      "gold": 2125,
+      "food": 2162,
+      "troops": 3053,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 262,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 517,
+          "food": 1578,
+          "troops": 5119
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 224,
+          "food": 791,
+          "troops": 3236
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 833,
+          "food": 1653,
+          "troops": 2603
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 435,
+          "food": 1334,
+          "troops": 3079
+        },
+        {
+          "month": 36,
+          "castles": 3,
+          "gold": 2125,
+          "food": 2162,
+          "troops": 3053
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 18,
+          "castleId": "C05",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1301,
+          "troopsAfter": 1301,
+          "use": 14,
+          "shortage": 14,
+          "departureFood": 0
+        },
+        {
+          "month": 19,
+          "castleId": "C05",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1301,
+          "troopsAfter": 1301,
+          "use": 14,
+          "shortage": 14,
+          "departureFood": 0
+        },
+        {
+          "month": 20,
+          "castleId": "C05",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1301,
+          "troopsAfter": 1301,
+          "use": 14,
+          "shortage": 14,
+          "departureFood": 0
+        },
+        {
+          "month": 21,
+          "castleId": "C05",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1301,
+          "troopsAfter": 1301,
+          "use": 14,
+          "shortage": 14,
+          "departureFood": 0
+        },
+        {
+          "month": 28,
+          "castleId": "C16",
+          "previousOwner": "F03",
+          "foodBefore": 6,
+          "troopsBefore": 1291,
+          "troopsAfter": 1291,
+          "use": 13,
+          "shortage": 7,
+          "departureFood": 0
+        },
+        {
+          "month": 29,
+          "castleId": "C16",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1291,
+          "troopsAfter": 1291,
+          "use": 13,
+          "shortage": 13,
+          "departureFood": 0
+        },
+        {
+          "month": 30,
+          "castleId": "C16",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1291,
+          "troopsAfter": 1291,
+          "use": 13,
+          "shortage": 13,
+          "departureFood": 0
+        },
+        {
+          "month": 31,
+          "castleId": "C16",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1291,
+          "troopsAfter": 1291,
+          "use": 13,
+          "shortage": 13,
+          "departureFood": 0
+        },
+        {
+          "month": 32,
+          "castleId": "C16",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1291,
+          "troopsAfter": 1291,
+          "use": 13,
+          "shortage": 13,
+          "departureFood": 0
+        },
+        {
+          "month": 33,
+          "castleId": "C16",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 1291,
+          "troopsAfter": 1291,
+          "use": 13,
+          "shortage": 13,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F03",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 5,
+      "transfers": 1,
+      "transferFood": 31,
+      "recruit": 13,
+      "fortify": 19,
+      "shortage": 70,
+      "lossMonth": 14,
+      "lowGold": 14,
+      "ending": null,
+      "castles": 1,
+      "gold": 801,
+      "food": 2270,
+      "troops": 1802,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 262,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 517,
+          "food": 1578,
+          "troops": 5116
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 274,
+          "food": 1008,
+          "troops": 3331
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 216,
+          "food": 1644,
+          "troops": 2806
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1120,
+          "food": 1510,
+          "troops": 2806
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 801,
+          "food": 2270,
+          "troops": 1802
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 27,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 915,
+          "troopsAfter": 915,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        },
+        {
+          "month": 28,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 915,
+          "troopsAfter": 915,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        },
+        {
+          "month": 29,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 915,
+          "troopsAfter": 915,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        },
+        {
+          "month": 30,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 915,
+          "troopsAfter": 915,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        },
+        {
+          "month": 31,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 915,
+          "troopsAfter": 915,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        },
+        {
+          "month": 32,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 915,
+          "troopsAfter": 915,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        },
+        {
+          "month": 33,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 915,
+          "troopsAfter": 915,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F03",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 5,
+      "transfers": 1,
+      "transferFood": 31,
+      "recruit": 13,
+      "fortify": 19,
+      "shortage": 30,
+      "lossMonth": 14,
+      "lowGold": 14,
+      "ending": null,
+      "castles": 1,
+      "gold": 913,
+      "food": 1702,
+      "troops": 2359,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 262,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 517,
+          "food": 1578,
+          "troops": 5117
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 274,
+          "food": 991,
+          "troops": 3339
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 223,
+          "food": 1604,
+          "troops": 2797
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 685,
+          "food": 1469,
+          "troops": 2596
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 913,
+          "food": 1702,
+          "troops": 2359
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 25,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 910,
+          "troopsAfter": 910,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        },
+        {
+          "month": 26,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 910,
+          "troopsAfter": 910,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        },
+        {
+          "month": 27,
+          "castleId": "C14",
+          "previousOwner": "F03",
+          "foodBefore": 0,
+          "troopsBefore": 910,
+          "troopsAfter": 910,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F04",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 7,
+      "transfers": 1,
+      "transferFood": 85,
+      "recruit": 15,
+      "fortify": 22,
+      "shortage": 20,
+      "lossMonth": 8,
+      "lowGold": 16,
+      "ending": null,
+      "castles": 1,
+      "gold": 561,
+      "food": 2347,
+      "troops": 1872,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 4,
+          "gold": 382,
+          "food": 952,
+          "troops": 4247
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 268,
+          "food": 1635,
+          "troops": 2465
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 152,
+          "food": 1479,
+          "troops": 2465
+        },
+        {
+          "month": 24,
+          "castles": 1,
+          "gold": 83,
+          "food": 1847,
+          "troops": 2259
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 958,
+          "food": 1328,
+          "troops": 2207
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 561,
+          "food": 2347,
+          "troops": 1872
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 6,
+          "castleId": "C15",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 447,
+          "troopsAfter": 447,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        },
+        {
+          "month": 7,
+          "castleId": "C15",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 447,
+          "troopsAfter": 447,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        },
+        {
+          "month": 8,
+          "castleId": "C15",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 447,
+          "troopsAfter": 447,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        },
+        {
+          "month": 9,
+          "castleId": "C15",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 447,
+          "troopsAfter": 447,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F04",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 6,
+      "transfers": 2,
+      "transferFood": 125,
+      "recruit": 15,
+      "fortify": 18,
+      "shortage": 15,
+      "lossMonth": 8,
+      "lowGold": 15,
+      "ending": null,
+      "castles": 1,
+      "gold": 569,
+      "food": 1808,
+      "troops": 1348,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 4,
+          "gold": 382,
+          "food": 952,
+          "troops": 4263
+        },
+        {
+          "month": 12,
+          "castles": 2,
+          "gold": 268,
+          "food": 1654,
+          "troops": 2612
+        },
+        {
+          "month": 18,
+          "castles": 1,
+          "gold": 76,
+          "food": 1437,
+          "troops": 2147
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 1588,
+          "food": 1693,
+          "troops": 2178
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 387,
+          "food": 1412,
+          "troops": 1348
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 569,
+          "food": 1808,
+          "troops": 1348
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 7,
+          "castleId": "C15",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 463,
+          "troopsAfter": 463,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        },
+        {
+          "month": 8,
+          "castleId": "C15",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 463,
+          "troopsAfter": 463,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        },
+        {
+          "month": 9,
+          "castleId": "C15",
+          "previousOwner": "F04",
+          "foodBefore": 0,
+          "troopsBefore": 463,
+          "troopsAfter": 463,
+          "use": 5,
+          "shortage": 5,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F04",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 9,
+      "transfers": 1,
+      "transferFood": 91,
+      "recruit": 12,
+      "fortify": 21,
+      "shortage": 0,
+      "lossMonth": 10,
+      "lowGold": 16,
+      "ending": null,
+      "castles": 1,
+      "gold": 755,
+      "food": 1799,
+      "troops": 1473,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 4,
+          "gold": 382,
+          "food": 911,
+          "troops": 4203
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 336,
+          "food": 1449,
+          "troops": 3860
+        },
+        {
+          "month": 18,
+          "castles": 4,
+          "gold": 601,
+          "food": 1088,
+          "troops": 3454
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 445,
+          "food": 1578,
+          "troops": 2550
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 108,
+          "food": 1346,
+          "troops": 1647
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 755,
+          "food": 1799,
+          "troops": 1473
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F04",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 10,
+      "transfers": 1,
+      "transferFood": 22,
+      "recruit": 12,
+      "fortify": 20,
+      "shortage": 0,
+      "lossMonth": 10,
+      "lowGold": 16,
+      "ending": null,
+      "castles": 2,
+      "gold": 1551,
+      "food": 3057,
+      "troops": 1225,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 4,
+          "gold": 382,
+          "food": 911,
+          "troops": 4213
+        },
+        {
+          "month": 12,
+          "castles": 3,
+          "gold": 336,
+          "food": 1448,
+          "troops": 3870
+        },
+        {
+          "month": 18,
+          "castles": 3,
+          "gold": 315,
+          "food": 1135,
+          "troops": 3719
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 324,
+          "food": 2580,
+          "troops": 2581
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 256,
+          "food": 2267,
+          "troops": 2136
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 1551,
+          "food": 3057,
+          "troops": 1225
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F05",
+      "terrain": false,
+      "seed": 77,
+      "months": 35,
+      "marches": 8,
+      "transfers": 1,
+      "transferFood": 83,
+      "recruit": 14,
+      "fortify": 22,
+      "shortage": 0,
+      "lossMonth": 14,
+      "lowGold": 14,
+      "ending": "defeat",
+      "castles": 0,
+      "gold": 0,
+      "food": 0,
+      "troops": 0,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 262,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 509,
+          "food": 1685,
+          "troops": 5286
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 282,
+          "food": 1050,
+          "troops": 2837
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 767,
+          "food": 1667,
+          "troops": 2102
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1428,
+          "food": 1454,
+          "troops": 1947
+        },
+        {
+          "month": 35,
+          "castles": 0,
+          "gold": 0,
+          "food": 0,
+          "troops": 0
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F05",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 5,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 17,
+      "fortify": 18,
+      "shortage": 0,
+      "lossMonth": 14,
+      "lowGold": 14,
+      "ending": null,
+      "castles": 1,
+      "gold": 884,
+      "food": 2501,
+      "troops": 2157,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 262,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 509,
+          "food": 1685,
+          "troops": 5285
+        },
+        {
+          "month": 18,
+          "castles": 2,
+          "gold": 319,
+          "food": 967,
+          "troops": 2043
+        },
+        {
+          "month": 24,
+          "castles": 1,
+          "gold": 576,
+          "food": 1723,
+          "troops": 2271
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 1476,
+          "food": 1585,
+          "troops": 2271
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 884,
+          "food": 2501,
+          "troops": 2157
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F05",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 7,
+      "transfers": 1,
+      "transferFood": 12,
+      "recruit": 16,
+      "fortify": 21,
+      "shortage": 0,
+      "lossMonth": 22,
+      "lowGold": 17,
+      "ending": null,
+      "castles": 1,
+      "gold": 792,
+      "food": 2667,
+      "troops": 1939,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 262,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 536,
+          "food": 1729,
+          "troops": 5300
+        },
+        {
+          "month": 18,
+          "castles": 4,
+          "gold": 564,
+          "food": 1277,
+          "troops": 4562
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 258,
+          "food": 2594,
+          "troops": 3186
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 192,
+          "food": 1951,
+          "troops": 1939
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 792,
+          "food": 2667,
+          "troops": 1939
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F05",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 7,
+      "transfers": 1,
+      "transferFood": 66,
+      "recruit": 17,
+      "fortify": 25,
+      "shortage": 24,
+      "lossMonth": 19,
+      "lowGold": 16,
+      "ending": null,
+      "castles": 2,
+      "gold": 2023,
+      "food": 3445,
+      "troops": 1920,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 262,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 536,
+          "food": 1729,
+          "troops": 5294
+        },
+        {
+          "month": 18,
+          "castles": 5,
+          "gold": 980,
+          "food": 1214,
+          "troops": 4691
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 702,
+          "food": 2451,
+          "troops": 3212
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1440,
+          "food": 2044,
+          "troops": 2506
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 2023,
+          "food": 3445,
+          "troops": 1920
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 25,
+          "castleId": "C12",
+          "previousOwner": "F05",
+          "foodBefore": 6,
+          "troopsBefore": 955,
+          "troopsAfter": 955,
+          "use": 10,
+          "shortage": 4,
+          "departureFood": 0
+        },
+        {
+          "month": 26,
+          "castleId": "C12",
+          "previousOwner": "F05",
+          "foodBefore": 0,
+          "troopsBefore": 955,
+          "troopsAfter": 955,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        },
+        {
+          "month": 27,
+          "castleId": "C12",
+          "previousOwner": "F05",
+          "foodBefore": 0,
+          "troopsBefore": 955,
+          "troopsAfter": 955,
+          "use": 10,
+          "shortage": 10,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F06",
+      "terrain": false,
+      "seed": 77,
+      "months": 36,
+      "marches": 10,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 14,
+      "fortify": 25,
+      "shortage": 0,
+      "lossMonth": 15,
+      "lowGold": 11,
+      "ending": "defeat",
+      "castles": 0,
+      "gold": 0,
+      "food": 0,
+      "troops": 0,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 452,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 464,
+          "food": 1784,
+          "troops": 5110
+        },
+        {
+          "month": 18,
+          "castles": 4,
+          "gold": 596,
+          "food": 1120,
+          "troops": 3718
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 803,
+          "food": 2236,
+          "troops": 2480
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1317,
+          "food": 1768,
+          "troops": 1951
+        },
+        {
+          "month": 36,
+          "castles": 0,
+          "gold": 0,
+          "food": 0,
+          "troops": 0
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F06",
+      "terrain": false,
+      "seed": 31415,
+      "months": 36,
+      "marches": 10,
+      "transfers": 1,
+      "transferFood": 65,
+      "recruit": 14,
+      "fortify": 26,
+      "shortage": 0,
+      "lossMonth": 15,
+      "lowGold": 11,
+      "ending": null,
+      "castles": 1,
+      "gold": 875,
+      "food": 2751,
+      "troops": 1157,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 452,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 464,
+          "food": 1784,
+          "troops": 5114
+        },
+        {
+          "month": 18,
+          "castles": 4,
+          "gold": 596,
+          "food": 1116,
+          "troops": 3847
+        },
+        {
+          "month": 24,
+          "castles": 1,
+          "gold": 122,
+          "food": 2190,
+          "troops": 2409
+        },
+        {
+          "month": 30,
+          "castles": 1,
+          "gold": 1060,
+          "food": 1709,
+          "troops": 1897
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 875,
+          "food": 2751,
+          "troops": 1157
+        }
+      ],
+      "shortageTrace": []
+    },
+    {
+      "scenario": "S07",
+      "player": "F06",
+      "terrain": true,
+      "seed": 77,
+      "months": 36,
+      "marches": 6,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 16,
+      "fortify": 18,
+      "shortage": 64,
+      "lossMonth": 17,
+      "lowGold": 10,
+      "ending": null,
+      "castles": 1,
+      "gold": 791,
+      "food": 3322,
+      "troops": 2172,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 452,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 464,
+          "food": 1784,
+          "troops": 5108
+        },
+        {
+          "month": 18,
+          "castles": 5,
+          "gold": 715,
+          "food": 1163,
+          "troops": 4917
+        },
+        {
+          "month": 24,
+          "castles": 2,
+          "gold": 795,
+          "food": 2430,
+          "troops": 2456
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1479,
+          "food": 2296,
+          "troops": 2456
+        },
+        {
+          "month": 36,
+          "castles": 1,
+          "gold": 791,
+          "food": 3322,
+          "troops": 2172
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 30,
+          "castleId": "C11",
+          "previousOwner": "F06",
+          "foodBefore": 0,
+          "troopsBefore": 1583,
+          "troopsAfter": 1583,
+          "use": 16,
+          "shortage": 16,
+          "departureFood": 0
+        },
+        {
+          "month": 31,
+          "castleId": "C11",
+          "previousOwner": "F06",
+          "foodBefore": 0,
+          "troopsBefore": 1583,
+          "troopsAfter": 1583,
+          "use": 16,
+          "shortage": 16,
+          "departureFood": 0
+        },
+        {
+          "month": 32,
+          "castleId": "C11",
+          "previousOwner": "F06",
+          "foodBefore": 0,
+          "troopsBefore": 1583,
+          "troopsAfter": 1583,
+          "use": 16,
+          "shortage": 16,
+          "departureFood": 0
+        },
+        {
+          "month": 33,
+          "castleId": "C11",
+          "previousOwner": "F06",
+          "foodBefore": 0,
+          "troopsBefore": 1583,
+          "troopsAfter": 1583,
+          "use": 16,
+          "shortage": 16,
+          "departureFood": 0
+        }
+      ]
+    },
+    {
+      "scenario": "S07",
+      "player": "F06",
+      "terrain": true,
+      "seed": 31415,
+      "months": 36,
+      "marches": 10,
+      "transfers": 0,
+      "transferFood": 0,
+      "recruit": 16,
+      "fortify": 18,
+      "shortage": 62,
+      "lossMonth": 17,
+      "lowGold": 9,
+      "ending": null,
+      "castles": 2,
+      "gold": 2411,
+      "food": 3031,
+      "troops": 1921,
+      "checkpoints": [
+        {
+          "month": 6,
+          "castles": 3,
+          "gold": 452,
+          "food": 1012,
+          "troops": 4400
+        },
+        {
+          "month": 12,
+          "castles": 4,
+          "gold": 464,
+          "food": 1784,
+          "troops": 5110
+        },
+        {
+          "month": 18,
+          "castles": 4,
+          "gold": 579,
+          "food": 1278,
+          "troops": 4996
+        },
+        {
+          "month": 24,
+          "castles": 3,
+          "gold": 1530,
+          "food": 2479,
+          "troops": 2753
+        },
+        {
+          "month": 30,
+          "castles": 2,
+          "gold": 1337,
+          "food": 2146,
+          "troops": 2108
+        },
+        {
+          "month": 36,
+          "castles": 2,
+          "gold": 2411,
+          "food": 3031,
+          "troops": 1921
+        }
+      ],
+      "shortageTrace": [
+        {
+          "month": 30,
+          "castleId": "C02",
+          "previousOwner": "F06",
+          "foodBefore": 6,
+          "troopsBefore": 1674,
+          "troopsAfter": 1674,
+          "use": 17,
+          "shortage": 11,
+          "departureFood": 0
+        },
+        {
+          "month": 31,
+          "castleId": "C02",
+          "previousOwner": "F06",
+          "foodBefore": 0,
+          "troopsBefore": 1674,
+          "troopsAfter": 1674,
+          "use": 17,
+          "shortage": 17,
+          "departureFood": 0
+        },
+        {
+          "month": 32,
+          "castleId": "C02",
+          "previousOwner": "F06",
+          "foodBefore": 0,
+          "troopsBefore": 1674,
+          "troopsAfter": 1674,
+          "use": 17,
+          "shortage": 17,
+          "departureFood": 0
+        },
+        {
+          "month": 33,
+          "castleId": "C02",
+          "previousOwner": "F06",
+          "foodBefore": 0,
+          "troopsBefore": 1674,
+          "troopsAfter": 1674,
+          "use": 17,
+          "shortage": 17,
+          "departureFood": 0
+        }
+      ]
+    }
+  ]
+}
