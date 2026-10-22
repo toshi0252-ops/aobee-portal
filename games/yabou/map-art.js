@@ -1,0 +1,14 @@
+(function(root){
+'use strict';
+// Display coordinates only. Never used by movement, battles or save validation.
+const positions={C01:[390,140],C06:[590,215],C13:[790,155],C04:[250,315],C05:[480,365],C14:[745,320],C07:[170,475],C08:[390,495],C15:[640,465],C03:[230,620],C12:[480,650],C16:[730,615],C02:[310,765],C11:[550,800],C17:[810,755],C09:[180,900],C10:[420,915],C18:[690,905]};
+const land='M330 65 C385 30 430 110 490 115 Q550 140 602 100 Q650 72 696 112 C752 70 815 86 848 135 Q885 181 826 225 Q793 250 846 287 Q894 321 815 353 Q770 369 793 410 Q813 439 746 469 Q697 486 715 520 Q726 550 793 563 Q867 577 817 636 Q795 660 856 697 Q918 731 865 782 Q835 813 777 819 Q738 845 776 887 Q815 937 746 965 Q693 988 635 947 Q593 927 551 966 Q494 999 440 969 Q403 946 339 976 Q278 1000 225 954 Q199 937 147 962 Q96 975 109 913 Q116 862 180 837 Q223 818 263 818 Q286 800 255 768 Q211 736 243 700 Q257 679 197 670 Q118 663 131 604 Q139 560 181 553 Q214 539 160 521 Q86 508 108 450 Q93 405 178 389 Q211 381 181 345 Q146 296 220 264 Q279 244 300 203 Q325 176 309 142 Q290 101 330 65Z';
+const ridges=['M340 90Q300 210 350 260T330 430','M570 120Q600 235 540 300T590 445','M360 500Q290 570 350 670T360 830','M640 555Q580 650 670 730T630 900'];
+const rivers=['M360 235Q445 270 395 330T250 410Q200 440 170 445','M580 370Q670 390 650 465T805 550','M370 660Q460 680 420 750T280 840Q240 860 225 940'];
+function point(id){const p=positions[id];if(!p)throw Error('Unknown display castle: '+id);return {x:p[0],y:p[1]};}
+function project(p,rotate,compact){return rotate?{x:p.y,y:60+p.x*.85}:compact?{x:p.x,y:170+(p.y-140)*.68}:{x:p.x,y:p.y*.9};}
+function transform(rotate,compact){return rotate?'matrix(0 .85 1 0 0 60)':compact?'matrix(1 0 0 .68 0 74.8)':'matrix(1 0 0 .9 0 0)';}
+function details(matrix,rotate,compact){const peaks=[[330,210],[345,260],[330,405],[560,250],[570,400],[330,565],[350,695],[650,665],[630,865]];return '<g class="atlasDetails" transform="'+matrix+'" pointer-events="none"><path class="atlasCoast" d="'+land+'"/>'+ridges.map(d=>'<path class="atlasRidge" d="'+d+'"/>').join('')+rivers.map(d=>'<path class="atlasRiver" d="'+d+'"/>').join('')+'</g><g pointer-events="none">'+peaks.map(([x,y])=>{const p=project({x,y},rotate,compact);return '<g transform="translate('+p.x+' '+p.y+')"><path class="atlasMountain" d="M-27 20L-4-27 27 20 8 12-4-7-13 12Z"/><path class="atlasSnow" d="M-12-9L-4-27 7-10-2-14Z"/></g>';}).join('')+'</g>';}
+function road(a,b,selected){const dx=b.x-a.x,dy=b.y-a.y,bend=(a.id.localeCompare(b.id)<0?1:-1)*.12;return '<path class="road '+([a.id,b.id].includes(selected)?'active':'')+'" d="M'+a.x+' '+a.y+'Q'+((a.x+b.x)/2-dy*bend)+' '+((a.y+b.y)/2+dx*bend)+' '+b.x+' '+b.y+'"/>';}
+root.YabouMapArt={point,project,transform,land,details,road};if(typeof module!=='undefined')module.exports=root.YabouMapArt;
+})(globalThis);

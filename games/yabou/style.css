@@ -127,3 +127,8 @@ dialog[open]:is(:has(#personOfficer),:has(#loyaltyOfficer),:has(.eventScreen),:h
 .biographyFilters input,.biographyFilters select{width:100%}#biographyReset{display:block}.biographyScreen>label{display:flex;align-items:center;gap:10px}#biographyOfficer{flex:1}
 
 .biographyAssignment{border-top:1px solid var(--line);margin-top:16px;padding-top:12px}.biographyAssignment p{font-size:.9rem;color:var(--muted)}
+
+/* 18-castle atlas: display-only geography. */
+.expandedMap .land{fill:#a8ad83;stroke:#d9d0a1;stroke-width:4}.expandedMap .territories polygon{fill-opacity:.24}.expandedMap .territoryBorder{stroke:#555b43;stroke-opacity:.7;stroke-dasharray:3 2;stroke-width:1}.atlasCoast{fill:none;stroke:#f0dfac;stroke-width:6;stroke-opacity:.55}.atlasRidge{fill:none;stroke:#506a4b;stroke-width:54;stroke-opacity:.13;stroke-linecap:round}.atlasRiver{fill:none;stroke:#9bd1d1;stroke-width:7;stroke-linecap:round}.atlasMountain{fill:#64764d;stroke:#d8d1a0;stroke-opacity:.7;stroke-width:1.5}.atlasSnow{fill:#d9d5b3;opacity:.7}.expandedMap .road{fill:none;stroke:#5e543c;stroke-opacity:.65;stroke-width:3;stroke-dasharray:5 4}.expandedMap .road.active{stroke:#fff1bf;stroke-width:5;stroke-opacity:1}.expandedMap .castle text{fill:#fff4d3;paint-order:stroke;stroke:#183e3c;stroke-width:4;stroke-linejoin:round}.expandedMap .castle.selected text{fill:#fff0b3}.atlasDetails{pointer-events:none}
+
+.expandedMap .territoryBorder{stroke:#596148;stroke-width:.8;stroke-dasharray:none;stroke-opacity:.55}.expandedMap .road{stroke:#66563e;stroke-dasharray:5 5;stroke-opacity:.8}.expandedMap .atlasRidge{stroke-width:30;stroke-opacity:.12}
