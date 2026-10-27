@@ -1,6 +1,6 @@
 (()=>{
 'use strict';
-const VERSION='1.9u';
+const VERSION='1.9v';
 let M=YABOU_DATA;const R=YABOU_RULES,E=Yabou,$=s=>document.querySelector(s),app=$('#app'),dialog=$('#modal');
 const colors=['#7bc4cf','#b3a3d3','#eea08b','#e6e6d4','#9cce99','#e3c675'];
 const marks=['蒼','影','紅','白','緑','金'],traits=['民政・調和','調略・均衡','軍事・攻勢','外交・通商','農政・持久','商業・交易'];
