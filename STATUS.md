@@ -27,6 +27,7 @@
 
 ## 共通資料と完了済みの整理
 
+- [Muse向け総括引き継ぎ（2026-10-30）](HANDOVER-TO-MUSE-20261030.md)：カバー公開、ポータル整理、本番検証、残作業と注意事項。
 - [CHARACTER_GUIDE.md](CHARACTER_GUIDE.md)：公式キャラクターデザイン。黄色い星は頭に直接、尻尾は青い歯車形。過去のアンテナ・結晶形指定は使わない。
 - [カバー再生成仕様](COVER-REDESIGN-20261029.md) / [カバー制作の引き継ぎ](HANDOVER-20261030-COVER-IDENTITY.md)：12枚の修正は[PR #6](https://github.com/toshi0252-ops/aobee-portal/pull/6)で公開済み。引き継ぎ末尾の未公開記述は制作時点の記録。
 - [冒険のidentity適用](HANDOVER-20261029-ADVENTURE-IDENTITY.md) / [GRAND PRIXのidentity適用](HANDOVER-20261029-GRANDPRIX-IDENTITY.md)：ラッパーからの適用に関する注意。
