@@ -12,6 +12,7 @@ function classify(context){
  if(/clearMascot[^}]*url\(["']$/.test(c))return 'cheer';
  if(/(?:\.mascot|\.player)[^}]*url\(["']$/.test(c))return 'front';
  if(/#[a-z-]*aobee[a-z-]*\s*\{[^}]*url\(["']?$/i.test(c))return 'front';
+ if(/AOBEE_RENA_REAR\.src\s*=\s*["']$/.test(c))return 'back';
  if(/(?:aobeeImg|aobeeImage|playerImg|playerImage|sprite)\.src\s*=\s*["']$/i.test(c))return 'front';
  if(/["']aobee["']\s*:\s*["']$/i.test(c))return 'front';
  if(/\baobee\s*:\s*["']$/i.test(c))return 'rpg';
