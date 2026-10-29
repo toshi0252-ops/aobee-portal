@@ -11,7 +11,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),path
   await page.setViewportSize({width,height});await page.goto(process.env.YABOU_URL||'file:///'+path.resolve('games/yabou/index.html').replaceAll('\\','/'),{waitUntil:'domcontentloaded'});await page.locator('#newCampaign').waitFor({state:'visible'});
   await page.locator('#importFile').setInputFiles({name:'v110a-progress.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(initial))});await page.locator('#acceptImport').tap();
   const open=async()=>{await page.locator('[data-tab="人材"]').tap();await page.locator('#retainerStories').tap();};await open();
-  assert((await page.locator('.chainRoster > summary').innerText()).includes('11組'));assert((await page.locator('.chainRoster article').first().innerText()).includes('雪解けを待つ約束'));
+  assert((await page.locator('.chainRoster > summary').innerText()).includes(YabouChains.defs.length+'組'));assert((await page.locator('.chainRoster article').first().innerText()).includes(YabouChains.defs.find(d=>d.edition===YabouChains.defs.filter(x=>x.manual).at(-1).edition).title));
   await page.locator('[data-request-story="'+id+'"]').tap();const reaction=story.acts[1].responses[prior],other=story.acts[1].responses[prior==='A'?'B':'A'];
   assert((await page.locator('.chainText').first().innerText()).includes(reaction));assert(!(await page.locator('.chainText').first().innerText()).includes(other));
   const body=await page.locator('#dialogContent').boundingBox(),close=await page.locator('#closeModal').boundingBox();assert(body.y+body.height<=close.y+1);assert(close.y+close.height<=height);assert(await page.locator('.chainScreen').evaluate(n=>n.scrollWidth<=n.clientWidth+1));

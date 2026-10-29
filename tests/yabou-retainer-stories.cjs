@@ -7,7 +7,7 @@ for(const scenario of ['S01','S07'])for(const id of ids)for(const choice of ['A'
  assert.equal(Object.keys(s.personnel.chains.tracks).length,5,'old states do not acquire extra tracks just by loading');
  for(let stage=0;stage<4;stage++){
   const turn=1+stage*6;s.turn=turn;s.month=(turn-1)%12+1;s.year=Math.floor((turn-1)/12)+1;
-  assert.equal(U.canRequest(s,id),null);const original=JSON.stringify(s),n=E.requestChain(s,id,map,R);assert.equal(JSON.stringify(s),original);assert.equal(n.personnel.chains.pending.id,id);assert(U.canRequest(n,id));assert.throws(()=>E.requestChain(n,id,map,R));
+  if(d.battleContext&&stage===d.battleStage){assert.match(U.canRequest(s,id),/合戦/);const t=s.personnel.chains.tracks[id];t.cofightTurn=s.turn;t.battleMemory={id:'fixture-cofight',turn:s.turn,castleId:'C04',result:'victory'};}assert.equal(U.canRequest(s,id),null);const original=JSON.stringify(s),n=E.requestChain(s,id,map,R);assert.equal(JSON.stringify(s),original);assert.equal(n.personnel.chains.pending.id,id);assert(U.canRequest(n,id));assert.throws(()=>E.requestChain(n,id,map,R));
   s=E.loadSave(E.serializeSave(n,map,R),map,R);const pending=s.personnel.chains.pending;if(stage&&d.acts[stage].responses)assert(U.text(s,pending).includes(d.acts[stage].responses[choice]));s=E.chooseChain(s,pending.uid,choice,map,R).state;
   assert.equal(s.personnel.chains.tracks[id].stage,stage+1);assert.throws(()=>E.chooseChain(s,pending.uid,choice,map,R));
   assert.deepEqual(s.castles,baseline.castles);assert.deepEqual(s.officers.map(o=>[o.id,o.status,o.factionId,o.stats]),baseline.officers);assert.equal(s.rngState,rng);
@@ -24,4 +24,4 @@ for(const scenario of ['S01','S07']){
  const corrupted=E.clone(started);delete corrupted.personnel.chains.tracks.CH01;assert.throws(()=>E.loadSave(JSON.stringify(corrupted),map,R));
  const unknown=E.clone(started);unknown.personnel.chains.tracks.CH99=U.track(s,'CH06');assert.throws(()=>E.loadSave(JSON.stringify(unknown),map,R));
 }
-console.log('PASS new retainer stories:',cases,'requested chapters; all six stories/both endings/2 maps, old five-track saves unchanged, lazy progress, pending reload, duplicate blocking, pause/skip/priority, biography, no resource/stat/RNG changes');
+console.log('PASS new retainer stories:',cases,'requested chapters; all seven stories/both endings/2 maps, old five-track saves unchanged, lazy progress, pending reload, duplicate blocking, pause/skip/priority, biography, no resource/stat/RNG changes');

@@ -1,0 +1,25 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict'),path=require('node:path');const {fixture}=require('./yabou-campaign-story.cjs');
+const E=Yabou,U=YabouChains,R=YABOU_RULES,id='CH12';
+(async()=>{const browser=await chromium.launch({channel:'msedge',headless:true,args:['--disable-gpu']});try{
+ const page=await browser.newPage({hasTouch:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ for(const [width,height]of [[390,844],[844,390],[1440,900]])for(const scenario of ['S01','S07'])for(const outcome of ['victory','defeat']){
+  const {map,state,from}=fixture(scenario,outcome),expected=E.advanceMonth(state,map,R),memory=expected.personnel.chains.tracks[id].battleMemory,suffix=map.mapId?'-'+map.mapId:'',key='aobee-yabou-domestic-auto'+suffix;
+  await page.setViewportSize({width,height});await page.goto(process.env.YABOU_URL||'file:///'+path.resolve('games/yabou/index.html').replaceAll('\\','/'),{waitUntil:'domcontentloaded'});await page.locator('#newCampaign').waitFor({state:'visible'});
+  const load=async s=>{await page.locator('#importFile').setInputFiles({name:'campaign-story.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(s))});await page.locator('#acceptImport').tap();};
+  const open=async()=>{await page.locator('[data-tab="人材"]').tap();await page.locator('#retainerStories').tap();if(!await page.locator('.chainRoster').evaluate(n=>n.open))await page.locator('.chainRoster > summary').tap();};
+  await load(state);await open();assert.equal(await page.locator('[data-request-story="CH12"]').isEnabled(),false);assert((await page.locator('.chainScreen').innerText()).includes('第一幕のあと'));
+  await page.locator('[data-story-military="CH12"]').tap();assert.equal(await page.locator('#marchFrom').inputValue(),from);await page.locator('#closeModal').tap();
+  await page.locator('#next').tap();await page.locator('#commitMonth').tap();await page.locator('#autoBattle').tap();await page.locator('#confirmDelegate').tap();await page.locator('#battleDone').tap();assert((await page.locator('#dialogContent').innerText()).includes('共闘条件を達成'));assert.deepEqual(await page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key),expected);
+  await page.locator('#closeModal').tap();await open();assert((await page.locator('[data-story-memory="CH12"]').innerText()).includes(outcome==='victory'?'勝利':'敗北'));assert.equal(await page.locator('[data-story-military="CH12"]').count(),0);
+  await page.reload({waitUntil:'domcontentloaded'});await page.locator('#newCampaign').waitFor({state:'visible'});await page.locator(scenario==='S07'?'#continueExpanded':'#continue').tap();await open();assert((await page.locator('[data-story-memory="CH12"]').innerText()).includes(outcome==='victory'?'勝利':'敗北'));
+  // Advance with real engine months, skipping optional replies, to the next legal chapter date.
+  let later=E.clone(expected);const clear=()=>{if(later.events.pending)later=E.dismissEvent(later,later.events.pending.uid,map,R);if(later.personnel.drama.pending)later=E.dismissDrama(later,later.personnel.drama.pending.uid,map,R);if(later.personnel.chains.pending)later=E.dismissChain(later,later.personnel.chains.pending.uid,map,R);};while(later.turn<7){clear();later=E.advanceMonth(later,map,R);}clear();assert.equal(U.canRequest(later,id),null);assert.deepEqual(later.personnel.chains.tracks[id].battleMemory,memory);
+  await load(later);await open();await page.locator('[data-request-story="CH12"]').tap();const reaction=U.byId[id].acts[1].battleResponses[outcome],opposite=U.byId[id].acts[1].battleResponses[outcome==='victory'?'defeat':'victory'];assert((await page.locator('.chainText').first().innerText()).includes(reaction));assert(!(await page.locator('.chainText').first().innerText()).includes(opposite));
+  const body=await page.locator('#dialogContent').boundingBox(),close=await page.locator('#closeModal').boundingBox();assert(body.y+body.height<=close.y+1);assert(close.y+close.height<=height);assert(await page.locator('.chainScreen').evaluate(n=>n.scrollWidth<=n.clientWidth+1));
+  if(scenario==='S01')await page.screenshot({path:require('node:os').tmpdir()+'/yabou-campaign-'+outcome+'-'+width+'.png'});
+  let chosen=E.requestChain(later,id,map,R);await page.locator('[data-chain-choice="B"]').tap();chosen=E.chooseChain(chosen,chosen.personnel.chains.pending.uid,'B',map,R).state;assert.deepEqual(await page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key),chosen);
+  if(!await page.locator('.chainRoster').evaluate(n=>n.open))await page.locator('.chainRoster > summary').tap();await page.locator('[data-read-story="CH12:1"] > summary').tap();assert((await page.locator('[data-read-story="CH12:1"]').innerText()).includes(reaction));assert.deepEqual(chosen.personnel.chains.tracks[id].battleMemory,memory);
+  console.log(scenario,width,outcome,'mission/military entry/real delegated battle/goal memory/reload/real month advance/next chapter/result-specific replay/exact save OK');
+ }
+ assert.deepEqual(errors,[]);
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1});
