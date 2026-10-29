@@ -22,7 +22,7 @@
 | 11 | [あおびーのピコピコフィッシング](games/aobee_pico_fishing_v68_dual_guide.html) | 釣り | `aobee_pico_fishing_v68_dual_guide.html` | `fishing` |
 | 12 | [あおびーと星の神殿](games/aobee_star_temple_portal.html?v=32) | アクション | `aobee_star_temple_portal.html`（第1章・開発中） | `temple` |
 | 13 | [押して！あおびー](games/oshite_aobee_superhard_reina_v15_hint.html?v=progress16) | パズル | `oshite_aobee_superhard_reina_v15_hint.html` | `puzzle` |
-| 14 | [あおびー群星絵巻](games/yabou/index.html?v=campaign110c) | SLG | `games/yabou/index.html` と関連素材（v1.10c） | `yabou-gunsei-v1` |
+| 14 | [あおびー群星絵巻](games/yabou/index.html?v=market111a) | SLG | `games/yabou/index.html` と関連素材（v1.11a） | `yabou-gunsei-v1` |
 | 15 | [あおびーゴルフ](games/aobee_golf.html?v=golf35) | スポーツ | `aobee_golf.html`（配信識別子golf35、開発中） | `golf` |
 
 ## 共通資料と完了済みの整理
