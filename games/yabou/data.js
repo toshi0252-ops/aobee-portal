@@ -1082,3 +1082,6 @@ Object.assign(YABOU_RULES.commands,{search:{cost:{gold:250},delta:{}},hire:{cost
 YABOU_RULES.commands.reward={cost:{gold:100},delta:{}};
 
 YABOU_RULES.commands.poach={cost:{gold:100},delta:{}};
+
+// Castle market, per lot of 50 grain.
+Object.assign(YABOU_RULES.commands,{buygrain:{cost:{gold:60},delta:{food:50}},sellgrain:{cost:{food:50},delta:{gold:30}}});

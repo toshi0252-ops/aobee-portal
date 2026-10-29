@@ -20,8 +20,8 @@ const V=root.YabouUnrest||(typeof require==='function'?require('./unrest.js'):nu
 const N=root.YabouIndependence||(typeof require==='function'?require('./independence.js'):null);
 const T=root.YabouDialogue||(typeof require==='function'?require('./dialogue.js'):null);
 const clone=x=>JSON.parse(JSON.stringify(x));
-const types=['cultivate','commerce','fortify','recruit','search','hire','reward','poach','scheme','counterplot','mediate'];
-const labels={cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉',reward:'家臣への褒賞',poach:'他家の引き抜き',scheme:'離間・流言',counterplot:'工作の対処',mediate:'内紛の仲裁'};
+const types=['cultivate','commerce','fortify','recruit','search','hire','reward','poach','scheme','counterplot','mediate','buygrain','sellgrain'];
+const labels={buygrain:'兵糧買入',sellgrain:'兵糧売却',cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉',reward:'家臣への褒賞',poach:'他家の引き抜き',scheme:'離間・流言',counterplot:'工作の対処',mediate:'内紛の仲裁'};
 const fail=m=>{throw new Error(m)};
 function validateMaster(m){
  const errors=[];if(m.mapId!==undefined&&m.mapId!=='expanded18-v1')errors.push('マップ識別');
@@ -53,6 +53,7 @@ function canIssueCommand(s,q,rules){
  const c=s.castles.find(c=>c.id===q.castleId),o=s.officers.find(o=>o.id===q.officerId);
  if(!c||!o)return '城または武将が存在しません';
  if(c.ownerFactionId!==q.factionId||o.factionId!==q.factionId||o.locationCastleId!==c.id||o.status!=='active')return '所属・配置が一致しません';
+ if(['buygrain','sellgrain'].includes(q.type)){if(q.factionId!==s.playerFactionId)return '城下の市は自家の取引です';if(![1,2,4].includes(q.lots))return '取引量は兵糧50・100・200から選んでください';}
  if(q.type==='search'&&(!['careful','normal','large'].includes(q.mode)))return '探索規模が不正です';
  if(q.type==='hire'){const t=s.officers.find(t=>t.id===q.targetId);if(!t||t.status!=='ronin'||!s.personnel?.known[q.factionId]?.includes(t.id))return '発見済みの浪人を選んでください';if(s.commands.some(x=>x.type==='hire'&&x.targetId===t.id))return '交渉予約済みです';if(!Number.isInteger(q.offer)||q.offer<0||q.offer>300)return '待遇金は0〜300です';}
  if(q.type==='mediate'){const error=V.can(s,q);if(error)return error;}
@@ -69,7 +70,7 @@ function canIssueCommand(s,q,rules){
  for(const [k,cost]of Object.entries(rule.cost)){const reserved=pending.reduce((a,x)=>a+(commandRule(x,rules).cost[k]||0),0);if(c[k]-reserved-(k==='gold'?D.reserved(s,c.id):k==='food'?W.food(s,c.id):0)<cost)return (k==='gold'?'金':'兵糧')+'が不足しています';}
  return null;
 }
-function commandRule(q,rules){if(q.type==='mediate')return {cost:{gold:100},delta:{}};if(['scheme','counterplot'].includes(q.type))return {cost:{gold:q.type==='scheme'?(q.kind==='insider'?300:150):100},delta:{}};return q.type==='search'?{cost:{gold:{careful:100,normal:250,large:500}[q.mode]},delta:{}}:['hire','reward','poach'].includes(q.type)?{cost:{gold:q.offer},delta:{}}:rules.commands[q.type];}
+function commandRule(q,rules){if(['buygrain','sellgrain'].includes(q.type)){const base=rules.commands[q.type];return {cost:Object.fromEntries(Object.entries(base.cost).map(([k,v])=>[k,v*q.lots])),delta:Object.fromEntries(Object.entries(base.delta).map(([k,v])=>[k,v*q.lots]))};}if(q.type==='mediate')return {cost:{gold:100},delta:{}};if(['scheme','counterplot'].includes(q.type))return {cost:{gold:q.type==='scheme'?(q.kind==='insider'?300:150):100},delta:{}};return q.type==='search'?{cost:{gold:{careful:100,normal:250,large:500}[q.mode]},delta:{}}:['hire','reward','poach'].includes(q.type)?{cost:{gold:q.offer},delta:{}}:rules.commands[q.type];}
 function queueCommand(s,q,rules){const error=canIssueCommand(s,q,rules);if(error)fail(error);const n=clone(s);n.commands.push(clone(q));return n;}
 function validateState(s,m,rules){
  H.validate(s);
@@ -94,7 +95,7 @@ function validateState(s,m,rules){
  if(report.diplomacy!==undefined&&(!Array.isArray(report.diplomacy)||report.diplomacy.some(q=>!fs.includes(q.factionId)||!fs.includes(q.targetFactionId)||typeof q.result!=='string')))fail('外交履歴が不正です');
  if(report.battles!==undefined){if(!Array.isArray(report.battles))fail('合戦報告が不正です');for(const h of report.battles)W.validateRecord(h,m,s.factions);}
  if(report.military!==undefined&&(!Array.isArray(report.military)||report.military.some(h=>!m.castles.some(c=>c.id===h.castleId)||!fs.includes(h.factionId)||typeof h.result!=='string')))fail('進軍報告が不正です');
- for(const q of report.commands)if(!types.includes(q.type)||!m.castles.some(c=>c.id===q.castleId)||!m.officers.some(o=>o.id===q.officerId)||!fs.includes(q.factionId))fail('命令履歴が不正です');
+ for(const q of report.commands){if(!types.includes(q.type)||!m.castles.some(c=>c.id===q.castleId)||!m.officers.some(o=>o.id===q.officerId)||!fs.includes(q.factionId))fail('命令履歴が不正です');if(['buygrain','sellgrain'].includes(q.type)&&![1,2,4].includes(q.lots))fail('取引履歴の数量が不正です');}
  }
  for(const x of s.aiLog)if(!Number.isInteger(x.turn)||!fs.includes(x.factionId)||!m.castles.some(c=>c.id===x.castleId)||!Array.isArray(x.candidates)||x.candidates.some(c=>typeof c.type!=='string'||!Number.isFinite(c.score))||typeof x.reason!=='string')fail('AI履歴が不正です');
  if(!s.eventFlags||typeof s.eventFlags!=='object'||Array.isArray(s.eventFlags))fail('イベント履歴が不正です');
@@ -112,7 +113,7 @@ function planAI(s,rules){
  for(const f of [...s.factions].sort((a,b)=>a.id.localeCompare(b.id))){if(f.id===s.playerFactionId||!W.aliveFaction(s,f.id))continue;
   for(const c of s.castles.filter(c=>c.ownerFactionId===f.id).sort((a,b)=>a.id.localeCompare(b.id))){
    for(const o of s.officers.filter(o=>o.locationCastleId===c.id&&o.status==='active'&&o.factionId===f.id).sort((a,b)=>b.stats.politics-a.stats.politics||a.id.localeCompare(b.id))){
-    const candidates=types.filter(t=>!['search','hire','reward','poach','scheme','counterplot','mediate'].includes(t)).map(type=>{let score=0,reason='';
+    const candidates=types.filter(t=>!['buygrain','sellgrain','search','hire','reward','poach','scheme','counterplot','mediate'].includes(t)).map(type=>{let score=0,reason='';
      if(type==='cultivate'){score=45-c.farm*.3+(c.food/Math.max(1,Math.ceil(c.troops/100))<3?100:0)+(f.trait==='agriculture'?15:0);reason='備蓄と秋収穫を確保';}
      if(type==='commerce'){score=55-c.commerce*.35+(f.trait==='commerce'?15:0);reason='継続収入を増やす';}
      if(type==='fortify'){score=18-c.defense*.1;reason='城防を整備';}
