@@ -1,3 +1,6 @@
 games/aobee_adventure_v641_start_fix.html -text
 
 games/aobee_grand_prix_v41_online_vs.html -text
+
+# Preserve historical blobs exactly, including original line endings and whitespace.
+archive/legacy-20261030/** -text -whitespace
