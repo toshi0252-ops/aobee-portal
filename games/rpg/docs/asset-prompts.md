@@ -9,6 +9,8 @@ Use case: stylized-concept. Asset type: original JRPG character design, transpar
 Use case: stylized-concept. Reference image is the original design basis for Lumina in a cozy top-down 2D JRPG. Create ONE game-ready full-body FRONT-facing standing NPC sprite of exactly this heroine, chibi proportions 2.5 heads tall, crisp clean outlines, restrained cel shading matching a cute mascot game. Pearl-silver long hair, half-up braid, gold star hairpin, violet-blue eyes, lavender capelet, ivory modest dress with lavender hem, brown boots and tiny gold star pendant. Simplify embroidery to readable shapes. Feet on same baseline, symmetrical neutral idle stance, both arms at sides, face warm friendly. Entire figure inside square image with generous empty transparent padding. Genuine transparent background, NO glow, NO drop shadow, NO text, no floor, no other poses or characters. Preserve hair, palette and costume identity from reference. Asset must read well when rendered at 56 pixels tall.
 
 ## あおびー / assets/aobee-walk-v1.png
+
+> 注記（2026-10-29）: この節は制作当時の記録であり、書き換えない。ここで指定した「金の星アンテナ」「青の角張った結晶の尻尾」は、2026-10-29 のユーザー決定（CHARACTER_GUIDE.md「公式デザイン決定」）により supersede された。今後のあおびーの生成では、星はアンテナなしで頭に直接、尻尾は青い歯車形とすること。歩行絵の素材自体は変更しない。
 公式参照：`aobee_star_guard/references/aobee-official.png`。4列4行、前/左/右/後の4歩行フレームを依頼。顔の色、星/歯車の瞳、濃青の垂れ耳、金の星アンテナ、ピンクの頬、青リボンと金の歯車、白い腹、青の角張った結晶の尻尾を維持する指定。
 最初の生成で輪郭外ノイズと後向きの尻尾が二重になる箇所を確認し、追加修正を依頼。最終編集指示：
 
