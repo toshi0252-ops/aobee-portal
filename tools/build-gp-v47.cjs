@@ -1,4 +1,4 @@
-const fs=require('fs');let s=fs.readFileSync('games/aobee_grand_prix_v46_turn_relay.html','utf8');
+const fs=require('fs');let s=fs.readFileSync('archive/legacy-20261030/games/aobee_grand_prix_v46_turn_relay.html','utf8');
 function r(a,b){if(!s.includes(a))throw Error(a.slice(0,90));s=s.replace(a,b)}
 r('</head>','<link rel="stylesheet" href="../assets/gp-race-menu-v47.css?v=47b"></head>');
 s=s.replaceAll('v4.6','v4.7');

@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');const root=path.resolve(__dirname,'..');
-const html=fs.readFileSync(path.join(root,'games/aobee_grand_prix_v45_ice_exchange.html'),'utf8'),source=html.slice(html.indexOf('let netPeer ='),html.indexOf('function sendNetState('));
+const html=fs.readFileSync(path.join(root,'archive/legacy-20261030/games/aobee_grand_prix_v45_ice_exchange.html'),'utf8'),source=html.slice(html.indexOf('let netPeer ='),html.indexOf('function sendNetState('));
 function make(){
  let clock=0,serial=0;const timers=new Map(),nodes=new Map();function node(k){if(!nodes.has(k))nodes.set(k,{value:'',textContent:'',style:{},classList:{toggle(){}},addEventListener(){},focus(){},select(){}});return nodes.get(k);}
  class Events{constructor(){this.handlers={};}on(k,f){(this.handlers[k]??=[]).push(f);}emit(k,x){for(const f of this.handlers[k]||[])f(x);}addEventListener(k,f){this.on(k,f)}removeListener(k,f){this.removeEventListener(k,f)}removeEventListener(k,f){this.handlers[k]=(this.handlers[k]||[]).filter(x=>x!==f);}}

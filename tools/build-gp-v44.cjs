@@ -1,4 +1,4 @@
-const fs=require('fs'),path=require('path'),vm=require('vm');const root=path.resolve(__dirname,'..');let h=fs.readFileSync(path.join(root,'games/aobee_grand_prix_v43_online_vs_icefix.html'),'utf8');
+const fs=require('fs'),path=require('path'),vm=require('vm');const root=path.resolve(__dirname,'..');let h=fs.readFileSync(path.join(root,'archive/legacy-20261030/games/aobee_grand_prix_v43_online_vs_icefix.html'),'utf8');
 function replace(a,b){if(!h.includes(a))throw Error('Missing '+a.slice(0,80));h=h.replace(a,b);}
 replace('<div id="onlinePlayers">',`<button type="button" id="retryConnection" style="min-height:44px">接続をやり直す</button><details id="connectionDetails"><summary>接続診断（v4.4）</summary><p style="font-size:11px">失敗したら、2台それぞれで診断をコピーして玲奈に伝えてください。IPアドレス・部屋番号は含みません。</p><textarea id="connectionReport" readonly aria-label="接続診断の内容" style="box-sizing:border-box;width:100%;height:160px;font-size:11px;background:#071c30;color:#deefff"></textarea><button type="button" id="copyConnectionReport" style="min-height:44px">診断をコピー</button><span id="connectionCopyNotice" role="status"></span></details><div id="onlinePlayers">`);
 replace('<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>','<script src="../assets/gp-connection-diagnostics.js?v=44a"></script><script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>');
@@ -73,6 +73,6 @@ h=h.replaceAll('aobee-gp-','aobee-gp-v44-').replaceAll('aobee-gp-v44-v43','aobee
 h=h.replaceAll('v4.3','v4.4').replaceAll('v43','v44');
 h=h.replace('通信：WebRTC / PeerJS Cloud（STUN強化版）。2台とも同じ公開ページを開いてください。','通信版 v4.4：2台ともポータルから開き直してください。つながらない時は「接続診断」を確認できます。TURN中継は未設定です。');
 for(const m of h.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g))if(m[1].trim())new vm.Script(m[1]);
-fs.writeFileSync(path.join(root,'games/aobee_grand_prix_v44_connection_diagnostics.html'),h);
+fs.writeFileSync(path.join(root,'archive/legacy-20261030/games/aobee_grand_prix_v44_connection_diagnostics.html'),h);
 const wrapper=path.join(root,'games/aobee_grand_prix_v41_portal.html');let w=fs.readFileSync(wrapper,'utf8').replace(/aobee_grand_prix_v(?:43_online_vs_icefix|44_connection_diagnostics)\.html\?v=[^"]+/, 'aobee_grand_prix_v44_connection_diagnostics.html?v=v44a');fs.writeFileSync(wrapper,w);
 console.log('Built GP v4.4 diagnostics and persistent host room retries.');
