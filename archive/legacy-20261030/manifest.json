@@ -1,0 +1,110 @@
+[
+  {
+    "original": "games/aobee_adventure_v537_item_throw.html",
+    "archived": "archive/legacy-20261030/games/aobee_adventure_v537_item_throw.html",
+    "bytes": 8257637,
+    "sha256": "582aa23517864376f0200a977bb86ded91bff29368500347d6bff79839e48373",
+    "redirect_to": "games/aobee_adventure_v641_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "games/aobee_grand_prix_reboot_v29_visual_polish.html",
+    "archived": "archive/legacy-20261030/games/aobee_grand_prix_reboot_v29_visual_polish.html",
+    "bytes": 42684,
+    "sha256": "ddf1a1ffdfb5ee306515ba6190625a17033db0ba9e7802b8afe5d5bd516b7572",
+    "redirect_to": "games/aobee_grand_prix_v41_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "games/aobee_grand_prix_v41_online_vs.html",
+    "archived": "archive/legacy-20261030/games/aobee_grand_prix_v41_online_vs.html",
+    "bytes": 192891,
+    "sha256": "d28118611467bc8f952ae6794eb60fff8ed257c13294b200654bb8e2c87becd2",
+    "redirect_to": "games/aobee_grand_prix_v41_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "games/aobee_grand_prix_v42_online_vs.html",
+    "archived": "archive/legacy-20261030/games/aobee_grand_prix_v42_online_vs.html",
+    "bytes": 195442,
+    "sha256": "e0d12d9c3dbaeedb0bb71f8f9d434eaa6128e36f9ad065c14559f28da7af009c",
+    "redirect_to": "games/aobee_grand_prix_v41_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "games/aobee_grand_prix_v43_online_vs_icefix.html",
+    "archived": "archive/legacy-20261030/games/aobee_grand_prix_v43_online_vs_icefix.html",
+    "bytes": 196781,
+    "sha256": "276c8793211aafcb39c0dc441caca329f67ca8030fcede4c57af780c91e24b12",
+    "redirect_to": "games/aobee_grand_prix_v41_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "games/aobee_grand_prix_v44_connection_diagnostics.html",
+    "archived": "archive/legacy-20261030/games/aobee_grand_prix_v44_connection_diagnostics.html",
+    "bytes": 198800,
+    "sha256": "b2c7c738666c3c29e2d848256075982ce8861e52912c1097d41f404d3d017418",
+    "redirect_to": "games/aobee_grand_prix_v41_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "games/aobee_grand_prix_v45_ice_exchange.html",
+    "archived": "archive/legacy-20261030/games/aobee_grand_prix_v45_ice_exchange.html",
+    "bytes": 198998,
+    "sha256": "6f2ed43c113dd5f402cfcea9df3d0b29d5e3fbdc31b34563016a1827d08894a2",
+    "redirect_to": "games/aobee_grand_prix_v41_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "games/aobee_grand_prix_v46_turn_relay.html",
+    "archived": "archive/legacy-20261030/games/aobee_grand_prix_v46_turn_relay.html",
+    "bytes": 199298,
+    "sha256": "e40a143583cafea3c1b2d6f48648f569a4401ab34f99be2adb20770abe5b48d6",
+    "redirect_to": "games/aobee_grand_prix_v41_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "games/aobee_star_temple_ch1_v020_motion.html",
+    "archived": "archive/legacy-20261030/games/aobee_star_temple_ch1_v020_motion.html",
+    "bytes": 1793525,
+    "sha256": "35785728b797e5e2b98820b2303608675b488853efc708b2d068b2975520e3f3",
+    "redirect_to": "games/aobee_star_temple_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "games/aobee_star_temple_ch1_v030_visibility.html",
+    "archived": "archive/legacy-20261030/games/aobee_star_temple_ch1_v030_visibility.html",
+    "bytes": 1833591,
+    "sha256": "51d6037a3b7432dddf622ad6d98f352a2a9486b09056e9f7f3bc11a4556e34c4",
+    "redirect_to": "games/aobee_star_temple_portal.html",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "assets/title-covers/race.jpg",
+    "archived": "archive/legacy-20261030/assets/title-covers/race.jpg",
+    "bytes": 455892,
+    "sha256": "bb77afe1030db4d95e2e1188338e66e293f24749eec643a1ddc1bf4dbab44c1c",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "assets/title-covers/race.webp",
+    "archived": "archive/legacy-20261030/assets/title-covers/race.webp",
+    "bytes": 305084,
+    "sha256": "6725357d0d39fe753ee90664a5aba1903f76b7892c12e1e80a1d74e7577bf9c8",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "assets/title-covers/yabou.jpg",
+    "archived": "archive/legacy-20261030/assets/title-covers/yabou.jpg",
+    "bytes": 230602,
+    "sha256": "91caeb34da0f2284c4b05b207c5cc16d17f02038b50f342b5f61f50896766a98",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  },
+  {
+    "original": "assets/title-covers/yabou.webp",
+    "archived": "archive/legacy-20261030/assets/title-covers/yabou.webp",
+    "bytes": 146084,
+    "sha256": "1fccbdc9667a5fc59d0a6d7f96a9a3b336aec3615066864b87d0ba72ce64b2e0",
+    "source_commit": "9c832516f163c254811c7e800abd26df2f8235b6"
+  }
+]
