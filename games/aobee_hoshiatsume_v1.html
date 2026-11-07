@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>あおびーのほしあつめ｜あおびーポータル</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{background:#0d2440;color:#fff;font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif}
+  body{min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:10px 10px 22px}
+  header{width:100%;max-width:520px;display:flex;align-items:center;justify-content:space-between;padding:6px 2px 10px}
+  header h1{font-size:19px;letter-spacing:.02em}
+  header h1 .star{color:#ffd94d}
+  .back{color:#bcd7f5;text-decoration:none;font-size:13px;border:1px solid #35598a;border-radius:999px;padding:6px 12px;background:#123058}
+  .hud{width:100%;max-width:520px;display:flex;gap:8px;align-items:stretch;margin-bottom:8px}
+  .hud .box{flex:1;background:#123058;border:1px solid #35598a;border-radius:12px;padding:7px 10px;text-align:center}
+  .hud .label{font-size:10px;color:#9db9dd;letter-spacing:.12em}
+  .hud .value{font-size:20px;font-weight:800;line-height:1.15}
+  .hud .value.combo{color:#ffd94d}
+  .timebar{width:100%;max-width:520px;height:10px;background:#123058;border:1px solid #35598a;border-radius:99px;overflow:hidden;margin-bottom:10px}
+  .timebar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ffd94d,#ff9d4d);transition:width .2s linear}
+  #field{position:relative;width:100%;max-width:520px;aspect-ratio:4/4.6;max-height:68dvh;border-radius:20px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;
+    background:radial-gradient(120% 90% at 50% 0%,#2b4c9a 0%,#1a3568 45%,#0e2148 100%);border:2px solid #35598a;box-shadow:0 12px 34px #0009}
+  #field::before{content:"";position:absolute;inset:0;background-image:radial-gradient(2px 2px at 12% 22%,#ffffffcc 50%,transparent 51%),radial-gradient(1.6px 1.6px at 78% 12%,#ffffffaa 50%,transparent 51%),radial-gradient(1.8px 1.8px at 34% 64%,#ffffff88 50%,transparent 51%),radial-gradient(1.4px 1.4px at 62% 42%,#ffffff99 50%,transparent 51%),radial-gradient(2px 2px at 88% 58%,#ffffff77 50%,transparent 51%),radial-gradient(1.5px 1.5px at 48% 14%,#ffffffbb 50%,transparent 51%),radial-gradient(1.6px 1.6px at 22% 84%,#ffffff66 50%,transparent 51%),radial-gradient(1.8px 1.8px at 70% 82%,#ffffff77 50%,transparent 51%)}
+  .cloud{position:absolute;color:#ffffff10;font-size:90px;line-height:1;pointer-events:none}
+  #aobee{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:26%;max-width:130px;pointer-events:none;filter:drop-shadow(0 6px 8px #0007);z-index:3}
+  #aobee.hop{animation:hop .45s ease}
+  @keyframes hop{35%{transform:translateX(-50%) translateY(-16px)}}
+  #bubble{position:absolute;left:50%;bottom:calc(26% + 8px);transform:translateX(-50%);background:#fffdf6;color:#274b6d;font-weight:800;font-size:13px;border-radius:999px;padding:7px 14px;white-space:nowrap;z-index:4;box-shadow:0 4px 10px #0005;pointer-events:none}
+  #bubble::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:7px solid transparent;border-top-color:#fffdf6;border-bottom:0}
+  .item{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border:0;background:none;cursor:pointer;z-index:2;display:grid;place-items:center;animation:pop .18s ease-out}
+  .item svg{width:100%;height:100%;filter:drop-shadow(0 3px 5px #0006)}
+  .item.bye{animation:shrink .22s ease-in forwards}
+  @keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+  @keyframes shrink{to{transform:scale(1.35);opacity:0}}
+  .float{position:absolute;transform:translate(-50%,-50%);font-weight:900;font-size:17px;color:#ffd94d;text-shadow:0 2px 4px #000a;pointer-events:none;z-index:5;animation:floatUp .7s ease-out forwards}
+  .float.bad{color:#ff7ab8}
+  @keyframes floatUp{to{transform:translate(-50%,-160%);opacity:0}}
+  .overlay{position:absolute;inset:0;background:#0a1a33d9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;z-index:6}
+  .overlay h2{font-size:26px}
+  .overlay h2 .star{color:#ffd94d}
+  .overlay p{font-size:13.5px;line-height:1.9;color:#cfe2fa}
+  .overlay .rules{text-align:left;font-size:13px;line-height:2;color:#eaf3ff}
+  .overlay .rules b.star{color:#ffd94d}.overlay .rules b.gear{color:#ffb84d}.overlay .rules b.bad{color:#ff7ab8}
+  .bigbtn{background:#ffd94d;color:#274b6d;border:0;border-radius:999px;font-size:17px;font-weight:900;padding:13px 34px;cursor:pointer;box-shadow:0 6px 0 #c79a1d}
+  .bigbtn:active{transform:translateY(3px);box-shadow:0 3px 0 #c79a1d}
+  .ghostbtn{background:none;color:#bcd7f5;border:1px solid #35598a;border-radius:999px;font-size:13px;padding:9px 20px;cursor:pointer;text-decoration:none}
+  .final-score{font-size:44px;font-weight:900;color:#ffd94d;line-height:1}
+  .best{font-size:12.5px;color:#9db9dd}
+  .hidden{display:none!important}
+  footer{margin-top:14px;font-size:11px;color:#7d97bd;text-align:center;line-height:1.9}
+  @media(prefers-reduced-motion:reduce){#aobee.hop{animation:none}.item,.float{animation-duration:.01s}}
+</style></head>
+<body>
+<header>
+  <h1><span class="star">★</span> あおびーのほしあつめ</h1>
+  <a class="back" href="../index.html">← ポータルへ</a>
+</header>
+<div class="hud">
+  <div class="box"><div class="label">SCORE</div><div class="value" id="score">0</div></div>
+  <div class="box"><div class="label">COMBO</div><div class="value combo" id="combo">×1</div></div>
+  <div class="box"><div class="label">BEST</div><div class="value" id="best">0</div></div>
+</div>
+<div class="timebar"><i id="timefill"></i></div>
+<div id="field">
+  <div class="cloud" style="left:-18px;top:6%">☁</div>
+  <div class="cloud" style="right:-24px;top:34%">☁</div>
+  <div id="bubble">あおびーに任せてよ！</div>
+  <img id="aobee" src="../assets/characters/aobee-front-v1.png" alt="あおびー">
+  <div class="overlay" id="startScreen">
+    <h2><span class="star">★</span> ほしあつめ <span class="star">★</span></h2>
+    <p>空から星が降ってくるよ。<br>30秒で、どれだけ集められる？</p>
+    <div class="rules">
+      <div><b class="star">★ 星</b> … 10点</div>
+      <div><b class="gear">⚙ 金の歯車</b> … 30点（レア！）</div>
+      <div><b class="bad">★ イジワル星</b> … −20点＆コンボ消滅（わるびーの罠）</div>
+      <div>連続で集めるとコンボ倍率アップ（最大×4）</div>
+    </div>
+    <button class="bigbtn" id="startBtn">スタート！</button>
+    <div class="best" id="startBest"></div>
+  </div>
+  <div class="overlay hidden" id="overScreen">
+    <h2>しゅうりょう！</h2>
+    <div class="final-score" id="finalScore">0</div>
+    <p id="finalLine"></p>
+    <div class="best" id="overBest"></div>
+    <button class="bigbtn" id="retryBtn">もういっかい！</button>
+    <a class="ghostbtn" href="../index.html">ポータルへもどる</a>
+  </div>
+</div>
+<footer>星と歯車はタップ（クリック）で集めよう。出てきたら消える前にタップ！<br>© 2026 AOBEE GAMES</footer>
+<script>
+(() => {
+  'use strict';
+  const field = document.getElementById('field');
+  const scoreEl = document.getElementById('score'), comboEl = document.getElementById('combo'), bestEl = document.getElementById('best');
+  const timefill = document.getElementById('timefill'), bubble = document.getElementById('bubble'), aobee = document.getElementById('aobee');
+  const startScreen = document.getElementById('startScreen'), overScreen = document.getElementById('overScreen');
+  const BEST_KEY = 'aobee_hoshi_best';
+  let best = Number(localStorage.getItem(BEST_KEY) || 0);
+  bestEl.textContent = best;
+  document.getElementById('startBest').textContent = best ? 'ベストスコア： ' + best : '';
+
+  const STAR = '<svg viewBox="0 0 100 100"><path d="M50 4 L63 36 L97 38 L70 59 L79 93 L50 72 L21 93 L30 59 L3 38 L37 36 Z" fill="#ffd94d" stroke="#e0a81c" stroke-width="4" stroke-linejoin="round"/></svg>';
+  const GEAR = '<svg viewBox="0 0 100 100"><path d="M50 6 L56 18 L68 13 L71 26 L84 26 L82 39 L94 45 L87 56 L92 68 L79 71 L77 85 L64 82 L56 92 L45 85 L33 89 L31 75 L17 73 L21 60 L10 51 L19 41 L16 27 L30 27 L34 14 L46 19 Z" fill="#ffb84d" stroke="#d98a1f" stroke-width="3" stroke-linejoin="round"/><circle cx="50" cy="52" r="13" fill="#0e2148"/></svg>';
+  const BAD = '<svg viewBox="0 0 100 100"><path d="M50 4 L60 30 L88 24 L70 48 L90 66 L61 66 L56 95 L42 70 L14 76 L30 52 L10 32 L38 32 Z" fill="#c13584" stroke="#7e1f56" stroke-width="4" stroke-linejoin="round"/></svg>';
+
+  let playing = false, score = 0, combo = 0, remain = 30, spawnTimer = null, tickTimer = null, items = new Set();
+
+  function say(t) { bubble.textContent = t; }
+  function mult() { return Math.min(4, 1 + Math.floor(combo / 8)); }
+  function hud() { scoreEl.textContent = score; comboEl.textContent = '×' + mult() + (combo ? ' (' + combo + ')' : ''); }
+  function hop() { aobee.classList.remove('hop'); void aobee.offsetWidth; aobee.classList.add('hop'); }
+
+  function floatText(x, y, text, bad) {
+    const f = document.createElement('div');
+    f.className = 'float' + (bad ? ' bad' : '');
+    f.style.left = x + 'px'; f.style.top = y + 'px';
+    f.textContent = text;
+    field.appendChild(f);
+    setTimeout(() => f.remove(), 720);
+  }
+
+  function spawn() {
+    if (!playing) return;
+    const r = Math.random();
+    const kind = r < 0.68 ? 'star' : (r < 0.82 ? 'gear' : 'bad');
+    const el = document.createElement('button');
+    el.className = 'item'; el.type = 'button';
+    el.setAttribute('aria-label', kind === 'bad' ? 'イジワル星' : kind === 'gear' ? '金の歯車' : '星');
+    el.innerHTML = kind === 'bad' ? BAD : kind === 'gear' ? GEAR : STAR;
+    const W = field.clientWidth, H = field.clientHeight;
+    const x = 34 + Math.random() * (W - 68), y = 40 + Math.random() * (H - 190);
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    const life = kind === 'gear' ? 950 : 1250;
+    const killer = setTimeout(() => { el.classList.add('bye'); setTimeout(() => { el.remove(); items.delete(el); }, 230); }, life);
+    el.addEventListener('pointerdown', (ev) => {
+      ev.preventDefault();
+      if (!playing || !items.has(el)) return;
+      clearTimeout(killer); items.delete(el); el.remove();
+      const fr = field.getBoundingClientRect();
+      const px = ev.clientX - fr.left, py = ev.clientY - fr.top;
+      if (kind === 'bad') {
+        score = Math.max(0, score - 20); combo = 0;
+        floatText(px, py, '−20', true); say('……仕様です'); 
+        if (navigator.vibrate) navigator.vibrate(60);
+      } else {
+        const gain = (kind === 'gear' ? 30 : 10) * mult();
+        score += gain; combo += 1;
+        floatText(px, py, '+' + gain, false);
+        if (kind === 'gear') { say('歯車ゲット！'); hop(); }
+        else if (combo === 10) say('その調子！');
+        else if (combo === 20) say('すごい！星の雨だ！');
+      }
+      hud();
+    });
+    field.appendChild(el); items.add(el);
+    const interval = Math.max(400, 680 - (30 - remain) * 10);
+    spawnTimer = setTimeout(spawn, interval + Math.random() * 160);
+  }
+
+  function start() {
+    score = 0; combo = 0; remain = 30;
+    items.forEach(el => el.remove()); items.clear();
+    hud(); timefill.style.width = '100%';
+    startScreen.classList.add('hidden'); overScreen.classList.add('hidden');
+    playing = true; say('あおびーに任せてよ！'); hop();
+    spawn();
+    tickTimer = setInterval(() => {
+      remain -= 0.1;
+      timefill.style.width = Math.max(0, remain / 30 * 100) + '%';
+      if (remain <= 5.05 && remain > 4.95) say('あと少し！');
+      if (remain <= 0) finish();
+    }, 100);
+  }
+
+  function finish() {
+    playing = false;
+    clearTimeout(spawnTimer); clearInterval(tickTimer);
+    items.forEach(el => el.remove()); items.clear();
+    timefill.style.width = '0%';
+    const isBest = score > best;
+    if (isBest) { best = score; localStorage.setItem(BEST_KEY, String(best)); bestEl.textContent = best; }
+    document.getElementById('finalScore').textContent = score;
+    document.getElementById('finalLine').textContent =
+      score >= 600 ? '星のマスター！あおびーもびっくり！' :
+      score >= 350 ? 'すごい！いっぱい集めたね！' :
+      score >= 180 ? 'やったね！その調子でもういっかい！' : '星は逃げないよ。たぶん。もういっかい！';
+    document.getElementById('overBest').textContent = 'ベストスコア： ' + best + (isBest ? '（新記録！）' : '');
+    say('おつかれさま！');
+    overScreen.classList.remove('hidden');
+  }
+
+  document.getElementById('startBtn').addEventListener('click', start);
+  document.getElementById('retryBtn').addEventListener('click', start);
+})();
+</script>
+</body></html>
