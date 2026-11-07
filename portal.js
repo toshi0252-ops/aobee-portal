@@ -9,7 +9,7 @@ const games=[
  ['あおびー STAR SHOOTER','STAR\nSHOOTER','シューティング','星の世界でシューティングに挑戦。','aobee_shooter_v18_star_rush.html','#3b579a','#8e9fe6'],
  ['あおびーの星守り','星を守る\nあおびー','バラエティ','STAR GUARDの世界へ出かけよう。','aobee_star_guard_v1_complete.html','#437898','#95cddb'],
  ['走れ！あおびー','走れ！\nあおびー','アクション','あおびーと一緒に、走り出そう。','hashire_aobee_v3.2.html','#378daa','#86d9d5'],
- ['あおびーのピコピコフィッシング','海へ、\n釣りに行こう！','釣り','魚の動きを読んで釣り上げよう。','aobee_pico_fishing_v68_dual_guide.html','#168db5','#8ce6e5'],
+ ['あおびーのピコピコフィッシング','海へ、\n釣りに行こう！','釣り','魚の動きを読んで釣り上げよう。','aobee_pico_fishing_v68_portal.html','#168db5','#8ce6e5'],
  ['あおびーと星の神殿','星の神殿へ、\n冒険の旅','アクション','星の消えた村から始まる、新しい冒険。','aobee_star_temple_portal.html?v=32','#3b7d78','#d8c58b'],
  ['押して！あおびー','じっくり、\nひと押し。','パズル','考えながら遊ぶ、あおびーのパズル。','oshite_aobee_superhard_reina_v15_hint.html?v=progress16','#7f80b2','#beb5e4'],
  ['あおびー群星絵巻','小さな星たちが、\n天下を動かす。','SLG','城下の市で兵糧を売買。備えと投資を選ぶ戦国戦略シミュレーション。','yabou/index.html?v=market111a','#205152','#d9bf83'],
@@ -20,5 +20,32 @@ details.push(["風・バウンド・ランとグリーンの傾斜を読むゴ�
 games.forEach((game,i)=>{if(game.url.includes('aobee_golf'))game.development=true;if(game.category==='SLG')game.aliases='あおびーの野望 七色戦国記';[game.description,game.controls,game.feature,game.preview]=details[i]});
 let selected='すべて';const filters=document.querySelector('#filters'),list=document.querySelector('#game-list'),search=document.querySelector('#search');
 for(const category of ['すべて',...new Set(games.map(g=>g.category))]){const button=document.createElement('button');button.textContent=category;button.type='button';button.setAttribute('aria-pressed',String(category===selected));button.onclick=()=>{selected=category;for(const b of filters.children)b.setAttribute('aria-pressed',String(b===button));render()};filters.append(button)}
-function render(){const term=search.value.trim().toLocaleLowerCase();const visible=games.filter(g=>(selected==='すべて'||selected===g.category)&&(g.name+' '+g.category+' '+(g.aliases||'')).toLocaleLowerCase().includes(term));list.replaceChildren();for(const g of visible){const card=document.createElement('a');card.className='card';card.href=g.url;card.target='_blank';card.rel='noopener';card.setAttribute('aria-label',g.name+'を遊ぶ（別タブで開きます）');card.style.setProperty('--color',g.color);card.style.setProperty('--light',g.light);card.innerHTML=`<div class="cover"><div class="preview-stage"><picture><source type="image/webp" srcset="assets/title-covers/${g.preview}.webp?v=${g.preview.startsWith('yabou')?'market111a':(['temple','golf'].includes(g.preview)?'iphone1':'official20261030')}"><img class="game-preview" src="assets/title-covers/${g.preview}.jpg?v=${g.preview.startsWith('yabou')?'market111a':(['temple','golf'].includes(g.preview)?'iphone1':'official20261030')}" alt="${g.name}のタイトルイラスト" width="1672" height="941" loading="eager"></picture></div><div class="preview-meta"><span class="preview-feature">${g.feature}</span><span class="number">${String(g.number).padStart(2,'0')} / AOBEE</span></div></div><div class="body"><span class="tag">${g.category}</span>${g.development?'<span class="tag development-tag">開発中</span>':''}<h3>${g.name}</h3><p>${g.description}</p><p class="game-controls">${g.controls}</p><div class="play">${g.development?'開発中版をあそぶ':'あそぶ'} ↗ <small>別タブで開く</small></div></div>`;const preview=card.querySelector(".game-preview");preview.addEventListener("error",()=>{const source=preview.parentElement.querySelector("source");if(source)source.remove();},{once:true});list.append(card)}document.querySelector('#count').textContent=`${visible.length} / ${games.length} 作品`;document.querySelector('#empty').hidden=visible.length!==0}
+function render(){const term=search.value.trim().toLocaleLowerCase();const visible=games.filter(g=>(selected==='すべて'||selected===g.category)&&(g.name+' '+g.category+' '+(g.aliases||'')).toLocaleLowerCase().includes(term));list.replaceChildren();for(const g of visible){const card=document.createElement('a');card.className='card';card.href=g.url;card.target='_blank';card.rel='noopener';card.setAttribute('aria-label',g.name+'を遊ぶ（別タブで開きます）');card.style.setProperty('--color',g.color);card.style.setProperty('--light',g.light);card.innerHTML=`<div class="cover"><div class="preview-stage"><picture><source type="image/webp" srcset="assets/title-covers/${g.preview}.webp?v=${g.preview.startsWith('yabou')?'market111a':(['temple','golf'].includes(g.preview)?'iphone1':'official20261030')}"><img class="game-preview" src="assets/title-covers/${g.preview}.jpg?v=${g.preview.startsWith('yabou')?'market111a':(['temple','golf'].includes(g.preview)?'iphone1':'official20261030')}" alt="${g.name}のタイトルイラスト" width="1672" height="941" loading="eager"></picture></div><div class="preview-meta"><span class="preview-feature">${g.feature}</span><span class="number">${String(g.number).padStart(2,'0')} / AOBEE</span></div></div><div class="body"><span class="tag">${g.category}</span>${g.development?'<span class="tag development-tag">開発中</span>':''}<h3>${g.name}</h3><p>${g.description}</p><p class="game-controls">${g.controls}</p><div class="play">${g.development?'開発中版をあそぶ':'あそぶ'} ↗</div></div>`;const preview=card.querySelector(".game-preview");preview.addEventListener("error",()=>{const source=preview.parentElement.querySelector("source");if(source)source.remove();},{once:true});list.append(card)}document.querySelector('#count').textContent=`${visible.length} / ${games.length} 作品`;document.querySelector('#empty').hidden=visible.length!==0}
 search.addEventListener('input',render);render();
+
+// portal polish 20261107: きょうのあおびー（日替わり一言）＋フッター作品数
+(() => {
+  const lines = ['あおびーに任せてよ！','……仕様です。','失敗したって、もういっかい！','きょうも、あそび日和。','おもしろそうなこと、やってみたい！','星は逃げないよ。たぶん。','ひと遊びしてから、考えよう。'];
+  const quote = document.querySelector('#dailyQuote');
+  if (quote) {
+    const now = new Date();
+    const day = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+    let idx = day % lines.length;
+    quote.textContent = 'きょうのあおびー「' + lines[idx] + '」';
+    const art = document.querySelector('.hero-art img');
+    if (art) {
+      art.title = 'あおびーをタップ！';
+      art.addEventListener('click', () => {
+        let next = idx;
+        while (next === idx) next = Math.floor(Math.random() * lines.length);
+        idx = next;
+        quote.textContent = 'きょうのあおびー「' + lines[idx] + '」';
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          art.classList.remove('hop'); void art.offsetWidth; art.classList.add('hop');
+        }
+      });
+    }
+  }
+  const fc = document.querySelector('#footCount');
+  if (fc) fc.textContent = String(games.length);
+})();
