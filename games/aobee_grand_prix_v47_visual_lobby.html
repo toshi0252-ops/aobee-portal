@@ -75,7 +75,8 @@ details.settings .race-options{justify-content:space-between}
 .hudTile small{font-size:11px;letter-spacing:1px;color:#e8f5ff}
 .hudTile.final strong{color:#ff8686}
 #timeTile strong{font-size:clamp(16px,4vw,24px);color:#fff}
-#top{position:absolute;top:66px;left:8px;right:8px;display:flex;justify-content:center;pointer-events:none;text-shadow:2px 2px #123;font-weight:900;font-size:12px}
+#top{position:absolute;top:84px;left:8px;right:8px;display:flex;justify-content:center;pointer-events:none;text-shadow:2px 2px #123;font-weight:900;font-size:12px}
+#respawnBtn{position:absolute;left:50%;transform:translateX(-50%);top:128px;width:auto;min-width:0;height:38px;font-size:14px;font-weight:900;padding:4px 16px;flex:none;z-index:4;display:none;background:#ffb52e;border:2px solid #fff3c4;border-radius:999px;color:#40260a;box-shadow:0 3px 0 #7a4a08;cursor:pointer}
 #reset{position:absolute;right:8px;top:96px;width:auto;min-width:0;height:32px;font-size:12px;padding:2px 8px;flex:none;z-index:2}
 #gpBadge{position:absolute;top:130px;left:9px;font-weight:900;text-shadow:1px 2px #123;pointer-events:none;font-size:13px}
 .titleBadge{display:inline-block;padding:4px 10px;border-radius:999px;background:#5fc9ff22;border:1px solid #8fdcff66;color:#bfeeff;font-size:11px;font-weight:900;letter-spacing:.13em}
@@ -95,13 +96,14 @@ details.settings .race-options{justify-content:space-between}
     <div class="hudTile" id="lapTile"><small>周回数</small><strong id="lapBig">1 / 3</strong></div>
   </div>
   <button id="reset">タイトル</button>
+  <button id="respawnBtn">↩ コースにもどる</button>
   <div id="gpBadge"></div>
   <div id="confetti"></div>
 
   <div id="panel">
     <div class="race-layout"><div class="race-intro"><picture id="raceTitleArt"><source type="image/webp" srcset="../assets/title-covers/race-v2.webp"><img src="../assets/title-covers/race-v2.jpg" width="1672" height="941" alt="あおびー GRAND PRIX — あおびーとわるびーのカート対決"></picture><div class="titleBadge">AOBEE RACING SERIES · v4.7 ONLINE VS</div>
     <h1 id="panelTitle">⭐ あおびー GRAND PRIX</h1>
-    <p id="panelBody">アイテムボックスで逆転！ 海岸は海に落下、星空は宇宙に落下！<br>カーブで景色が回転するコースを走ろう。<br>左親指で左右、右親指でアクセル！同時押し対応。<br>PC：↑ アクセル / ← → 操舵 / Space ドリフト / E アイテム / ↓ ブレーキ<br>ドリフト長押しでミニターボ（青→橙→桃）！</p>
+    <p id="panelBody">アイテムボックスで逆転！ 海岸は海に落下、星空は宇宙に落下！<br>カーブで景色が回転するコースを走ろう。<br>左親指で左右、右親指でアクセル！同時押し対応。<br>PC：↑ アクセル / ← → 操舵 / Space ドリフト / E アイテム / ↓ ブレーキ / R コースに復帰<br>ドリフト長押しでミニターボ（青→橙→桃）！</p>
     <div id="podium"></div>
     </div><div class="race-setup"><div id="recordLine"></div>
     <div class="race-options"><label for="raceMode">モード</label>
@@ -121,7 +123,7 @@ details.settings .race-options{justify-content:space-between}
     </div>
     <div class="race-options" id="difficultyRow"><label for="difficulty">ライバルの強さ</label>
       <select id="difficulty"><option value="easy">やさしい</option><option value="normal" selected>ふつう</option><option value="hard">むずかしい</option></select></div>
-    <details class="settings"><summary>操作・あそび方</summary><p>スマホ：左親指で左右、右親指でアクセル。DRIFT長押しでミニターボ！ ITEMでアイテムを使おう。</p><p>PC：↑ アクセル ／ ← → ハンドル ／ Space ドリフト ／ E アイテム ／ ↓ ブレーキ。</p><p>海岸と星空はコース外への落下に注意。グランプリは3コースの合計ポイントで競うよ。</p></details><details class="settings">
+    <details class="settings"><summary>操作・あそび方</summary><p>スマホ：左親指で左右、右親指でアクセル。DRIFT長押しでミニターボ！ ITEMでアイテムを使おう。</p><p>PC：↑ アクセル ／ ← → ハンドル ／ Space ドリフト ／ E アイテム ／ ↓ ブレーキ ／ R コースに復帰。</p><p>海岸と星空はコース外への落下に注意。グランプリは3コースの合計ポイントで競うよ。</p></details><details class="settings">
       <summary>⚙ せってい</summary>
       <div class="race-options"><label for="setVolume">音量</label>
         <select id="setVolume"><option value="0">OFF</option><option value="0.5">小</option><option value="1">大</option></select></div>
@@ -239,7 +241,7 @@ let records = store.get('aobee_gp_records', {});
  * ===================================================================== */
 const $ = s => document.querySelector(s);
 const el = {
-  panel: $('#panel'), title: $('#panelTitle'), body: $('#panelBody'), start: $('#start'), reset: $('#reset'),
+  panel: $('#panel'), title: $('#panelTitle'), body: $('#panelBody'), start: $('#start'), reset: $('#reset'), respawnBtn: $('#respawnBtn'),
   course: $('#course'), mode: $('#raceMode'), diff: $('#difficulty'), record: $('#recordLine'),
   hud: $('#raceHud'), rank: $('#rankBig'), lap: $('#lapBig'), lapTile: $('#lapTile'), time: $('#timeBig'), timeSmall: $('#timeSmall'),
   speed: $('#speed'), gpBadge: $('#gpBadge'), podium: $('#podium'), confetti: $('#confetti'),
@@ -767,6 +769,12 @@ function tickTimers(dt) {
   parts = parts.filter(p => p.life > 0);
 }
 
+function respawnToRoad() {
+  if (!running || done || countdown > 0 || vsActive) return;
+  const n = nearest(car.x, car.y), at = road[n.i], next = road[(n.i + 1) % N_ROAD];
+  car.x = at.x; car.y = at.y; car.a = Math.atan2(next.y - at.y, next.x - at.x); car.v = 42; car.idx = n.i;
+  R.sideSlip = 0; R.spin = 0;
+}
 function updateFall(dt) {
   R.fallTimer -= dt;
   if (R.fallTimer > 0) return;
@@ -1424,7 +1432,7 @@ function drawOverlay() {
   ctx.drawImage(miniCv, 468, 50);
   const mx = q => 547 + (q.x - 512) * 0.174, my = q => 120 + (q.y - 512) * 0.174;
   for (const r of rivals) { const q = interp(r.s); ctx.beginPath(); ctx.arc(mx(q), my(q), 4, 0, Math.PI * 2); ctx.fillStyle = r.color; ctx.fill(); }
-  ctx.beginPath(); ctx.arc(mx(car), my(car), 5.5, 0, Math.PI * 2); ctx.fillStyle = '#17cfff'; ctx.fill(); ctx.strokeStyle = '#07182b'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.beginPath(); ctx.arc(clamp(mx(car), 474, 620), clamp(my(car), 56, 183), 5.5, 0, Math.PI * 2); ctx.fillStyle = '#17cfff'; ctx.fill(); ctx.strokeStyle = '#07182b'; ctx.lineWidth = 2; ctx.stroke();
 
   ctx.fillStyle = '#132c4bd9'; ctx.fillRect(12, 45, 185, 35); ctx.font = 'bold 17px system-ui'; ctx.fillStyle = '#fff'; ctx.textAlign = 'start';
   ctx.fillText(R.heldItem ? ITEM_NAMES[R.heldItem] : 'ITEM なし', 22, 69);
@@ -1444,6 +1452,15 @@ function drawOverlay() {
   if (R.rankNotice > 0) strokeText(R.rankText, 320, 205, 24, R.rankText === 'OVERTAKE!' ? '#ffe55b' : '#ff9a9a');
   if (R.lapNotice > 0 && R.lapText) strokeText(R.lapText, 320, 150, 22, '#9fffd0');
   if (R.completed >= LAPS - 1 && R.lapNotice > 0 && R.completed === LAPS - 1) strokeText('FINAL LAP!', 320, 180, 26, '#ff9a8a');
+
+  if (running && countdown <= 0 && NR.d > 62) {
+    const tgt = road[car.idx];
+    let rel = Math.atan2(tgt.y - car.y, tgt.x - car.x) - car.a;
+    rel = Math.atan2(Math.sin(rel), Math.cos(rel));
+    ctx.save(); ctx.translate(320, 158); ctx.fillStyle = 'rgba(6,27,50,.82)'; ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = '#ffd75a'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.rotate(rel); ctx.fillStyle = '#ffd75a'; ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(8.5, 9); ctx.lineTo(0, 4); ctx.lineTo(-8.5, 9); ctx.closePath(); ctx.fill(); ctx.restore();
+    strokeText('コースはこっち！', 320, 198, 17, '#ffe780');
+  }
 
   if (countdown > 0 || gridFlash > 0) {
     ctx.save(); ctx.globalAlpha = countdown > 0 ? 1 : Math.min(1, gridFlash * 2); ctx.textAlign = 'center'; ctx.font = 'bold 13px system-ui'; ctx.lineWidth = 3; ctx.strokeStyle = '#1c3047'; ctx.fillStyle = '#fff';
@@ -1476,9 +1493,10 @@ function drawOverlay() {
 
 let hudFinal = null;
 function updateHud() {
-  if (vsActive && !onlineActive) { setStyle(el.hud,'display','none'); setStyle(el.speed.parentElement,'display','none'); return; }
+  if (vsActive && !onlineActive) { setStyle(el.hud,'display','none'); setStyle(el.speed.parentElement,'display','none'); setStyle(el.respawnBtn,'display','none'); return; }
   setStyle(el.speed.parentElement,'display','flex'); setStyle(el.hud, 'display', running ? 'flex' : 'none');
   setText(el.speed, `${Math.round(car.v * 1.1)} km/h`);
+  setStyle(el.respawnBtn, 'display', (running && !done && !onlineActive && NR.d > 62) ? 'block' : 'none');
   if (!running) return;
   setText(el.rank, R.rank + ['st', 'nd', 'rd', 'th'][Math.min(3, R.rank - 1)]);
   const final = R.completed >= LAPS - 1;
@@ -1525,6 +1543,7 @@ const KEYMAP_NORMAL={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'brake',Arrow
 const KEYMAP_P1={ArrowLeft:'left',ArrowRight:'right',ArrowDown:'brake',ArrowUp:'accel',Space:'drift',KeyE:'item'};
 const KEYMAP_P2={KeyA:'left',KeyD:'right',KeyS:'brake',KeyW:'accel',ShiftLeft:'drift',ShiftRight:'drift',KeyF:'item'};
 window.addEventListener('keydown',e=>{
+  if(e.code==='KeyR' && !vsActive){ if(running && !done && countdown<=0){ e.preventDefault(); respawnToRoad(); } return; }
   if(vsActive && !onlineActive){const k1=KEYMAP_P1[e.code],k2=KEYMAP_P2[e.code];if(k1){e.preventDefault();if(k1==='item'){if(!e.repeat)useItem();}else setKey(k1,true);} if(k2){e.preventDefault();if(k2==='item'){if(!e.repeat)useItem2();}else setKey2(k2,true);} return;}
   const k=KEYMAP_NORMAL[e.code];if(!k)return;e.preventDefault();if(k==='item'){if(!e.repeat)useItem();}else setKey(k,true);
 });
@@ -1569,7 +1588,8 @@ el.start.onclick = () => {
   gpActive = el.mode.value === 'grandprix'; gpRound = 0; gpResults = [];
   if (gpActive) startGpRound(); else { beginRace(); showGpBadge(); }
 };
-el.reset.onclick = () => {
+el.respawnBtn.onclick = () => respawnToRoad();
+  el.reset.onclick = () => {
   hidePodium(); gpActive = false; gpRound = 0; gpResults = []; showGpBadge(); releaseAll(); releaseAll2(); running = false; countdown = 0; done = false;
   if (onlineActive) { netReady=false; netSend({type:'ready',ready:false}); }
   el.title.textContent = '⭐ あおびー GRAND PRIX'; el.panel.style.display = 'block';
