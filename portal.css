@@ -62,3 +62,40 @@ footer nav{display:flex;gap:16px;justify-content:center;margin-top:8px}
 .goods-cta:hover{background:#054e73}
 @media(max-width:760px){.goods{margin:0 20px 40px;padding:26px 22px;grid-template-columns:1fr;gap:16px;text-align:center}.goods-art img{max-width:130px}.goods-cta{width:100%;justify-content:center;gap:14px}}
 
+/* === MANGA CORNER (2026-11-09) === */
+.manga-promo{margin:0 30px 60px;padding:34px 42px;display:grid;grid-template-columns:200px minmax(0,1fr);gap:36px;align-items:center;background:linear-gradient(125deg,#e9f8ff,#d3e9ff);border:2px solid #a8cdf0;border-radius:26px;box-shadow:6px 7px 0 #153e55}
+.manga-promo-art{display:grid;place-items:center}
+.manga-promo-art img{width:100%;max-width:200px;height:auto;border-radius:18px;transform:rotate(3deg)}
+.manga-promo-copy .eyebrow{margin:0}
+.manga-promo-copy h2{font-size:clamp(24px,3vw,32px);margin:8px 0 12px}
+.manga-promo-lead{font-size:14px;line-height:2;color:#365564;font-weight:600;margin:0}
+.manga-promo-cta{display:inline-flex;align-items:center;gap:26px;background:var(--blue);color:#fff;padding:17px 28px;border-radius:50px;font-size:15px;font-weight:bold;margin-top:20px;box-shadow:0 8px 20px #076a9f33}
+.manga-promo-cta:hover{background:#054e73}
+@media(max-width:760px){.manga-promo{margin:0 20px 40px;padding:26px 22px;grid-template-columns:1fr;gap:16px;text-align:center}.manga-promo-art img{max-width:150px}.manga-promo-cta{width:100%;justify-content:center;gap:14px}}
+.manga-hero{margin:10px 20px 50px;padding:40px 42px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:36px;align-items:center;background:linear-gradient(125deg,#e9f8ff,#dcf0ff 60%,#edf0ff);border-radius:40px}
+.manga-hero h1{font-size:clamp(34px,5vw,52px);margin:10px 0 14px}
+.manga-lead{font-size:16px;line-height:2;font-weight:600;color:#365564;margin:0}
+.manga-note{font-size:12px;color:#5b7a90;margin:16px 0 0}
+.manga-hero-art img{width:100%;height:auto;border-radius:24px;box-shadow:6px 7px 0 #153e5522}
+@media(max-width:760px){.manga-hero{grid-template-columns:1fr;padding:28px 22px;gap:20px}}
+.manga-toc{margin:0 30px 56px;padding:26px 30px;background:#fff;border:2px solid #d6e6f5;border-radius:26px}
+.manga-toc h2{font-size:18px;margin:0 0 14px}
+.manga-toc ol{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:8px 28px}
+.manga-toc a{display:flex;gap:12px;align-items:baseline;padding:9px 10px;border-radius:12px;font-weight:600;color:#365564}
+.manga-toc a:hover{background:#eef6ff}
+.manga-toc a span{color:var(--blue);font-weight:900;font-size:13px;white-space:nowrap}
+@media(max-width:760px){.manga-toc{margin:0 20px 40px;padding:20px}.manga-toc ol{grid-template-columns:1fr}}
+.episode{margin:0 30px 64px}
+.ep-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 16px;margin-bottom:14px}
+.ep-no{background:var(--blue);color:#fff;font-weight:900;font-size:13px;padding:5px 14px;border-radius:50px;margin:0}
+.ep-head h2{font-size:clamp(22px,3vw,30px);margin:0}
+.ep-lead{width:100%;margin:0;font-size:14px;font-weight:600;color:#5b7a90}
+.ep-orig{width:100%;margin:0;font-size:11px;color:#8aa3b5}
+.ep-img{width:100%;height:auto;display:block;border-radius:16px;box-shadow:0 10px 30px #1534561f}
+.ep-comment{display:flex;gap:12px;align-items:flex-start;background:#fff6d8;border:2px solid #e7cb55;border-radius:18px;padding:16px 20px;margin-top:14px}
+.ep-comment-mark{color:#eb9c10;font-size:18px;line-height:1.6}
+.ep-comment p{margin:0;font-size:14px;line-height:1.9;font-weight:600;color:#5a4a1a}
+@media(max-width:760px){.episode{margin:0 20px 48px}}
+.manga-back-wrap{text-align:center;margin:0 30px 70px}
+.manga-back{display:inline-flex;background:#153456;color:#fff;padding:15px 30px;border-radius:50px;font-weight:bold;font-size:15px}
+.manga-back:hover{background:#0d2740}
