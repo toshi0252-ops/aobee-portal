@@ -20,8 +20,10 @@ const V=root.YabouUnrest||(typeof require==='function'?require('./unrest.js'):nu
 const N=root.YabouIndependence||(typeof require==='function'?require('./independence.js'):null);
 const T=root.YabouDialogue||(typeof require==='function'?require('./dialogue.js'):null);
 const clone=x=>JSON.parse(JSON.stringify(x));
-const types=['cultivate','commerce','fortify','recruit','search','hire','reward','poach','scheme','counterplot','mediate','buygrain','sellgrain'];
-const labels={buygrain:'兵糧買入',sellgrain:'兵糧売却',cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉',reward:'家臣への褒賞',poach:'他家の引き抜き',scheme:'離間・流言',counterplot:'工作の対処',mediate:'内紛の仲裁'};
+const types=['cultivate','commerce','fortify','recruit','search','hire','reward','poach','scheme','counterplot','mediate','buygrain','sellgrain','development'];
+const developmentPolicies=Object.freeze({balanced:'均衡',cultivate:'農業重視',commerce:'商業重視',fortify:'城防重視'});
+const developmentStats={cultivate:'farm',commerce:'commerce',fortify:'defense'};
+const labels={development:'発展方針の変更',buygrain:'兵糧買入',sellgrain:'兵糧売却',cultivate:'開墾',commerce:'商業振興',fortify:'城防整備',recruit:'徴兵',search:'武将探索',hire:'登用交渉',reward:'家臣への褒賞',poach:'他家の引き抜き',scheme:'離間・流言',counterplot:'工作の対処',mediate:'内紛の仲裁'};
 const fail=m=>{throw new Error(m)};
 function validateMaster(m){
  const errors=[];if(m.mapId!==undefined&&m.mapId!=='expanded18-v1')errors.push('マップ識別');
@@ -54,6 +56,10 @@ function canIssueCommand(s,q,rules){
  if(!c||!o)return '城または武将が存在しません';
  if(c.ownerFactionId!==q.factionId||o.factionId!==q.factionId||o.locationCastleId!==c.id||o.status!=='active')return '所属・配置が一致しません';
  if(['buygrain','sellgrain'].includes(q.type)){if(q.factionId!==s.playerFactionId)return '城下の市は自家の取引です';if(![1,2,4].includes(q.lots))return '取引量は兵糧50・100・200から選んでください';}
+ if(q.type==='development'){
+  if(q.factionId!==s.playerFactionId||!Object.hasOwn(developmentPolicies,q.policy))return '自領の発展方針を選んでください';
+  if(q.policy===(c.developmentPolicy||'balanced'))return '現在と同じ発展方針です';
+ }
  if(q.type==='search'&&(!['careful','normal','large'].includes(q.mode)))return '探索規模が不正です';
  if(q.type==='hire'){const t=s.officers.find(t=>t.id===q.targetId);if(!t||t.status!=='ronin'||!s.personnel?.known[q.factionId]?.includes(t.id))return '発見済みの浪人を選んでください';if(s.commands.some(x=>x.type==='hire'&&x.targetId===t.id))return '交渉予約済みです';if(!Number.isInteger(q.offer)||q.offer<0||q.offer>300)return '待遇金は0〜300です';}
  if(q.type==='mediate'){const error=V.can(s,q);if(error)return error;}
@@ -70,7 +76,13 @@ function canIssueCommand(s,q,rules){
  for(const [k,cost]of Object.entries(rule.cost)){const reserved=pending.reduce((a,x)=>a+(commandRule(x,rules).cost[k]||0),0);if(c[k]-reserved-(k==='gold'?D.reserved(s,c.id):k==='food'?W.food(s,c.id):0)<cost)return (k==='gold'?'金':'兵糧')+'が不足しています';}
  return null;
 }
-function commandRule(q,rules){if(['buygrain','sellgrain'].includes(q.type)){const base=rules.commands[q.type];return {cost:Object.fromEntries(Object.entries(base.cost).map(([k,v])=>[k,v*q.lots])),delta:Object.fromEntries(Object.entries(base.delta).map(([k,v])=>[k,v*q.lots]))};}if(q.type==='mediate')return {cost:{gold:100},delta:{}};if(['scheme','counterplot'].includes(q.type))return {cost:{gold:q.type==='scheme'?(q.kind==='insider'?300:150):100},delta:{}};return q.type==='search'?{cost:{gold:{careful:100,normal:250,large:500}[q.mode]},delta:{}}:['hire','reward','poach'].includes(q.type)?{cost:{gold:q.offer},delta:{}}:rules.commands[q.type];}
+function commandRule(q,rules,castle){
+ if(q.type==='development')return {cost:{gold:100},delta:{}};
+ if(castle?.developmentPolicy&&Object.hasOwn(developmentStats,q.type)){
+  const base=rules.commands[q.type],stat=developmentStats[q.type];
+  return {...base,delta:{...base.delta,[stat]:base.delta[stat]+(castle.developmentPolicy===q.type?3:-2)}};
+ }
+ if(['buygrain','sellgrain'].includes(q.type)){const base=rules.commands[q.type];return {cost:Object.fromEntries(Object.entries(base.cost).map(([k,v])=>[k,v*q.lots])),delta:Object.fromEntries(Object.entries(base.delta).map(([k,v])=>[k,v*q.lots]))};}if(q.type==='mediate')return {cost:{gold:100},delta:{}};if(['scheme','counterplot'].includes(q.type))return {cost:{gold:q.type==='scheme'?(q.kind==='insider'?300:150):100},delta:{}};return q.type==='search'?{cost:{gold:{careful:100,normal:250,large:500}[q.mode]},delta:{}}:['hire','reward','poach'].includes(q.type)?{cost:{gold:q.offer},delta:{}}:rules.commands[q.type];}
 function queueCommand(s,q,rules){const error=canIssueCommand(s,q,rules);if(error)fail(error);const n=clone(s);n.commands.push(clone(q));return n;}
 function validateState(s,m,rules){
  H.validate(s);
@@ -83,7 +95,7 @@ function validateState(s,m,rules){
  for(const k of ['castles','officers']){if(!Array.isArray(s[k])||s[k].length!==m[k].length||new Set(s[k].map(x=>x.id)).size!==m[k].length||s[k].some(x=>!m[k].some(y=>y.id===x.id)))fail('ID参照が不正です');}
  const fs=s.factions.map(f=>f.id);if(!fs.includes(s.playerFactionId))fail('操作勢力が不正です');
  for(const f of s.factions)if((W.aliveFaction(s,f.id)?!s.castles.some(c=>c.id===f.capitalCastleId&&c.ownerFactionId===f.id):f.capitalCastleId!==null)||(m.factions.some(x=>x.id===f.id)&&f.trait!==m.factions.find(x=>x.id===f.id).trait))fail('勢力情報が不正です');
- for(const c of s.castles){if(!fs.includes(c.ownerFactionId))fail('城所属が不正です');for(const k of ['gold','food','troops','farm','commerce','defense','publicOrder'])if(!Number.isSafeInteger(c[k])||c[k]<0||(['farm','commerce','defense','publicOrder'].includes(k)&&c[k]>100))fail('資源が不正です');const original=m.castles.find(x=>x.id===c.id);if(c.x!==original.x||c.y!==original.y)fail('座標が不正です');}
+ for(const c of s.castles){if(!fs.includes(c.ownerFactionId))fail('城所属が不正です');if(c.developmentPolicy!==undefined&&(c.ownerFactionId!==s.playerFactionId||!Object.hasOwn(developmentStats,c.developmentPolicy)))fail('城の発展方針が不正です');for(const k of ['gold','food','troops','farm','commerce','defense','publicOrder'])if(!Number.isSafeInteger(c[k])||c[k]<0||(['farm','commerce','defense','publicOrder'].includes(k)&&c[k]>100))fail('資源が不正です');const original=m.castles.find(x=>x.id===c.id);if(c.x!==original.x||c.y!==original.y)fail('座標が不正です');}
  for(const o of s.officers){
  const valid=o.status==='active'?fs.includes(o.factionId)&&s.castles.some(c=>c.id===o.locationCastleId&&c.ownerFactionId===o.factionId):o.status==='prisoner'?fs.includes(o.factionId)&&fs.includes(o.captorFactionId)&&s.castles.some(c=>c.id===o.locationCastleId&&c.ownerFactionId===o.captorFactionId):o.status==='ronin'?o.factionId===null&&o.locationCastleId===null:false;
  if(!valid||!Number.isInteger(o.loyalty)||o.loyalty<0||o.loyalty>100)fail('武将配置が不正です');if(JSON.stringify(o.stats)!==JSON.stringify(m.officers.find(x=>x.id===o.id).stats))fail('能力値が不正です');}
@@ -95,7 +107,7 @@ function validateState(s,m,rules){
  if(report.diplomacy!==undefined&&(!Array.isArray(report.diplomacy)||report.diplomacy.some(q=>!fs.includes(q.factionId)||!fs.includes(q.targetFactionId)||typeof q.result!=='string')))fail('外交履歴が不正です');
  if(report.battles!==undefined){if(!Array.isArray(report.battles))fail('合戦報告が不正です');for(const h of report.battles)W.validateRecord(h,m,s.factions);}
  if(report.military!==undefined&&(!Array.isArray(report.military)||report.military.some(h=>!m.castles.some(c=>c.id===h.castleId)||!fs.includes(h.factionId)||typeof h.result!=='string')))fail('進軍報告が不正です');
- for(const q of report.commands){if(!types.includes(q.type)||!m.castles.some(c=>c.id===q.castleId)||!m.officers.some(o=>o.id===q.officerId)||!fs.includes(q.factionId))fail('命令履歴が不正です');if(['buygrain','sellgrain'].includes(q.type)&&![1,2,4].includes(q.lots))fail('取引履歴の数量が不正です');}
+ for(const q of report.commands){if(!types.includes(q.type)||!m.castles.some(c=>c.id===q.castleId)||!m.officers.some(o=>o.id===q.officerId)||!fs.includes(q.factionId))fail('命令履歴が不正です');if(['buygrain','sellgrain'].includes(q.type)&&![1,2,4].includes(q.lots))fail('取引履歴の数量が不正です');if(q.type==='development'&&(q.factionId!==s.playerFactionId||!Object.hasOwn(developmentPolicies,q.policy)))fail('発展方針の履歴が不正です');}
  }
  for(const x of s.aiLog)if(!Number.isInteger(x.turn)||!fs.includes(x.factionId)||!m.castles.some(c=>c.id===x.castleId)||!Array.isArray(x.candidates)||x.candidates.some(c=>typeof c.type!=='string'||!Number.isFinite(c.score))||typeof x.reason!=='string')fail('AI履歴が不正です');
  if(!s.eventFlags||typeof s.eventFlags!=='object'||Array.isArray(s.eventFlags))fail('イベント履歴が不正です');
@@ -113,7 +125,7 @@ function planAI(s,rules){
  for(const f of [...s.factions].sort((a,b)=>a.id.localeCompare(b.id))){if(f.id===s.playerFactionId||!W.aliveFaction(s,f.id))continue;
   for(const c of s.castles.filter(c=>c.ownerFactionId===f.id).sort((a,b)=>a.id.localeCompare(b.id))){
    for(const o of s.officers.filter(o=>o.locationCastleId===c.id&&o.status==='active'&&o.factionId===f.id).sort((a,b)=>b.stats.politics-a.stats.politics||a.id.localeCompare(b.id))){
-    const candidates=types.filter(t=>!['buygrain','sellgrain','search','hire','reward','poach','scheme','counterplot','mediate'].includes(t)).map(type=>{let score=0,reason='';
+    const candidates=types.filter(t=>!['development','buygrain','sellgrain','search','hire','reward','poach','scheme','counterplot','mediate'].includes(t)).map(type=>{let score=0,reason='';
      if(type==='cultivate'){score=45-c.farm*.3+(c.food/Math.max(1,Math.ceil(c.troops/100))<3?100:0)+(f.trait==='agriculture'?15:0);reason='備蓄と秋収穫を確保';}
      if(type==='commerce'){score=55-c.commerce*.35+(f.trait==='commerce'?15:0);reason='継続収入を増やす';}
      if(type==='fortify'){score=18-c.defense*.1;reason='城防を整備';}
@@ -128,7 +140,13 @@ function planAI(s,rules){
 function beginMonth(state,m,rules){
  validateState(state,m,rules);if(state.ending)fail('この戦記は終了しています');const s=clone(state);W.planAI(s,m,rules);D.planAI(s,m,rules);planAI(s,rules);
  const report={turn:s.turn,year:s.year,month:s.month,entries:[],commands:clone(s.commands),military:[],battles:[]};
- for(const q of s.commands){const c=s.castles.find(c=>c.id===q.castleId),r=commandRule(q,rules);for(const [k,v]of Object.entries(r.cost))c[k]-=v;for(const[k,v]of Object.entries(r.delta)){c[k]+=v;if(r.cap&&v>0)c[k]=Math.min(r.cap,c[k]);if(r.floor&&k in r.floor)c[k]=Math.max(r.floor[k],c[k]);}}
+ for(const q of s.commands){const c=s.castles.find(c=>c.id===q.castleId),r=commandRule(q,rules,c);for(const [k,v]of Object.entries(r.cost))c[k]-=v;for(const[k,v]of Object.entries(r.delta)){c[k]+=v;if(r.cap&&v>0)c[k]=Math.min(r.cap,c[k]);if(r.floor&&k in r.floor)c[k]=Math.max(r.floor[k],c[k]);}}
+ // Apply the new policy after all domestic improvements for this month.
+ for(const q of s.commands.filter(q=>q.type==='development')){
+  const castle=s.castles.find(c=>c.id===q.castleId);
+  if(q.policy==='balanced')delete castle.developmentPolicy;
+  else castle.developmentPolicy=q.policy;
+ }
  resolvePersonnel(s,report);I.launch(s,report);V.mediate(s,report);N.mediate(s,report);H.changes(state,s,'personnel:'+s.turn);T.departures(s);return {state:s,report,armies:W.launch(s),current:null};
 }
 function nextBattle(tx){return W.nextBattle(tx,random);}
@@ -149,5 +167,5 @@ function resolvePersonnel(s,report){
  }p.log=p.log.slice(-200);
 }
 function migratePersonnel(s,m){if(s.personnel)return L.init(s);for(const o of m.officers.filter(o=>o.id.startsWith('N')))if(!s.officers.some(x=>x.id===o.id)){s.officers.push({...clone(o),factionId:null,status:'ronin',locationCastleId:null,loyalty:50});}s.personnel={known:{},attempts:{},log:[]};return L.init(s);}
-root.Yabou={requestChain:(s,id,m,r)=>{validateState(s,m,r);const n=U.request(s,id);validateState(n,m,r);return n;},chooseChain:(s,uid,id,m,r)=>{validateState(s,m,r);const result=U.choose(s,uid,id);F.refresh(result.state);validateState(result.state,m,r);return result;},dismissChain:(s,uid,m,r)=>{validateState(s,m,r);const n=U.dismiss(s,uid);validateState(n,m,r);return n;},chooseDrama:(s,uid,id,m,r)=>{validateState(s,m,r);const result=Z.choose(s,uid,id);F.refresh(result.state);validateState(result.state,m,r);return result;},dismissDrama:(s,uid,m,r)=>{validateState(s,m,r);const n=Z.dismiss(s,uid);validateState(n,m,r);return n;},labels,types,clone,dismissEvent:(s,uid,m,r)=>{validateState(s,m,r);const n=X.dismiss(s,uid);validateState(n,m,r);return n;},chooseEvent:(s,uid,id,m,r)=>{validateState(s,m,r);const result=X.choose(s,uid,id);H.changes(s,result.state,'event:'+uid);H.event(result.state,s.events.pending,X.byId[s.events.pending.id].title+'：'+result.text);F.refresh(result.state);validateState(result.state,m,r);return result;},commandRule,loyaltyLabel:L.label,bond:L.bond,validateMaster,createInitialState,canIssueCommand,queueCommand,advanceMonth,beginMonth,nextBattle,finishMonth,validateState,serializeSave:(s,m,r)=>{validateState(s,m,r);return JSON.stringify(s)},loadSave:(t,m,r)=>{const s=F.init(U.init(Z.init(P.init(H.init(A.init(X.init(migratePersonnel(W.migrate(JSON.parse(t)),m))))))));I.init(s);Q.init(s);V.init(s);N.init(s);T.init(s);validateState(s,m,r);return s}};
+root.Yabou={requestChain:(s,id,m,r)=>{validateState(s,m,r);const n=U.request(s,id);validateState(n,m,r);return n;},chooseChain:(s,uid,id,m,r)=>{validateState(s,m,r);const result=U.choose(s,uid,id);F.refresh(result.state);validateState(result.state,m,r);return result;},dismissChain:(s,uid,m,r)=>{validateState(s,m,r);const n=U.dismiss(s,uid);validateState(n,m,r);return n;},chooseDrama:(s,uid,id,m,r)=>{validateState(s,m,r);const result=Z.choose(s,uid,id);F.refresh(result.state);validateState(result.state,m,r);return result;},dismissDrama:(s,uid,m,r)=>{validateState(s,m,r);const n=Z.dismiss(s,uid);validateState(n,m,r);return n;},labels,types,developmentPolicies,clone,dismissEvent:(s,uid,m,r)=>{validateState(s,m,r);const n=X.dismiss(s,uid);validateState(n,m,r);return n;},chooseEvent:(s,uid,id,m,r)=>{validateState(s,m,r);const result=X.choose(s,uid,id);H.changes(s,result.state,'event:'+uid);H.event(result.state,s.events.pending,X.byId[s.events.pending.id].title+'：'+result.text);F.refresh(result.state);validateState(result.state,m,r);return result;},commandRule,loyaltyLabel:L.label,bond:L.bond,validateMaster,createInitialState,canIssueCommand,queueCommand,advanceMonth,beginMonth,nextBattle,finishMonth,validateState,serializeSave:(s,m,r)=>{validateState(s,m,r);return JSON.stringify(s)},loadSave:(t,m,r)=>{const s=F.init(U.init(Z.init(P.init(H.init(A.init(X.init(migratePersonnel(W.migrate(JSON.parse(t)),m))))))));I.init(s);Q.init(s);V.init(s);N.init(s);T.init(s);validateState(s,m,r);return s}};
 })(globalThis);

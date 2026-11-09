@@ -69,7 +69,7 @@ function nextBattle(tx,random){
 function settle(tx,battle){
  const s=tx.state,before=clone(s),current=tx.current;if(!current||!battle.result||battle.id!==current.battle.id)throw new Error('合戦結果が一致しません');const {army,defender,reserve}=current,t=s.castles.find(c=>c.id===army.targetCastleId),attack=battle.units.filter(u=>u.side==='attack'),defend=battle.units.filter(u=>u.side==='defend');
  if(battle.result.winner==='attack'){
-  t.ownerFactionId=army.factionId;t.troops=0;t.food=0;returnArmy(s,army,attack.filter(B().alive),battle.food.attack,t.id);returnArmy(s,army,attack.filter(u=>!B().alive(u)),0,army.castleId);
+  t.ownerFactionId=army.factionId;delete t.developmentPolicy;t.troops=0;t.food=0;returnArmy(s,army,attack.filter(B().alive),battle.food.attack,t.id);returnArmy(s,army,attack.filter(u=>!B().alive(u)),0,army.castleId);
   const home=safeCastle(s,defender);if(home){home.troops+=reserve+defend.reduce((a,u)=>a+u.troops,0);home.food+=battle.food.defend;}
   for(const o of s.officers.filter(o=>o.factionId===defender&&o.status==='active'&&o.locationCastleId===t.id)){if(home)o.locationCastleId=home.id;else{o.status='prisoner';o.captorFactionId=army.factionId;o.locationCastleId=t.id;}}
  }else{t.troops=reserve+defend.reduce((a,u)=>a+u.troops,0);t.food=battle.food.defend;returnArmy(s,army,attack,battle.food.attack,army.castleId);}
