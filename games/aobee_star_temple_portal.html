@@ -363,6 +363,7 @@ draw=function(){
 document.querySelector('header').innerHTML='あおびーと星の神殿 <small>第1章 · v0.32 開発中</small>';
 document.querySelector('#start p:last-child').textContent='左手：スライド移動　右手：調べる・攻撃 ／ PC：WASD・Space';
 document.querySelector('#start').insertAdjacentHTML('beforeend','<small style="color:#b9cfc5;font-size:9px;letter-spacing:.08em;margin-top:7px">第1章の開発中版 · 装備ボタンから武器を選べます</small>');
+document.querySelector('#start').insertAdjacentHTML('beforeend','<small style="color:#e8d9a0;font-size:10px;letter-spacing:.05em;margin-top:5px">話しかけ方：相手の隣に立って、相手のほうを向いてから「調べる（Space）」</small>');
 })();
 </script><script>// Pure quest state machine. Rewards are stored with claims in the same save snapshot.
 (function(root){
@@ -616,7 +617,7 @@ function drawS102(g){
  // A small footbridge is scenery on existing walkable tiles, not a progression gate.
  g.fillStyle='#678f91';g.fillRect(359,477,42,48);g.fillStyle='#bd9c71';g.fillRect(357,489,46,23);g.strokeStyle='#6e5841';g.lineWidth=2;for(let x=361;x<402;x+=9){g.beginPath();g.moveTo(x,489);g.lineTo(x,512);g.stroke();}
  g.fillStyle='#f0e8cf';g.fillText('橋',380,541);
- if(!q.progress.includes('tracks')&&q.state!=='claimed'){g.fillStyle='#e5cf9e';for(let i=0;i<3;i++){g.beginPath();g.ellipse(535+(i%2)*9,369+i*8,3,5,.4,0,Math.PI*2);g.fill();}g.fillText('足跡',540,359);}
+ if(!q.progress.includes('tracks')&&q.state!=='claimed'){g.fillStyle='#caa96d';for(let i=0;i<3;i++){g.beginPath();g.ellipse(535+(i%2)*9,369+i*8,3,5,.4,0,Math.PI*2);g.fill();}g.strokeStyle='#3d2c17';g.lineWidth=3;g.strokeText('足跡',540,359);g.fillStyle='#ffeec2';g.fillText('足跡',540,359);}
  g.fillStyle='#4e7c51';g.beginPath();g.ellipse(260,503,21,13,0,0,Math.PI*2);g.fill();g.fillStyle='#f0e8cf';g.fillText('低木',260,536);
  if(q.progress.includes('witness')&&!q.progress.includes('found')&&q.state!=='claimed'){g.fillStyle='#ffe2a0';g.font='21px serif';g.fillText('☆',260,507);}
  if(q.state==='claimed'){g.fillStyle='#f2d38d';g.font='22px serif';g.fillText('☆',598,205);}
@@ -770,4 +771,21 @@ function fitEdgeControls(){const r=$('wrap').getBoundingClientRect(),v=window.vi
 function syncEdgeControls(){const blocked=$('start').style.display!=='none'||$('dialog').style.display==='block'||templeGearOpen||questJournalOpen||playMenuOpen||landscapeBlocked||end;for(const z of [leftZone,rightZone]){const value=blocked?'none':'auto';if(z.style.pointerEvents!==value)z.style.pointerEvents=value;}if(blocked&&(stickPointer!==null||hold||stick.style.display!=='none'))clearStick();}
 new MutationObserver(syncEdgeControls).observe(document.body,{subtree:true,attributes:true,attributeFilter:['style','hidden','class']});
 window.addEventListener('resize',fitEdgeControls);window.visualViewport?.addEventListener('resize',fitEdgeControls);fitEdgeControls();
+</script><script>
+// P2序盤案内（2026-11-12）: 村でNPCの隣に立っているのに向きが合わず会話が始まらなかったときだけ、向きのヒントをトーストで出す。
+// 既存の action（s105までの全レイヤー適用済み）をラップするだけで、本体の判定・会話には触れない。
+(function(){
+ const prevAction=action;
+ action=function(){
+  const wasOpen=$('dialog').style.display==='block';
+  prevAction();
+  if(wasOpen||$('dialog').style.display==='block')return;
+  if($('start').style.display!=='none')return;
+  if(typeof end!=='undefined'&&end)return;
+  if(typeof area==='undefined'||area!=='village')return;
+  if(typeof villageNpcs==='undefined'||typeof player==='undefined')return;
+  const nearNpc=villageNpcs.some(n=>Math.abs(n.x-player.x)+Math.abs(n.y-player.y)===1);
+  if(nearNpc)toast('相手のほうを向いて話しかけてみよう。隣に立って、向きを合わせるのがコツだよ。');
+ };
+})();
 </script></body></html>
