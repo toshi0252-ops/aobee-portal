@@ -758,3 +758,17 @@ $('#modalClose').onclick=()=>{$('#modal .card').classList.remove('hsRoom');scree
  text-align:center; line-height:16px;
 }
 </style>
+
+<style>
+/* P2 fix 2026-11-12 (Muse): 表示の重なり3点の解消
+   1. v1.2.0の制限時間ラベル帯(.timerSetting)が「5ミス終了」ボタン(68.3%-73.5%)に
+      70.0%から被さるため廃止する。制限時間の選択UIは .timerSettingRow 側に集約済みで、
+      この帯はラベルのみの残骸（JS参照なし）。 */
+.timerSetting{display:none!important}
+/* 2. 「次へ」ボタン表示中はメッセージ帯の右端を44%にし、
+      「時間切れ！ 正解は…」等の長い文がボタン裏に回り込まないようにする。 */
+.overlay:has(#next:not(.hidden)) .msg{right:44%!important}
+/* 3. 正解/不正解スタンプは高さ92pxで選択肢1番目に被さるため帯状にし、
+      問題文の下端(43.8%)と選択肢の上端(48.7%)の間に収める。 */
+.feedbackStamp{top:43.9%!important;height:4.6%!important;min-height:0!important;border-radius:14px!important;border-width:3px!important;font-size:clamp(18px,5vw,36px)!important}
+</style>
