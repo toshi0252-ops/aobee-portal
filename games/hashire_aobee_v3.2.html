@@ -318,10 +318,10 @@ function draw(){
   x.strokeText("SCORE "+Math.floor(score),14,32);x.fillText("SCORE "+Math.floor(score),14,32);
   x.font="bold 14px sans-serif";
   x.strokeText("SPEED "+spd().toFixed(1),14,54);x.fillText("SPEED "+spd().toFixed(1),14,54);
-  if(starInv>0||boots>0||shield||wing>0){x.font="bold 15px sans-serif";x.textAlign="right";let st=[];if(starInv>0)st.push("🌟"+Math.ceil(starInv/60));if(boots>0)st.push("👟"+Math.ceil(boots/60));if(shield)st.push("🛡");if(wing>0)st.push("🪽"+Math.ceil(wing/60));x.fillStyle="#fff";x.strokeStyle="#173f68";x.lineWidth=4;x.strokeText(st.join("  "),innerWidth-16,82);x.fillText(st.join("  "),innerWidth-16,82);x.textAlign="left";}
+  if(starInv>0||boots>0||shield||wing>0){x.font="bold 15px sans-serif";x.textAlign="right";let st=[];if(starInv>0)st.push("🌟"+Math.ceil(starInv/60));if(boots>0)st.push("👟"+Math.ceil(boots/60));if(shield)st.push("🛡");if(wing>0)st.push("🪽"+Math.ceil(wing/60));x.fillStyle="#fff";x.strokeStyle="#173f68";x.lineWidth=4;x.strokeText(st.join("  "),innerWidth-78,82);x.fillText(st.join("  "),innerWidth-78,82);x.textAlign="left";}
   if(combo>=2){x.font="bold 18px sans-serif";x.fillStyle="#fff";x.strokeText("COMBO ×"+combo,14,79);x.fillText("COMBO ×"+combo,14,79);}
   x.textAlign="right";
-  x.strokeText("BEST "+best,innerWidth-14,32);x.fillText("BEST "+best,innerWidth-14,32);
+  x.strokeText("BEST "+best,innerWidth-78,32);x.fillText("BEST "+best,innerWidth-78,32);
 
   for(let q of pop){
     x.textAlign="center";x.font="bold 17px sans-serif";
