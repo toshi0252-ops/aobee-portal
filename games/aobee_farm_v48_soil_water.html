@@ -2081,7 +2081,7 @@ const toolShelf=document.createElement('details');
 toolShelf.className='toolShelf';
 const shelfSummary=document.createElement('summary');
 shelfSummary.textContent='道具・種を選ぶ';
-const shelfHint=document.createElement('p');shelfHint.className='hint';shelfHint.textContent='順番は 耕す→種まき→水やり→収穫。畑をタップしたときは「おまかせ作業」が畑の状態に合わせて道具を選びます。';toolShelf.append(shelfSummary,shelfHint,toolbarNode);
+toolShelf.append(shelfSummary,toolbarNode);
 touchHint.after(toolShelf);
 toolbarNode.style.display='';
 autoButton.style.display='none';
@@ -3142,7 +3142,7 @@ farmCamera=function(){
  const cx=400-(visual.x*T+20)*zoom,cy=300-(visual.y*T+20)*zoomY;
  return {zoom,zoomY,x:800*zoom<800?(800-800*zoom)/2:Math.max(800-800*zoom,Math.min(0,cx)),y:600*zoomY<600?(600-600*zoomY)/2:Math.max(600-600*zoomY,Math.min(0,cy))};
 };
-const toolsDialog43=document.createElement('dialog');toolsDialog43.className='bagdialog toolsDialog43';toolsDialog43.innerHTML='<h2>道具と種</h2><p>使う道具と、育てる作物を選べます。</p>';toolsDialog43.append(toolbarNode);
+const toolsDialog43=document.createElement('dialog');toolsDialog43.className='bagdialog toolsDialog43';toolsDialog43.innerHTML='<h2>道具と種</h2><p>使う道具と、育てる作物を選べます。</p><p class="hint">順番は 耕す→種まき→水やり→収穫。畑をタップしたときは「おまかせ作業」が畑の状態に合わせて道具を選びます。</p>';toolsDialog43.append(toolbarNode);
 const toolsDone43=document.createElement('button');toolsDone43.textContent='牧場に戻る';toolsDone43.className='menuClose40';toolsDone43.onclick=()=>toolsDialog43.close();toolsDialog43.append(toolsDone43);document.body.append(toolsDialog43);
 quickChoice.onclick=()=>{if(c._house||document.querySelector('dialog[open]')||autoToken33)return;toolsDialog43.showModal()};
 toolbarNode.addEventListener('click',e=>{if(e.target.closest('button[data-tool]'))toolsDialog43.close()});
