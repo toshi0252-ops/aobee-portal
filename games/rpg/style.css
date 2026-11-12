@@ -65,3 +65,8 @@ dialog{width:min(640px,calc(100% - 26px));max-height:calc(100dvh - 32px);border:
 #hud>div{min-width:0;max-width:calc(100% - 105px)}#hud strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#hud .eyebrow{letter-spacing:.08em;white-space:nowrap}
 
 #objective{pointer-events:auto;min-height:44px;max-width:calc(100% - 36px);text-align:left;border:1px solid #b6cba566;line-height:1.5;font-family:inherit;cursor:pointer}#objective:disabled{cursor:default;opacity:.85}#objective:focus-visible{outline:3px solid #ffe5a5;outline-offset:3px}
+
+/* P2序盤案内（2026-11-12）: 話せる・調べられる対象が範囲内にある間、ヒントとボタンを光らせて知らせる */
+#interaction-hint.ready{background:#ffd94d;color:#20313a;font-weight:700;box-shadow:0 0 0 2px #fff3b0,0 4px 14px #0005}
+.action-button.ready{border-color:#fff8d0;animation:aobeeReadyPulse 1s ease-in-out infinite}
+@keyframes aobeeReadyPulse{0%,100%{box-shadow:0 6px 20px #173b4433}50%{box-shadow:0 0 0 7px #ffd94d88,0 6px 22px #173b4466}}

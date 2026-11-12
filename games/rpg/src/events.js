@@ -1,7 +1,7 @@
 (function(root){
  'use strict';
  const adventure=typeof module!=='undefined'&&module.exports?require('./adventure.js'):root.AobeeAdventure;
- function interact(app,t){if(typeof AobeePostgame!=='undefined'&&t&&AobeePostgame.interact(app,t))return;if(!t)return app.ui.toast('少し近づいて、話す・調べるを押してね。');if(typeof AobeeChapter6!=='undefined'&&AobeeChapter6.interact(app,t))return;if(typeof AobeeChapter5!=='undefined'&&AobeeChapter5.interact(app,t))return;if(typeof AobeeChapter4!=='undefined'&&AobeeChapter4.interact(app,t))return;
+ function interact(app,t){if(typeof AobeePostgame!=='undefined'&&t&&AobeePostgame.interact(app,t))return;if(!t)return app.ui.toast('もう少し近づいてみて。相手の隣に立つと、右下のボタンが光るよ。');if(typeof AobeeChapter6!=='undefined'&&AobeeChapter6.interact(app,t))return;if(typeof AobeeChapter5!=='undefined'&&AobeeChapter5.interact(app,t))return;if(typeof AobeeChapter4!=='undefined'&&AobeeChapter4.interact(app,t))return;
  if(typeof AobeeChapter3!=='undefined'&&AobeeChapter3.interact(app,t))return;
  if(typeof AobeeChapter2!=='undefined'&&AobeeChapter2.interact(app,t))return;
  if(adventure.interact(app,t))return;
@@ -38,7 +38,7 @@
  if(t.dialogue)return say(app.data.dialogues[t.dialogue]);
  }
  function travel(a,to,x,y,direction){transition(a,{to,tx:x,ty:y,direction});}
- function intro(a){if(a.state.events.luminaIntro)return;a.dialogue.start(a.data.dialogues.intro,()=>{a.state.events.luminaIntro=true;a.ui.toast('旅の手帳に、おつかいを記しました。');});}
+ function intro(a){if(a.state.events.luminaIntro)return;a.dialogue.start(a.data.dialogues.intro,()=>{a.state.events.luminaIntro=true;a.ui.toast('旅の手帳に、おつかいを記しました。人の隣に立つと、右下の「話す」ボタンが光ります。');});}
  function transition(a,d){if(typeof AobeePostgame!=='undefined')AobeePostgame.visit(a.state,d.to,a.state.mapId);a.state.mapId=d.to;a.state.position={x:d.tx,y:d.ty,direction:d.direction||'down'};if(d.event)a.state.events[d.event]=true;const m=a.map();if(m.visitedEvent)a.state.events[m.visitedEvent]=true;a.syncVisual();a.cancelPath();a.input.reset();a.ui.hud();a.audio.effect();a.audio.mood(AobeeStory.worldMood(a.state));}
  root.AobeeEvents={interact,intro,transition};
 })(globalThis);
