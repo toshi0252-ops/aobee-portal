@@ -128,6 +128,7 @@ enemies: cfg.enemies.map(e => ({...e, hp: e.maxHp, weakMode: e.weakMode || 'norm
 };
 ui.classList.remove('hidden');
 document.getElementById('hud').classList.add('hidden');
+Engine.Snd.bgm(cfg.enemies.some(e => e.kind === 'boss') ? 'boss' : 'battle');
 renderEnemy(); renderStatus(); setCmds(false);
 Engine.Snd.gear();
 await logSeq([cfg.intro || `${B.enemies[0].name} が あらわれた！`], 900);
@@ -168,6 +169,7 @@ end('lose', resolve || B._resolve);
 return true;
 }
 function end(result, resolve) {
+Engine.Snd.bgm('field');
 ui.classList.add('hidden');
 document.getElementById('hud').classList.remove('hidden');
 const r = resolve || (B && B._resolve);

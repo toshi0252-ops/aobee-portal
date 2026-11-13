@@ -189,7 +189,7 @@ const Engine = (() => {
 
   /* ---------- サウンド（WebAudio・初回操作後に初期化） ---------- */
   let AC = null;
-  function audioInit() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === 'suspended') AC.resume(); }
+  function audioInit() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === 'suspended') AC.resume(); bgmKick(); }
   function beep(freq, dur, type, vol) {
     if (!AC) return;
     const o = AC.createOscillator(), g = AC.createGain();
@@ -199,13 +199,76 @@ const Engine = (() => {
     o.connect(g); g.connect(AC.destination);
     o.start(); o.stop(AC.currentTime + dur);
   }
+  /* ---------- BGM（WebAudio簡易シーケンサ・外部音源なし） ---------- */
+  const BGM_VOL = 0.07; // マスター音量（効果音より小さめ）
+  const mf = (m) => 440 * Math.pow(2, (m - 69) / 12); // MIDIノート番号→周波数
+  // mel/bass は8分音符グリッドのMIDIノート列（0=休符）、各32ステップ（8小節）のループ
+  const BGM_TRACKS = {
+    field: { step: 0.30, wave: 'triangle', melVol: 0.55, bassVol: 0.9, // 穏やかな村: Cメジャーペンタ、コード C-F-C-G
+      mel:  [72, 0, 76, 0, 79, 0, 76, 0, 74, 0, 72, 0, 69, 0, 71, 0, 72, 0, 76, 0, 81, 0, 79, 0, 76, 0, 74, 0, 72, 0, 0, 0],
+      bass: [48, 0, 0, 0, 0, 0, 0, 0, 53, 0, 0, 0, 0, 0, 0, 0, 48, 0, 0, 0, 0, 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 0] },
+    battle: { step: 0.24, wave: 'square', melVol: 0.38, bassVol: 0.9, // 少し緊張感: Aマイナー、コード Am-F-G-Am
+      mel:  [69, 0, 72, 0, 69, 0, 67, 0, 69, 0, 74, 0, 72, 0, 69, 0, 65, 0, 69, 0, 65, 0, 64, 0, 67, 0, 71, 0, 69, 0, 0, 0],
+      bass: [45, 0, 0, 0, 45, 0, 0, 0, 41, 0, 0, 0, 41, 0, 0, 0, 43, 0, 0, 0, 43, 0, 0, 0, 45, 0, 0, 0, 47, 0, 0, 0] },
+    boss: { step: 0.20, wave: 'sawtooth', melVol: 0.30, bassVol: 0.95, // 速め・重め: Dマイナー、8分パルスのベース
+      mel:  [62, 0, 62, 65, 0, 62, 0, 60, 0, 62, 0, 58, 0, 61, 0, 62, 0, 62, 65, 0, 69, 0, 67, 0, 65, 0, 64, 0, 62, 0, 0, 0],
+      bass: [38, 0, 38, 0, 38, 0, 45, 0, 36, 0, 36, 0, 36, 0, 43, 0, 38, 0, 38, 0, 38, 0, 45, 0, 41, 0, 41, 0, 43, 0, 45, 0] }
+  };
+  let bgmName = null, bgmTimer = null, bgmStepIdx = 0, bgmNextTime = 0, bgmGainNode = null;
+  let bgmIsMuted = false;
+  try { bgmIsMuted = localStorage.getItem('aobeeGrandBgm') === 'off'; } catch (e) { /* 読めない環境ではON扱い */ }
+  function bgmTone(freq, t, dur, type, vol) {
+    if (!AC || !bgmGainNode) return;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0011, vol), t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(bgmGainNode);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  function bgmTick() { // ルックアヘッド方式: 0.22秒先まで予約してループ
+    if (!AC || !bgmName) return;
+    const tr = BGM_TRACKS[bgmName]; if (!tr) return;
+    while (bgmNextTime < AC.currentTime + 0.22) {
+      const i = bgmStepIdx % tr.mel.length;
+      if (tr.mel[i]) bgmTone(mf(tr.mel[i]), bgmNextTime, tr.step * 0.92, tr.wave, tr.melVol);
+      if (tr.bass[i]) bgmTone(mf(tr.bass[i]), bgmNextTime, tr.step * 1.9, 'sine', tr.bassVol);
+      bgmNextTime += tr.step; bgmStepIdx++;
+    }
+  }
+  function bgmKick() { // AudioContext準備後にシーケンサを（再）起動。曲名は保持されるのでジェスチャ前に指定しても鳴り出す
+    if (!AC || !bgmName || bgmTimer) return;
+    if (!bgmGainNode) {
+      bgmGainNode = AC.createGain();
+      bgmGainNode.gain.value = bgmIsMuted ? 0 : BGM_VOL;
+      bgmGainNode.connect(AC.destination);
+    }
+    bgmStepIdx = 0; bgmNextTime = AC.currentTime + 0.06;
+    bgmTimer = setInterval(bgmTick, 40);
+  }
+  function bgmSet(name) {
+    if (name === bgmName) { bgmKick(); return; }
+    bgmName = name;
+    if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+    if (name) bgmKick();
+  }
+
   const Snd = {
     step: () => {}, ok: () => beep(660, 0.07, 'square', 0.04),
     pickup: () => { beep(880, 0.08, 'square', 0.05); setTimeout(() => beep(1320, 0.1, 'square', 0.05), 70); },
     hit: () => beep(140, 0.15, 'sawtooth', 0.07),
     hurt: () => beep(220, 0.18, 'sawtooth', 0.06),
     win: () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 0.12, 'square', 0.05), i * 110)); },
-    gear: () => { beep(196, 0.3, 'triangle', 0.08); setTimeout(() => beep(98, 0.4, 'triangle', 0.08), 200); }
+    gear: () => { beep(196, 0.3, 'triangle', 0.08); setTimeout(() => beep(98, 0.4, 'triangle', 0.08), 200); },
+    /* BGM: bgm('field'|'battle'|'boss') で開始/切替、bgm(null) で停止。ミュートはBGMのみ（効果音は鳴る） */
+    bgm: (name) => bgmSet(name || null),
+    bgmMuted: () => bgmIsMuted,
+    setBgmMuted: (m) => {
+      bgmIsMuted = !!m;
+      try { localStorage.setItem('aobeeGrandBgm', bgmIsMuted ? 'off' : 'on'); } catch (e) { /* 保存不可環境では無視 */ }
+      if (bgmGainNode) bgmGainNode.gain.value = bgmIsMuted ? 0 : BGM_VOL;
+    }
   };
 
   /* ---------- 入力 ---------- */

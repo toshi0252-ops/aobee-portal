@@ -25,6 +25,12 @@ canvas#game { width: 100%; height: 100%; display: block; }
   text-align: center; padding: 10px;
 }
 .overlay > * { margin: auto; }
+.title-inner { width: min(94vw, 560px); }
+.title-art {
+  display: block; width: min(92%, 520px); height: auto; margin: 0 auto 10px;
+  border-radius: 12px; border: 2px solid #5b82a6; box-shadow: 0 4px 14px rgba(0,0,0,.45);
+  object-fit: cover;
+}
 .title-inner h1 { font-size: clamp(26px, 6vw, 44px); line-height: 1.25; color: #ffe066; text-shadow: 0 3px 0 #b8860b; letter-spacing: .04em; }
 .eyebrow { color: #8fd0ff; font-size: 12px; letter-spacing: .25em; margin-bottom: 8px; }
 .subtitle { margin: 10px 0 20px; color: #dfeffc; font-size: clamp(13px, 2.6vw, 17px); }
@@ -119,6 +125,12 @@ canvas#game { width: 100%; height: 100%; display: block; }
   border-radius: 8px; padding: 5px 10px; font-size: 13px; font-weight: 700;
 }
 #hud-sub { margin-top: 4px; background: rgba(12,24,38,.7); color: #cfe6f7; border-radius: 8px; padding: 3px 9px; font-size: 12px; display: inline-block; }
+#btn-bgm {
+  pointer-events: auto; display: inline-block; vertical-align: top; margin-left: 6px;
+  width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+  border: 1.5px solid #ffd94d; background: rgba(12,24,38,.85); color: #ffe9a8; font-size: 16px; line-height: 1;
+}
+#btn-bgm.off { opacity: .45; border-color: #7e97ad; color: #9db8cc; }
 
 /* タッチ操作 */
 #touch { display: none; margin-top: 12px; justify-content: space-between; align-items: center; padding: 0 6px; }
@@ -147,6 +159,7 @@ body.touch #foot { display: none; }
   #clear-stats { line-height: 1.6; font-size: 13.5px; margin-bottom: 6px; }
   .clear-next { line-height: 1.5; font-size: 12.5px; margin-bottom: 8px; }
   .bigbtn { padding: 8px 20px; font-size: 15px; min-width: 180px; }
+  .title-art { display: none; } /* 低い画面ではタイトル全体の収まりを優先して隠す */
   .subtitle { margin: 6px 0 10px; }
   .title-btns { gap: 7px; }
   .title-note { margin-top: 8px; }

@@ -5,11 +5,20 @@
   const SAVE_KEY = 'aobeeGrandSaveV1';
   const $ = (id) => document.getElementById(id);
 
+  /* 画像の先読み（敵イラストは戦闘開始時に初めて読み込むと初回だけ1フレーム欠けるため） */
+  const PRELOAD_SRCS = [
+    'assets/chars/npc-gardo.png', 'assets/chars/npc-mami.png', 'assets/chars/npc-poco.png',
+    'assets/chars/enemy-cog.png', 'assets/chars/enemy-guardian.png', 'assets/chars/enemy-karakuri.png',
+    'assets/warubee-front-v1.png'
+  ];
+  for (const src of PRELOAD_SRCS) { const im = new Image(); im.src = src; }
+
   function freshState() {
     return {
       hp: 40, maxHp: 40, herbs: 2, guts: 0,
       fragments: 0, losses: 0, playMs: 0, startedAt: Date.now(),
       flags: {}, // opening, boots, trailIntro, cogDone, millIntro, millGear, bridgeOpen, bossDone, cleared
+      talks: {}, // NPCごとの会話回数（2回目以降のセリフ出し分け用）
       picked: {}, // 'map:x,y' -> true
       choice: null, // 'strong' | 'weak'
       stats: { gutsSaves: 0 }
@@ -136,15 +145,31 @@
     const f = World.frontTile();
     const npc = World.map.npcs.find(n => !n.hidden && n.x === f.x && n.y === f.y);
     if (npc) {
+      S.talks = S.talks || {};
       if (npc.id === 'gardo') {
         if (!S.flags.boots) {
           Dialogue.play(Data.dlg.gardoFirst, () => {
             S.flags.boots = true; S.herbs += 1;
             Snd.pickup(); refreshHUD(); save();
           });
-        } else Dialogue.play(Data.dlg.gardoAfter);
-      } else if (npc.id === 'baker') Dialogue.play(Data.dlg.baker);
-      else if (npc.id === 'kid') Dialogue.play(Data.dlg.kid);
+        } else if (S.flags.bossDone) Dialogue.play(Data.dlg.gardoBossDone);
+        else if (S.fragments >= 3) Dialogue.play(Data.dlg.gardoFragmentsDone);
+        else Dialogue.play(Data.dlg.gardoAfter);
+      } else if (npc.id === 'baker') {
+        if (S.flags.bossDone) Dialogue.play(Data.dlg.bakerBossDone);
+        else {
+          const n = (S.talks.baker = (S.talks.baker || 0) + 1);
+          if (n === 1) Dialogue.play(Data.dlg.baker);
+          else Dialogue.play(Data.dlg.bakerChat[(n - 2) % Data.dlg.bakerChat.length]);
+        }
+      } else if (npc.id === 'kid') {
+        if (S.flags.bossDone) Dialogue.play(Data.dlg.kidBossDone);
+        else {
+          const n = (S.talks.kid = (S.talks.kid || 0) + 1);
+          if (n === 1) Dialogue.play(Data.dlg.kid);
+          else Dialogue.play(Data.dlg.kidChat[(n - 2) % Data.dlg.kidChat.length]);
+        }
+      }
       else if (npc.id === 'warubee' && curMap === 'mill' && !S.flags.bossDone && !S.flags.bossStarted) {
         S.flags.bossStarted = true; startBoss();
       }
@@ -259,6 +284,7 @@
     $('clear-screen').classList.add('hidden');
     $('hud').classList.remove('hidden');
     started = true;
+    Snd.bgm('field');
     if (fromSave) {
       const sv = loadSave();
       S = Object.assign(freshState(), sv.S);
@@ -306,5 +332,10 @@
     $('btn-howto').addEventListener('click', () => { $('howto-screen').classList.remove('hidden'); });
     $('btn-howto-back').addEventListener('click', () => { $('howto-screen').classList.add('hidden'); });
     $('btn-clear-back').addEventListener('click', () => location.reload());
+    // BGMミュート切替（状態は Snd 側で localStorage に保存される）
+    const bgmBtn = $('btn-bgm');
+    const paintBgm = () => bgmBtn.classList.toggle('off', Snd.bgmMuted());
+    bgmBtn.addEventListener('click', () => { Snd.setBgmMuted(!Snd.bgmMuted()); paintBgm(); });
+    paintBgm();
   });
 })();
