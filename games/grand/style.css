@@ -65,15 +65,16 @@ canvas#game { width: 100%; height: 100%; display: block; }
 
 /* 戦闘 */
 #battle-ui { position: absolute; inset: 0; z-index: 15; pointer-events: none; }
-#enemy-area { position: absolute; top: 4%; left: 0; right: 0; height: 46%; }
-.enemy { position: absolute; transform: translateX(-50%); text-align: center; transition: opacity .3s; }
-.enemy img, .enemy canvas { width: auto; }
-.enemy .ename { font-size: 13px; font-weight: 700; text-shadow: 0 1px 3px #000; margin-top: 2px; }
+#enemy-area { position: absolute; top: 2%; left: 0; right: 0; height: 50%; }
+.enemy { position: absolute; top: 0; height: 100%; transform: translateX(-50%); text-align: center; transition: opacity .3s; display: flex; flex-direction: column; align-items: center; }
+.enemy img, .enemy canvas { width: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+.eplate { background: rgba(12,24,38,.9); border: 1.5px solid #7fb2dd; border-radius: 8px; padding: 3px 10px 6px; z-index: 2; flex: none; }
+.enemy .ename { font-size: 13px; font-weight: 700; color: #eaf4ff; white-space: nowrap; }
 .enemy .ehp { width: 110px; height: 9px; background: #333; border: 1px solid #999; border-radius: 5px; margin: 3px auto 0; overflow: hidden; }
 .enemy .ehp > div { height: 100%; background: #7ee787; transition: width .3s; }
 .enemy.hit { animation: hit .35s; }
-.enemy-visual { display: flex; flex-direction: column; align-items: center; }
-.enemy-bob { animation: ebob 2.6s ease-in-out infinite alternate; }
+.enemy-visual { display: flex; flex-direction: column; align-items: center; flex: 1; min-height: 0; width: 100%; justify-content: flex-end; }
+.enemy-bob { animation: ebob 2.6s ease-in-out infinite alternate; flex: 1; min-height: 0; display: flex; align-items: flex-end; justify-content: center; width: 100%; }
 @keyframes ebob { from { transform: translateY(-3px); } to { transform: translateY(3px); } }
 .enemy-shadow {
   height: 14px; border-radius: 50%; margin-top: -4px;

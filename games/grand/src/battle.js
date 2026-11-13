@@ -49,17 +49,17 @@ if (e.kind === 'boss') {
 bob.style.display = 'flex'; bob.style.alignItems = 'flex-end'; bob.style.gap = '4px';
 const art = ENEMY_ART.karakuri;
 const kimg = document.createElement('img');
-kimg.src = art.src; kimg.alt = 'からくり人形'; kimg.style.height = art.h + 'px';
+kimg.src = art.src; kimg.alt = 'からくり人形'; kimg.style.height = '100%';
 kimg.onerror = () => { kimg.replaceWith(karakuriFallback()); };
 const wimg = document.createElement('img');
-wimg.src = 'assets/warubee-front-v1.png'; wimg.alt = 'わるびー'; wimg.style.height = '150px';
+wimg.src = 'assets/warubee-front-v1.png'; wimg.alt = 'わるびー'; wimg.style.height = '82%';
 wimg.onerror = () => { wimg.style.display = 'none'; };
 bob.appendChild(kimg); bob.appendChild(wimg);
 shadowW = 250;
 } else {
 const art = ENEMY_ART[e.id] || ENEMY_ART.cog;
 const img = document.createElement('img');
-img.src = art.src; img.alt = e.name; img.style.height = art.h + 'px';
+img.src = art.src; img.alt = e.name; img.style.height = '100%';
 img.onerror = () => { img.replaceWith(cogFallback(art)); };
 bob.appendChild(img);
 shadowW = art.shadow;
@@ -75,13 +75,14 @@ B.enemies.forEach((e, i) => {
 const d = document.createElement('div');
 d.className = 'enemy'; d.id = 'enemy-' + i;
 d.style.left = (50 + (i - (B.enemies.length - 1) / 2) * 34) + '%';
-d.style.top = '6%';
-d.appendChild(enemyVisual(e));
+const plate = document.createElement('div'); plate.className = 'eplate';
 const nm = document.createElement('div'); nm.className = 'ename';
 nm.textContent = e.name + (e.kind === 'boss'? `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`: '');
 const hp = document.createElement('div'); hp.className = 'ehp';
 const fill = document.createElement('div'); fill.style.width = (Math.max(0, e.hp) / e.maxHp * 100) + '%';
-hp.appendChild(fill); d.appendChild(nm); d.appendChild(hp);
+hp.appendChild(fill); plate.appendChild(nm); plate.appendChild(hp);
+d.appendChild(plate);
+d.appendChild(enemyVisual(e));
 d._fill = fill; d._nm = nm;
 enemyArea.appendChild(d);
 e._el = d;
