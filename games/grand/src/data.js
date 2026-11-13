@@ -59,17 +59,17 @@ const Data = (() => {
         { id: 'kid', name: '村の子ポコ', x: 13, y: 9, kind: 'kid' }
       ],
       exits: [
-        { x: 10, y: 12, to: 'trail', tx: 10, ty: 1 },
-        { x: 11, y: 12, to: 'trail', tx: 10, ty: 1 }
+        { x: 10, y: 12, to: 'trail', tx: 10, ty: 1, label: '欠片の小道へ' },
+        { x: 11, y: 12, to: 'trail', tx: 10, ty: 1, label: '欠片の小道へ' }
       ]
     },
     trail: {
       name: '欠片の小道', grid: TRAIL, npcs: [],
       exits: [
-        { x: 10, y: 0, to: 'village', tx: 10, ty: 11 },
-        { x: 11, y: 0, to: 'village', tx: 10, ty: 11 },
-        { x: 10, y: 13, to: 'mill', tx: 2, ty: 11, gate: 'fragments' },
-        { x: 11, y: 13, to: 'mill', tx: 2, ty: 11, gate: 'fragments' }
+        { x: 10, y: 0, to: 'village', tx: 10, ty: 11, label: 'はぐるま村へ' },
+        { x: 11, y: 0, to: 'village', tx: 10, ty: 11, label: 'はぐるま村へ' },
+        { x: 10, y: 13, to: 'mill', tx: 2, ty: 11, gate: 'fragments', label: '水車小屋へ' },
+        { x: 11, y: 13, to: 'mill', tx: 2, ty: 11, gate: 'fragments', label: '水車小屋へ' }
       ]
     },
     mill: {
@@ -78,8 +78,8 @@ const Data = (() => {
         { id: 'warubee', name: 'わるびー', x: 17, y: 7, kind: 'warubee', hidden: true }
       ],
       exits: [
-        { x: 2, y: 13, to: 'trail', tx: 10, ty: 12 },
-        { x: 3, y: 13, to: 'trail', tx: 10, ty: 12 }
+        { x: 2, y: 13, to: 'trail', tx: 10, ty: 12, label: '欠片の小道へ' },
+        { x: 3, y: 13, to: 'trail', tx: 10, ty: 12, label: '欠片の小道へ' }
       ]
     }
   };

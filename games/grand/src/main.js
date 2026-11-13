@@ -39,7 +39,7 @@
     const f = S.flags;
     if (!f.opening) return '……';
     if (!f.boots) return '工房のガルドに話そう';
-    if (!f.cogDone && S.fragments < 3 && curMap !== 'mill') return `小道で歯車の欠片を集めよう（${S.fragments}/3）`;
+    if (S.fragments < 3 && curMap !== 'mill') return `小道で歯車の欠片を集めよう（${S.fragments}/3）`;
     if (!f.millGear) return curMap === 'mill' ? '水車小屋で小歯車を回収しよう' : '南の出口から水車小屋へ進もう';
     if (!f.bridgeOpen) return '橋の仕掛けに小歯車をはめよう';
     if (!f.bossDone) return '橋を渡って わるびーを追い詰めよう！';
@@ -185,7 +185,8 @@
         S.flags.millGear = true;
         World.setTile(World.player.gx, World.player.gy, '.');
         Snd.pickup();
-        Dialogue.play(Data.dlg.millCogOutro, () => { refreshHUD(); save(); });
+        S.hp = S.maxHp; S.herbs += 1;
+        Dialogue.play(Data.dlg.millCogOutro.concat([Data.L('', '水車小屋でひと休みした。HPが全回復！　ほし草を1つ見つけた。')]), () => { refreshHUD(); save(); });
       } else onLose();
       refreshHUD();
     });

@@ -416,7 +416,30 @@ const Engine = (() => {
         if (t === 'S') { ctx.fillStyle = '#8a653f'; ctx.fillRect(px + 13, py + 10, 6, 18); ctx.fillStyle = '#e8dcc3'; ctx.fillRect(px + 5, py + 2, 22, 13); }
         if (t === 'F') { ctx.save(); ctx.translate(px + 16, py + 16); ctx.rotate(performance.now() / 900); gearPath(ctx, 0, 0, 7, 8, '#ffd21f'); ctx.restore(); }
         if (t === 'G') { ctx.save(); ctx.translate(px + 16, py + 16); ctx.rotate(-performance.now() / 1200); gearPath(ctx, 0, 0, 9, 9, '#c0c6cc'); ctx.restore(); }
-        if (t === 'D') { ctx.fillStyle = '#5d9146'; ctx.fillRect(px + 4, py + 26, 24, 4); }
+        if (t === 'D') { ctx.fillStyle = '#c9b458'; ctx.fillRect(px, py, TILE, TILE); ctx.fillStyle = '#b39d45'; ctx.fillRect(px + 3, py + 6, 4, 4); ctx.fillRect(px + 24, py + 20, 4, 4); }
+      }
+      // 出口サイン（行き先ラベル＋矢印）
+      if (m.exits) {
+        const groups = {};
+        for (const ex of m.exits) { if (!ex.label) continue; const k = ex.to + '|' + ex.label; (groups[k] = groups[k] || []).push(ex); }
+        for (const k of Object.keys(groups)) {
+          const arr = groups[k];
+          const cx = (arr.reduce((s, e) => s + e.x, 0) / arr.length) * TILE + 16;
+          const ey = arr[0].y;
+          const atBottom = ey >= ROWS - 2, atTop = ey <= 1;
+          const bob = Math.round(Math.sin(performance.now() / 350) * 2);
+          const ly = atTop ? (ey + 1) * TILE + 10 : ey * TILE - 12;
+          ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          const w = ctx.measureText(arr[0].label).width + 14;
+          ctx.fillStyle = 'rgba(23,45,59,0.88)';
+          ctx.beginPath(); ctx.roundRect(cx - w / 2, ly - 9, w, 18, 9); ctx.fill();
+          ctx.fillStyle = '#ffd21f'; ctx.fillText(arr[0].label, cx, ly + 1);
+          ctx.fillStyle = '#ffd21f';
+          ctx.beginPath();
+          if (atBottom) { ctx.moveTo(cx - 6, ey * TILE - 24 + bob); ctx.lineTo(cx + 6, ey * TILE - 24 + bob); ctx.lineTo(cx, ey * TILE - 16 + bob); }
+          else if (atTop) { ctx.moveTo(cx - 6, (ey + 1) * TILE + 22 + bob); ctx.lineTo(cx + 6, (ey + 1) * TILE + 22 + bob); ctx.lineTo(cx, (ey + 1) * TILE + 14 + bob); }
+          ctx.closePath(); ctx.fill();
+        }
       }
       // 村の大歯車タワー
       if (this.mapId === 'village') {
