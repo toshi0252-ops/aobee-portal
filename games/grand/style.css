@@ -1,0 +1,139 @@
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  background: #14202e;
+  color: #fff;
+  font-family: "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic", sans-serif;
+  display: flex; justify-content: center;
+  overflow-x: hidden;
+}
+#wrap { width: min(96vw, 680px); padding: 10px 0 20px; }
+#stage {
+  position: relative; width: 100%; aspect-ratio: 640 / 448;
+  background: #22384f; border-radius: 12px; overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0,0,0,.5);
+  touch-action: none; user-select: none; -webkit-user-select: none;
+}
+canvas#game { width: 100%; height: 100%; display: block; }
+.hidden { display: none !important; }
+
+/* タイトル等オーバーレイ */
+.overlay {
+  position: absolute; inset: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(180deg, rgba(20,42,66,.92), rgba(16,30,48,.96));
+  text-align: center; padding: 16px;
+}
+.title-inner h1 { font-size: clamp(26px, 6vw, 44px); line-height: 1.25; color: #ffe066; text-shadow: 0 3px 0 #b8860b; letter-spacing: .04em; }
+.eyebrow { color: #8fd0ff; font-size: 12px; letter-spacing: .25em; margin-bottom: 8px; }
+.subtitle { margin: 10px 0 20px; color: #dfeffc; font-size: clamp(13px, 2.6vw, 17px); }
+.title-btns { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.bigbtn {
+  min-width: 210px; padding: 11px 22px; font-size: 17px; font-weight: 700;
+  color: #20303f; background: #ffd94d; border: none; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 3px 0 #c49a12;
+}
+.bigbtn:active { transform: translateY(2px); box-shadow: none; }
+.bigbtn.sub { background: #9fd8ff; box-shadow: 0 3px 0 #4d84ad; font-size: 15px; }
+.bigbtn:disabled { opacity: .45; cursor: default; box-shadow: none; }
+.title-note { margin-top: 16px; font-size: 11px; color: #9db8cc; }
+.panel { background: rgba(10,22,36,.65); border: 2px solid #5b82a6; border-radius: 12px; padding: 18px 20px; max-width: 560px; text-align: left; }
+.panel h2 { text-align: center; color: #ffe066; margin-bottom: 12px; font-size: 22px; }
+.panel ul { margin: 0 0 14px 20px; line-height: 1.75; font-size: 14px; }
+.panel .bigbtn { display: block; margin: 0 auto; }
+
+/* 会話 */
+#dlg {
+  position: absolute; left: 2.5%; right: 2.5%; bottom: 2.5%; z-index: 20;
+  display: flex; gap: 10px; align-items: stretch;
+  background: rgba(12, 24, 38, .94); border: 2px solid #7fb2dd; border-radius: 12px;
+  padding: 10px 12px; min-height: 92px; cursor: pointer;
+}
+#dlg-face { width: 74px; flex: 0 0 74px; display: flex; align-items: flex-start; justify-content: center; }
+#dlg-face img { width: 74px; height: 74px; object-fit: contain; display: none; }
+#dlg-face-canvas { width: 74px; height: 74px; display: none; }
+#dlg-main { flex: 1; position: relative; }
+#dlg-name { color: #ffd94d; font-weight: 700; font-size: 14px; margin-bottom: 3px; min-height: 17px; }
+#dlg-text { font-size: clamp(14px, 2.9vw, 17px); line-height: 1.55; white-space: pre-wrap; }
+#dlg-next { position: absolute; right: 0; bottom: -4px; color: #ffd94d; font-size: 12px; animation: bob 0.8s infinite alternate; }
+@keyframes bob { from { transform: translateY(0); } to { transform: translateY(3px); } }
+#dlg-choices { position: absolute; right: 8px; top: -86px; display: flex; flex-direction: column; gap: 6px; }
+#dlg-choices button {
+  padding: 9px 14px; font-size: 15px; font-weight: 700; border-radius: 10px; cursor: pointer;
+  background: #fff7d6; color: #20303f; border: 2px solid #c49a12;
+}
+
+/* 戦闘 */
+#battle-ui { position: absolute; inset: 0; z-index: 15; pointer-events: none; }
+#enemy-area { position: absolute; top: 2%; left: 0; right: 0; height: 50%; }
+.enemy { position: absolute; top: 0; height: 100%; transform: translateX(-50%); text-align: center; transition: opacity .3s; display: flex; flex-direction: column; align-items: center; }
+.enemy img, .enemy canvas { width: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+.eplate { background: rgba(12,24,38,.9); border: 1.5px solid #7fb2dd; border-radius: 8px; padding: 3px 10px 6px; z-index: 2; flex: none; }
+.enemy .ename { font-size: 13px; font-weight: 700; color: #eaf4ff; white-space: nowrap; }
+.enemy .ehp { width: 110px; height: 9px; background: #333; border: 1px solid #999; border-radius: 5px; margin: 3px auto 0; overflow: hidden; }
+.enemy .ehp > div { height: 100%; background: #7ee787; transition: width .3s; }
+.enemy.hit { animation: hit .35s; }
+.enemy-visual { display: flex; flex-direction: column; align-items: center; flex: 1; min-height: 0; width: 100%; justify-content: flex-end; }
+.enemy-bob { animation: ebob 2.6s ease-in-out infinite alternate; flex: 1; min-height: 0; display: flex; align-items: flex-end; justify-content: center; width: 100%; }
+@keyframes ebob { from { transform: translateY(-3px); } to { transform: translateY(3px); } }
+.enemy-shadow {
+  height: 14px; border-radius: 50%; margin-top: -4px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.5) 0%, rgba(0,0,0,0) 70%);
+}
+@keyframes hit { 0% { filter: brightness(2.2); } 50% { transform: translateX(-50%) translateX(7px); } 100% { filter: none; } }
+.enemy.weakflash .ename { color: #ffd94d; }
+#battle-log {
+  position: absolute; left: 2.5%; right: 2.5%; bottom: 118px;
+  background: rgba(12,24,38,.92); border: 2px solid #7fb2dd; border-radius: 10px;
+  padding: 8px 12px; font-size: clamp(13px, 2.7vw, 16px); line-height: 1.5; min-height: 52px;
+  pointer-events: none; white-space: pre-wrap;
+}
+#battle-status {
+  position: absolute; left: 2.5%; bottom: 12px; width: 47%;
+  background: rgba(12,24,38,.92); border: 2px solid #7fb2dd; border-radius: 10px; padding: 8px 12px;
+  font-size: 13px; line-height: 1.6; pointer-events: none;
+}
+.bar { height: 9px; background: #333; border-radius: 5px; overflow: hidden; margin: 2px 0 5px; }
+.bar > div { height: 100%; transition: width .3s; }
+.bar.hp > div { background: #7ee787; }
+.bar.guts > div { background: #ffb340; }
+#battle-cmds { position: absolute; right: 2.5%; bottom: 12px; width: 45%; display: flex; flex-direction: column; gap: 7px; pointer-events: auto; }
+#battle-cmds button {
+  padding: 10px; font-size: 15px; font-weight: 700; text-align: left;
+  background: #fff7d6; color: #20303f; border: 2px solid #c49a12; border-radius: 10px; cursor: pointer;
+}
+#battle-cmds button:disabled { opacity: .45; cursor: default; }
+#battle-cmds button small { display: block; font-weight: 400; font-size: 11px; color: #6b5310; }
+
+/* クリア */
+#clear-stats { line-height: 2; font-size: 15px; margin-bottom: 10px; }
+.clear-next { line-height: 1.7; font-size: 14px; color: #dfeffc; margin-bottom: 14px; text-align: center; }
+#clear-screen h2 { font-size: 26px; }
+
+/* HUD */
+#hud { position: absolute; top: 8px; left: 8px; z-index: 10; pointer-events: none; }
+#hud-obj {
+  display: inline-block; background: rgba(12,24,38,.85); border: 1.5px solid #ffd94d; color: #ffe9a8;
+  border-radius: 8px; padding: 5px 10px; font-size: 13px; font-weight: 700;
+}
+#hud-sub { margin-top: 4px; background: rgba(12,24,38,.7); color: #cfe6f7; border-radius: 8px; padding: 3px 9px; font-size: 12px; display: inline-block; }
+
+/* タッチ操作 */
+#touch { display: none; margin-top: 12px; justify-content: space-between; align-items: center; padding: 0 6px; }
+body.touch #touch { display: flex; }
+#dpad { position: relative; width: 148px; height: 148px; }
+.dbtn {
+  position: absolute; width: 48px; height: 48px; border-radius: 12px; border: none;
+  background: #33506e; color: #dfeffc; font-size: 17px; touch-action: none;
+}
+.dbtn.on { background: #ffd94d; color: #20303f; }
+.dbtn.up { left: 50px; top: 0; } .dbtn.left { left: 0; top: 50px; }
+.dbtn.right { left: 100px; top: 50px; } .dbtn.down { left: 50px; top: 100px; }
+#abtns { display: flex; gap: 14px; align-items: flex-end; }
+.abtn { width: 62px; height: 62px; border-radius: 50%; border: none; font-size: 19px; font-weight: 700; touch-action: none; }
+#btn-a { background: #ffd94d; color: #20303f; }
+#btn-b { background: #9fd8ff; color: #20303f; width: 52px; height: 52px; }
+.abtn.on { filter: brightness(1.25); }
+#foot { margin-top: 10px; text-align: center; font-size: 11px; color: #7e97ad; }
+body.touch #foot { display: none; }
+@media (max-width: 560px) { #battle-log { bottom: 108px; } }
