@@ -263,23 +263,39 @@ cmdsEl.addEventListener('click', (e) => {
 const b = e.target.closest('button');
 if (b &&!b.disabled) playerCmd(b.dataset.cmd);
 });
+function cmdsVisible() { return B && !B.busy && B._resolve && !cmdsEl.classList.contains('hidden'); }
+function moveSel(d) {
+const btns = cmdButtons();
+let n = cmdSel;
+for (let k = 0; k < btns.length; k++) { n = (n + d + btns.length) % btns.length; if (!btns[n].disabled) break; }
+cmdSel = n; paintSel();
+}
+function activateSel() {
+const b = cmdButtons()[cmdSel];
+if (b && !b.disabled) playerCmd(b.dataset.cmd);
+}
 window.addEventListener('keydown', (e) => {
 if (!B || B.busy ||!B._resolve) return;
 if (e.key === '1') playerCmd('attack');
 if (e.key === '2') playerCmd('charge');
 if (e.key === '3') playerCmd('herb');
 if (cmdsEl.classList.contains('hidden')) return;
-const btns = cmdButtons();
 if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 's' || e.key === 'w') {
-const d = (e.key === 'ArrowDown' || e.key === 's') ? 1 : -1;
-let n = cmdSel;
-for (let k = 0; k < btns.length; k++) { n = (n + d + btns.length) % btns.length; if (!btns[n].disabled) break; }
-cmdSel = n; paintSel(); e.preventDefault();
+moveSel((e.key === 'ArrowDown' || e.key === 's') ? 1 : -1); e.preventDefault();
 } else if (e.key === 'z' || e.key === 'Enter' || e.key === ' ') {
-const b = btns[cmdSel];
-if (b && !b.disabled) { playerCmd(b.dataset.cmd); e.preventDefault(); }
+activateSel(); e.preventDefault();
 }
 });
+/* スマホの仮想コントローラでもコマンド選択できるようにする（十字キー上下＋Aボタン） */
+document.querySelectorAll('#dpad .dbtn').forEach(b => {
+b.addEventListener('pointerdown', () => {
+if (!cmdsVisible()) return;
+if (b.dataset.dir === 'down') moveSel(1);
+else if (b.dataset.dir === 'up') moveSel(-1);
+});
+});
+const touchA = document.getElementById('btn-a');
+if (touchA) touchA.addEventListener('pointerdown', () => { if (cmdsVisible()) activateSel(); });
 
 return { start, get active() { return!!B;}};
 })();
