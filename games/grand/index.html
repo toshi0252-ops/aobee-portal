@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>あおびーと失われた歯車 第1章（試作）</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <canvas id="game" width="640" height="448"></canvas>
+
+    <!-- タイトル画面 -->
+    <div id="title-screen" class="overlay">
+      <div class="title-inner">
+        <p class="eyebrow">AOBEE GRAND RPG · 試作版</p>
+        <h1>あおびーと<br>失われた歯車</h1>
+        <p class="subtitle">第1章「止まった村と歯車泥棒」</p>
+        <div class="title-btns">
+          <button id="btn-new" class="bigbtn">はじめから</button>
+          <button id="btn-continue" class="bigbtn">つづきから</button>
+          <button id="btn-howto" class="bigbtn sub">あそびかた</button>
+        </div>
+        <p class="title-note">※試作版です。セーブはこの端末のブラウザに保存されます。</p>
+      </div>
+    </div>
+
+    <!-- 遊び方 -->
+    <div id="howto-screen" class="overlay hidden">
+      <div class="panel">
+        <h2>あそびかた</h2>
+        <ul>
+          <li>移動： 矢印キー / WASD（大文字でもOK）/ 画面の十字ボタン</li>
+          <li>決定・話す・調べる： Z / Enter / Space / 画面の「A」ボタン</li>
+          <li>ダッシュ： Shift を押しながら移動（工房でブーツをもらってから）</li>
+          <li>戦闘： 「こうげき」「歯車チャージ（1ターン溜めて大ダメージ＋歯車はずし）」「ほし草（回復）」の3つだけ</li>
+          <li>強がりゲージ： たまるとピンチで1回だけHP1で踏みとどまる</li>
+          <li>負けても大丈夫。工房に戻るだけ（ほんの少しだけ記録が残る）</li>
+          <li>セーブ： マップが変わるたびに自動</li>
+        </ul>
+        <button id="btn-howto-back" class="bigbtn">もどる</button>
+      </div>
+    </div>
+
+    <!-- 会話ウィンドウ -->
+    <div id="dlg" class="hidden">
+      <div id="dlg-face"><img id="dlg-face-img" alt=""><canvas id="dlg-face-canvas" width="96" height="96"></canvas></div>
+      <div id="dlg-main">
+        <div id="dlg-name"></div>
+        <div id="dlg-text"></div>
+        <div id="dlg-next">▼</div>
+      </div>
+      <div id="dlg-choices" class="hidden"></div>
+    </div>
+
+    <!-- 戦闘UI -->
+    <div id="battle-ui" class="hidden">
+      <div id="enemy-area"></div>
+      <div id="battle-log"></div>
+      <div id="battle-status"></div>
+      <div id="battle-cmds" class="hidden">
+        <button data-cmd="attack">こうげき</button>
+        <button data-cmd="charge">歯車チャージ</button>
+        <button data-cmd="herb">ほし草（<span id="herb-count">0</span>）</button>
+      </div>
+    </div>
+
+    <!-- クリア画面 -->
+    <div id="clear-screen" class="overlay hidden">
+      <div class="panel">
+        <h2>第1章 クリア！</h2>
+        <div id="clear-stats"></div>
+        <p class="clear-next">大歯車は戻った。でも、歯が1枚欠けたまま…。<br>わるびーは何を隠しているのか——第2章へつづく。</p>
+        <button id="btn-clear-back" class="bigbtn">タイトルへ</button>
+      </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div id="hud-obj"></div>
+      <div id="hud-sub"></div>
+    </div>
+  </div>
+
+  <!-- タッチ操作 -->
+  <div id="touch">
+    <div id="dpad">
+      <button data-dir="up" class="dbtn up">▲</button>
+      <button data-dir="left" class="dbtn left">◀</button>
+      <button data-dir="right" class="dbtn right">▶</button>
+      <button data-dir="down" class="dbtn down">▼</button>
+    </div>
+    <div id="abtns">
+      <button id="btn-b" class="abtn">B</button>
+      <button id="btn-a" class="abtn">A</button>
+    </div>
+  </div>
+  <p id="foot">キーボード： 矢印/WASD=移動　Z/Enter/Space=決定　Shift=ダッシュ</p>
+</div>
+<script src="src/data.js"></script>
+<script src="src/engine.js"></script>
+<script src="src/battle.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>
