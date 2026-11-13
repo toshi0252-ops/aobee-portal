@@ -16,6 +16,42 @@ const Engine = (() => {
   warubeeImg.onload = () => { warubeeOK = true; };
   warubeeImg.src = 'assets/warubee-front-v1.png';
 
+  /* NPCイラスト（cx/cy=顔中心の割合, side=顔切り出しの一辺の割合 ※高さ基準） */
+  const NPC_FACE = {
+    gardo: { file: 'npc-gardo.png', cx: 0.51, cy: 0.29, side: 0.58 },
+    baker: { file: 'npc-mami.png', cx: 0.50, cy: 0.27, side: 0.47 },
+    kid:   { file: 'npc-poco.png', cx: 0.38, cy: 0.36, side: 0.62 }
+  };
+  const npcImgs = {};
+  for (const k of Object.keys(NPC_FACE)) {
+    const im = new Image();
+    const rec = { img: im, ok: false };
+    im.onload = () => { rec.ok = true; };
+    im.src = 'assets/chars/' + NPC_FACE[k].file;
+    npcImgs[k] = rec;
+  }
+  /* 接地影（半透明の楕円グラデーション） */
+  function groundShadow(c2, cx, cy, w) {
+    c2.save();
+    const g = c2.createRadialGradient(cx, cy, 1, cx, cy, w / 2);
+    g.addColorStop(0, 'rgba(18,38,20,0.38)');
+    g.addColorStop(0.7, 'rgba(18,38,20,0.18)');
+    g.addColorStop(1, 'rgba(18,38,20,0)');
+    c2.fillStyle = g;
+    c2.beginPath(); c2.ellipse(cx, cy, w / 2, Math.max(3, w / 6), 0, 0, Math.PI * 2); c2.fill();
+    c2.restore();
+  }
+  /* フィールド用NPCイラスト描画（アスペクト維持・足元=groundY）。描けたら true */
+  function drawNpcImage(kind, cx, groundY, h) {
+    const rec = npcImgs[kind];
+    if (!rec || !rec.ok) return false;
+    const w = h * rec.img.naturalWidth / rec.img.naturalHeight;
+    ctx.drawImage(rec.img, cx - w / 2, groundY - h, w, h);
+    return true;
+  }
+  /* タイル質感用の決定的ハッシュ（座標から安定したバラつきを出す） */
+  function hash2(x, y) { let h = (x * 374761393 + y * 668265263) ^ 0x5bf03635; h = Math.imul(h ^ (h >> 13), 1274126177); return (h ^ (h >> 16)) >>> 0; }
+
   /* アトラスセル: 上段 0=正面 1=背面 2=左向き 3=右向き / 下段 0=喜ぶ 1=手を伸ばす 2=左へ走る 3=右へ走る */
   function aobeeCell(dir, moving) {
     if (moving && dir === 'left') return [2, 1];
@@ -259,6 +295,18 @@ const Engine = (() => {
       dlgFaceImg.style.display = 'none'; dlgFaceCv.style.display = 'none';
       if (!face) return;
       if (face === 'warubee' && warubeeOK) { dlgFaceImg.src = warubeeImg.src; dlgFaceImg.style.display = 'block'; return; }
+      const nrec = npcImgs[face];
+      if (nrec && nrec.ok) { // NPCはイラストの顔部分を切り出して表示
+        const c2 = dlgFaceCv.getContext('2d');
+        c2.clearRect(0, 0, 96, 96);
+        dlgFaceCv.style.display = 'block';
+        const F = NPC_FACE[face], W = nrec.img.naturalWidth, H = nrec.img.naturalHeight;
+        const sp = F.side * H;
+        const sx = Math.min(Math.max(F.cx * W - sp / 2, 0), Math.max(0, W - sp));
+        const sy = Math.min(Math.max(F.cy * H - sp / 2, 0), Math.max(0, H - sp));
+        c2.drawImage(nrec.img, sx, sy, sp, sp, 0, 0, 96, 96);
+        return;
+      }
       const c2 = dlgFaceCv.getContext('2d');
       c2.clearRect(0, 0, 96, 96);
       dlgFaceCv.style.display = 'block';
@@ -394,29 +442,74 @@ const Engine = (() => {
       const m = this.map; if (!m) return;
       for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
         const t = m.grid[y][x], px = x * TILE, py = y * TILE;
-        ctx.fillStyle = (x + y) % 2 ? '#79b657' : '#83c061';
+        const h1 = hash2(x, y);
+        // 草地: 差を抑えた2色＋座標依存の微細ドット/草葉で質感を出す
+        ctx.fillStyle = (x + y) % 2 ? '#7cb95e' : '#84bf64';
         ctx.fillRect(px, py, TILE, TILE);
-        if (t === ',' ) { ctx.fillStyle = '#c9b458'; ctx.fillRect(px, py, TILE, TILE); ctx.fillStyle = '#e88bb0'; ctx.fillRect(px + 6, py + 8, 4, 4); ctx.fillRect(px + 20, py + 20, 4, 4); }
-        if (t === 'T' || t === '#') {
-          ctx.fillStyle = '#4d7d3a'; ctx.fillRect(px, py, TILE, TILE);
-          ctx.fillStyle = '#5d9146'; ctx.beginPath(); ctx.arc(px + 16, py + 14, 13, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#6d4c2f'; ctx.fillRect(px + 13, py + 20, 6, 12);
+        ctx.fillStyle = 'rgba(255,255,220,0.10)';
+        ctx.fillRect(px + 2 + (h1 % 24), py + 2 + ((h1 >> 3) % 24), 2, 2);
+        ctx.fillRect(px + 3 + ((h1 >> 9) % 22), py + 4 + ((h1 >> 12) % 22), 2, 2);
+        ctx.fillStyle = 'rgba(30,80,30,0.13)';
+        ctx.fillRect(px + 3 + ((h1 >> 5) % 22), py + 4 + ((h1 >> 7) % 22), 3, 2);
+        ctx.strokeStyle = 'rgba(43,100,40,0.55)'; ctx.lineWidth = 1.4;
+        const gxx = px + 5 + ((h1 >> 15) % 18), gyy = py + 21 + ((h1 >> 18) % 7);
+        ctx.beginPath(); ctx.moveTo(gxx, gyy + 4); ctx.lineTo(gxx, gyy); ctx.moveTo(gxx + 3, gyy + 5); ctx.lineTo(gxx + 3, gyy + 2); ctx.stroke();
+        if (t === ',' ) { // 道: 砂色グラデーション＋小石と花
+          const pg = ctx.createLinearGradient(px, py, px, py + TILE);
+          pg.addColorStop(0, '#d3bd68'); pg.addColorStop(1, '#c0a954');
+          ctx.fillStyle = pg; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = 'rgba(120,95,40,0.25)';
+          ctx.fillRect(px + 2 + ((h1 >> 4) % 24), py + 2 + ((h1 >> 6) % 24), 3, 2);
+          ctx.fillStyle = '#e88bb0'; ctx.fillRect(px + 6, py + 8, 4, 4); ctx.fillRect(px + 20, py + 20, 4, 4);
+          ctx.fillStyle = '#fff'; ctx.fillRect(px + 7, py + 9, 2, 2); ctx.fillRect(px + 21, py + 21, 2, 2);
         }
-        if (t === 'H') {
-          ctx.fillStyle = '#e8dcc3'; ctx.fillRect(px, py + 8, TILE, 24);
+        if (t === 'T' || t === '#') { // 木: 接地影＋幹＋輪郭とハイライトつき樹冠
+          groundShadow(ctx, px + 16, py + 29, 24);
+          ctx.fillStyle = '#6d4c2f'; ctx.fillRect(px + 13, py + 20, 6, 11);
+          ctx.fillStyle = '#8a6238'; ctx.fillRect(px + 13, py + 20, 2.5, 11);
+          const cg = ctx.createRadialGradient(px + 12, py + 10, 3, px + 16, py + 14, 15);
+          cg.addColorStop(0, '#6fae4e'); cg.addColorStop(0.65, '#4d7d3a'); cg.addColorStop(1, '#3a612b');
+          ctx.fillStyle = cg;
+          ctx.beginPath(); ctx.arc(px + 16, py + 14, 13, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(28,58,24,0.55)'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(px + 16, py + 14, 13, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = 'rgba(255,255,230,0.20)';
+          ctx.beginPath(); ctx.arc(px + 11, py + 9, 4.5, 0, Math.PI * 2); ctx.fill();
+        }
+        if (t === 'H') { // 家: 壁グラデーション＋屋根とその落とす影
+          const wg = ctx.createLinearGradient(px, py + 8, px, py + 32);
+          wg.addColorStop(0, '#f4ead2'); wg.addColorStop(1, '#dccca4');
+          ctx.fillStyle = wg; ctx.fillRect(px, py + 8, TILE, 24);
+          ctx.fillStyle = 'rgba(122,92,50,0.30)'; ctx.fillRect(px, py + 29, TILE, 3);
           ctx.fillStyle = '#b0512f'; ctx.beginPath(); ctx.moveTo(px - 2, py + 10); ctx.lineTo(px + 16, py - 2); ctx.lineTo(px + 34, py + 10); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.16)'; ctx.beginPath(); ctx.moveTo(px - 2, py + 10); ctx.lineTo(px + 16, py - 2); ctx.lineTo(px + 16, py + 10); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = 'rgba(60,30,10,0.20)'; ctx.fillRect(px, py + 10, TILE, 3);
         }
-        if (t === '~') { ctx.fillStyle = '#3f8fd2'; ctx.fillRect(px, py, TILE, TILE); ctx.fillStyle = '#6db3e8'; ctx.fillRect(px + 4, py + 8, 12, 3); ctx.fillRect(px + 16, py + 22, 12, 3); }
-        if (t === '=') { ctx.fillStyle = '#a9805a'; ctx.fillRect(px, py + 4, TILE, 24); ctx.fillStyle = '#8a653f'; ctx.fillRect(px, py + 10, TILE, 3); ctx.fillRect(px, py + 22, TILE, 3); }
+        if (t === '~') { // 水: 明るいグラデーション＋ゆらぐ波紋とキラキラ
+          const wag = ctx.createLinearGradient(px, py, px, py + TILE);
+          wag.addColorStop(0, '#57b6ec'); wag.addColorStop(1, '#2f7fc4');
+          ctx.fillStyle = wag; ctx.fillRect(px, py, TILE, TILE);
+          const tw = Math.round(Math.sin(performance.now() / 600 + x * 1.7 + y * 2.3) * 2);
+          ctx.fillStyle = 'rgba(255,255,255,0.5)';
+          ctx.fillRect(px + 4 + tw, py + 8, 12, 2.5); ctx.fillRect(px + 16 - tw, py + 22, 12, 2.5);
+          ctx.fillStyle = 'rgba(255,255,255,0.85)';
+          ctx.fillRect(px + 8 + (h1 % 14), py + 15 + ((h1 >> 4) % 8), 2, 2);
+        }
+        if (t === '=') { ctx.fillStyle = '#a9805a'; ctx.fillRect(px, py + 4, TILE, 24); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fillRect(px, py + 4, TILE, 3); ctx.fillStyle = '#8a653f'; ctx.fillRect(px, py + 10, TILE, 3); ctx.fillRect(px, py + 22, TILE, 3); }
         if (t === 'X') {
-          ctx.fillStyle = '#a9805a'; ctx.fillRect(px, py + 4, TILE, 24);
+          ctx.fillStyle = '#a9805a'; ctx.fillRect(px, py + 4, TILE, 24); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fillRect(px, py + 4, TILE, 3);
           const open = this.hooks.hooksState && this.hooks.hooksState().bridgeOpen;
           if (!open) gearPath(ctx, px + 16, py + 16, 7, 8, '#8a929c');
         }
         if (t === 'S') { ctx.fillStyle = '#8a653f'; ctx.fillRect(px + 13, py + 10, 6, 18); ctx.fillStyle = '#e8dcc3'; ctx.fillRect(px + 5, py + 2, 22, 13); }
         if (t === 'F') { ctx.save(); ctx.translate(px + 16, py + 16); ctx.rotate(performance.now() / 900); gearPath(ctx, 0, 0, 7, 8, '#ffd21f'); ctx.restore(); }
         if (t === 'G') { ctx.save(); ctx.translate(px + 16, py + 16); ctx.rotate(-performance.now() / 1200); gearPath(ctx, 0, 0, 9, 9, '#c0c6cc'); ctx.restore(); }
-        if (t === 'D') { ctx.fillStyle = '#c9b458'; ctx.fillRect(px, py, TILE, TILE); ctx.fillStyle = '#b39d45'; ctx.fillRect(px + 3, py + 6, 4, 4); ctx.fillRect(px + 24, py + 20, 4, 4); }
+        if (t === 'D') { // 出入口: 道と同じ砂色グラデーション
+          const dg = ctx.createLinearGradient(px, py, px, py + TILE);
+          dg.addColorStop(0, '#d3bd68'); dg.addColorStop(1, '#bfa855');
+          ctx.fillStyle = dg; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = '#b39d45'; ctx.fillRect(px + 3, py + 6, 4, 4); ctx.fillRect(px + 24, py + 20, 4, 4);
+        }
       }
       // 出口サイン（行き先ラベル＋矢印）
       if (m.exits) {
@@ -448,25 +541,32 @@ const Engine = (() => {
         if (st.gearRestored) { ctx.save(); ctx.translate(10 * TILE, 16); ctx.rotate(performance.now() / 3000); gearPath(ctx, 0, 0, 15, 10, '#c49a12'); ctx.restore(); }
         else { ctx.fillStyle = '#6b7280'; ctx.fillRect(9 * TILE + 26, 10, 28, 5); }
       }
-      // NPC
+      // NPC（接地影つき。NPCはイラスト優先、読込失敗時のみコード描画）
       for (const n of m.npcs) {
         if (n.hidden) continue;
+        const ncx = n.x * TILE + 16;
         if (n.kind === 'warubee') {
+          groundShadow(ctx, ncx, n.y * TILE + 31, 26);
           if (warubeeOK) ctx.drawImage(warubeeImg, n.x * TILE - 6, n.y * TILE - 14, 44, 44);
-          else drawCritter(ctx, n.x * TILE + 16, n.y * TILE + 16, 40, true);
-        } else drawNPC(ctx, n.x * TILE + 16, n.y * TILE + 18, 40, n.kind);
+          else drawCritter(ctx, ncx, n.y * TILE + 16, 40, true);
+        } else {
+          groundShadow(ctx, ncx, n.y * TILE + 33, 26);
+          if (!drawNpcImage(n.kind, ncx, n.y * TILE + 33, 44)) drawNPC(ctx, ncx, n.y * TILE + 18, 40, n.kind);
+        }
       }
       // イベントアクター
       for (const a of this.actors) {
         if (!a.visible) continue;
         if (a.kind === 'warubee') {
+          groundShadow(ctx, a.x * TILE + 16, a.y * TILE + 27, 30);
           if (warubeeOK) ctx.drawImage(warubeeImg, a.x * TILE - 10, a.y * TILE - 26, 52, 52);
           else drawCritter(ctx, a.x * TILE + 16, a.y * TILE + 8, 48, true);
         }
       }
-      // プレイヤー
+      // プレイヤー（接地影つき）
       const p = this.player;
       const joy = p.joyT > performance.now();
+      groundShadow(ctx, p.px + 16, p.py + 33, 26);
       drawAobee(p.px + 16, p.py + 34, 42, p.dir, p.moving, joy);
       if (this.fade) { ctx.fillStyle = `rgba(0,0,0,${this.fade})`; ctx.fillRect(0, 0, COLS * TILE, ROWS * TILE); }
     }

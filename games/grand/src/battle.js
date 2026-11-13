@@ -24,6 +24,51 @@ statusEl.innerHTML =
 (B.charged? '<span style="color:#ffd94d;font-weight:700">⚙ 歯車チャージ完了！</span>': '');
 document.getElementById('herb-count').textContent = s.herbs;
 }
+/* 敵イラスト素材（高さpx・影幅px）。読込失敗時はコード描画にフォールバック */
+const ENEMY_ART = {
+cog: { src: 'assets/chars/enemy-cog.png', h: 150, shadow: 110 },
+millCog: { src: 'assets/chars/enemy-guardian.png', h: 190, shadow: 130 },
+karakuri: { src: 'assets/chars/enemy-karakuri.png', h: 210, shadow: 120 }
+};
+function cogFallback(art) {
+const c = document.createElement('canvas'); c.width = art.h; c.height = art.h;
+Engine.drawCog(c.getContext('2d'), art.h / 2, art.h / 2, art.h * 0.92);
+return c;
+}
+function karakuriFallback() {
+const c = document.createElement('canvas'); c.width = 170; c.height = 220;
+Engine.drawKarakuri(c.getContext('2d'), 85, 112, 195);
+return c;
+}
+function enemyVisual(e) {
+const visual = document.createElement('div'); visual.className = 'enemy-visual';
+const bob = document.createElement('div'); bob.className = 'enemy-bob';
+let shadowW;
+if (e.kind === 'boss') {
+// からくり人形（イラスト）の隣にわるびー公式絵を並べ、2体に見せる（HPは単一のまま）
+bob.style.display = 'flex'; bob.style.alignItems = 'flex-end'; bob.style.gap = '4px';
+const art = ENEMY_ART.karakuri;
+const kimg = document.createElement('img');
+kimg.src = art.src; kimg.alt = 'からくり人形'; kimg.style.height = art.h + 'px';
+kimg.onerror = () => { kimg.replaceWith(karakuriFallback()); };
+const wimg = document.createElement('img');
+wimg.src = 'assets/warubee-front-v1.png'; wimg.alt = 'わるびー'; wimg.style.height = '150px';
+wimg.onerror = () => { wimg.style.display = 'none'; };
+bob.appendChild(kimg); bob.appendChild(wimg);
+shadowW = 250;
+} else {
+const art = ENEMY_ART[e.id] || ENEMY_ART.cog;
+const img = document.createElement('img');
+img.src = art.src; img.alt = e.name; img.style.height = art.h + 'px';
+img.onerror = () => { img.replaceWith(cogFallback(art)); };
+bob.appendChild(img);
+shadowW = art.shadow;
+}
+visual.appendChild(bob);
+const sh = document.createElement('div'); sh.className = 'enemy-shadow'; sh.style.width = shadowW + 'px';
+visual.appendChild(sh);
+return visual;
+}
 function renderEnemy() {
 enemyArea.innerHTML = '';
 B.enemies.forEach((e, i) => {
@@ -31,21 +76,7 @@ const d = document.createElement('div');
 d.className = 'enemy'; d.id = 'enemy-' + i;
 d.style.left = (50 + (i - (B.enemies.length - 1) / 2) * 34) + '%';
 d.style.top = '6%';
-if (e.kind === 'boss') {
-const wrap = document.createElement('div');
-wrap.style.display = 'flex'; wrap.style.justifyContent = 'center'; wrap.style.alignItems = 'flex-end'; wrap.style.gap = '2px';
-const img = document.createElement('img');
-img.src = 'assets/warubee-front-v1.png'; img.alt = 'わるびー'; img.style.height = '128px';
-img.onerror = () => { img.style.display = 'none';};
-const c = document.createElement('canvas'); c.width = 110; c.height = 110;
-Engine.drawKarakuri(c.getContext('2d'), 55, 62, 105);
-wrap.appendChild(c); wrap.appendChild(img);
-d.appendChild(wrap);
-} else {
-const c = document.createElement('canvas'); c.width = 120; c.height = 120;
-Engine.drawCog(c.getContext('2d'), 60, 60, 115);
-d.appendChild(c);
-}
+d.appendChild(enemyVisual(e));
 const nm = document.createElement('div'); nm.className = 'ename';
 nm.textContent = e.name + (e.kind === 'boss'? `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`: '');
 const hp = document.createElement('div'); hp.className = 'ehp';

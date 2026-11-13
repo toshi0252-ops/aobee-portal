@@ -72,6 +72,13 @@ canvas#game { width: 100%; height: 100%; display: block; }
 .enemy .ehp { width: 110px; height: 9px; background: #333; border: 1px solid #999; border-radius: 5px; margin: 3px auto 0; overflow: hidden; }
 .enemy .ehp > div { height: 100%; background: #7ee787; transition: width .3s; }
 .enemy.hit { animation: hit .35s; }
+.enemy-visual { display: flex; flex-direction: column; align-items: center; }
+.enemy-bob { animation: ebob 2.6s ease-in-out infinite alternate; }
+@keyframes ebob { from { transform: translateY(-3px); } to { transform: translateY(3px); } }
+.enemy-shadow {
+  height: 14px; border-radius: 50%; margin-top: -4px;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.5) 0%, rgba(0,0,0,0) 70%);
+}
 @keyframes hit { 0% { filter: brightness(2.2); } 50% { transform: translateX(-50%) translateX(7px); } 100% { filter: none; } }
 .enemy.weakflash .ename { color: #ffd94d; }
 #battle-log {
