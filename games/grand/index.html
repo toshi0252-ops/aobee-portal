@@ -34,7 +34,7 @@
           <li>移動： 矢印キー / WASD（大文字でもOK）/ 画面の十字ボタン</li>
           <li>決定・話す・調べる： Z / Enter / Space / 画面の「A」ボタン</li>
           <li>ダッシュ： Shift を押しながら移動（工房でブーツをもらってから）</li>
-          <li>戦闘： 「こうげき」「歯車チャージ（1ターン溜めて大ダメージ＋歯車はずし）」「ほし草（回復）」の3つだけ</li>
+          <li>戦闘： 「こうげき」「歯車チャージ（1ターン溜めて大ダメージ＋歯車はずし）」「ほし草（回復）」の3つだけ。コマンドは ↑↓＋Z/Enter でも、1/2/3キーでも選べる</li>
           <li>強がりゲージ： たまるとピンチで1回だけHP1で踏みとどまる</li>
           <li>負けても大丈夫。工房に戻るだけ（ほんの少しだけ記録が残る）</li>
           <li>セーブ： マップが変わるたびに自動</li>
@@ -60,9 +60,9 @@
       <div id="battle-log"></div>
       <div id="battle-status"></div>
       <div id="battle-cmds" class="hidden">
-        <button data-cmd="attack">こうげき</button>
-        <button data-cmd="charge">歯車チャージ</button>
-        <button data-cmd="herb">ほし草（<span id="herb-count">0</span>）</button>
+        <button data-cmd="attack"><span class="cmd-label">こうげき</span><small>キー 1</small></button>
+        <button data-cmd="charge">歯車チャージ<small>キー 2</small></button>
+        <button data-cmd="herb">ほし草（<span id="herb-count">0</span>）<small>キー 3</small></button>
       </div>
     </div>
 

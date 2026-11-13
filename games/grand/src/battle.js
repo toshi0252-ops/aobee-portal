@@ -23,6 +23,9 @@ statusEl.innerHTML =
 `強がり<div class="bar guts"><div style="width:${s.guts}%"></div></div>` +
 (B.charged? '<span style="color:#ffd94d;font-weight:700">⚙ 歯車チャージ完了！</span>': '');
 document.getElementById('herb-count').textContent = s.herbs;
+const ab = cmdButtons().find(b => b.dataset && b.dataset.cmd === 'attack');
+const lbl = ab && ab.children ? [...ab.children].find(c => c.className === 'cmd-label') : null;
+if (lbl) lbl.textContent = B.charged ? '歯車アタック！' : 'こうげき';
 }
 /* 敵イラスト素材（高さpx・影幅px）。読込失敗時はコード描画にフォールバック */
 const ENEMY_ART = {
@@ -97,12 +100,23 @@ if (e.hp <= 0) e._el.style.opacity = '0.25';
 }
 });
 }
+let cmdSel = 0;
+function cmdButtons() { return [...cmdsEl.querySelectorAll('button')]; }
+function paintSel() {
+cmdButtons().forEach((b, i) => b.classList.toggle('sel', i === cmdSel && !cmdsEl.classList.contains('hidden')));
+}
 function setCmds(on) {
 cmdsEl.classList.toggle('hidden',!on);
 logEl.style.right = on ? '49%' : '2.5%';
-[...cmdsEl.querySelectorAll('button')].forEach(b => {
+cmdButtons().forEach(b => {
 b.disabled =!on || (b.dataset.cmd === 'herb' && B.state.herbs <= 0);
 });
+if (on) {
+const btns = cmdButtons();
+if (cmdSel >= btns.length) cmdSel = 0;
+if (btns[cmdSel] && btns[cmdSel].disabled) { const f = btns.findIndex(b => !b.disabled); if (f >= 0) cmdSel = f; }
+}
+paintSel();
 }
 
 async function start(cfg) {
@@ -254,6 +268,17 @@ if (!B || B.busy ||!B._resolve) return;
 if (e.key === '1') playerCmd('attack');
 if (e.key === '2') playerCmd('charge');
 if (e.key === '3') playerCmd('herb');
+if (cmdsEl.classList.contains('hidden')) return;
+const btns = cmdButtons();
+if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 's' || e.key === 'w') {
+const d = (e.key === 'ArrowDown' || e.key === 's') ? 1 : -1;
+let n = cmdSel;
+for (let k = 0; k < btns.length; k++) { n = (n + d + btns.length) % btns.length; if (!btns[n].disabled) break; }
+cmdSel = n; paintSel(); e.preventDefault();
+} else if (e.key === 'z' || e.key === 'Enter' || e.key === ' ') {
+const b = btns[cmdSel];
+if (b && !b.disabled) { playerCmd(b.dataset.cmd); e.preventDefault(); }
+}
 });
 
 return { start, get active() { return!!B;}};
