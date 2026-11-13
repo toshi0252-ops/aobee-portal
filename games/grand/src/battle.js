@@ -99,6 +99,7 @@ if (e.hp <= 0) e._el.style.opacity = '0.25';
 }
 function setCmds(on) {
 cmdsEl.classList.toggle('hidden',!on);
+logEl.style.right = on ? '49%' : '2.5%';
 [...cmdsEl.querySelectorAll('button')].forEach(b => {
 b.disabled =!on || (b.dataset.cmd === 'herb' && B.state.herbs <= 0);
 });
