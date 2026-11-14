@@ -115,6 +115,8 @@ canvas#game { width: 100%; height: 100%; display: block; }
 
 /* クリア */
 #clear-stats { line-height: 2; font-size: 15px; margin-bottom: 10px; }
+.panel a.bigbtn { text-decoration: none; text-align: center; }
+#btn-to-ch2, #clear-link { margin-bottom: 10px; }
 .clear-next { line-height: 1.7; font-size: 14px; color: #dfeffc; margin-bottom: 14px; text-align: center; }
 #clear-screen h2 { font-size: 26px; }
 

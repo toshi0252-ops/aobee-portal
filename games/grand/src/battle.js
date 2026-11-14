@@ -31,7 +31,9 @@ if (lbl) lbl.textContent = B.charged ? '歯車アタック！' : 'こうげき';
 const ENEMY_ART = {
 cog: { src: 'assets/chars/enemy-cog.png', h: 150, shadow: 110 },
 millCog: { src: 'assets/chars/enemy-guardian.png', h: 190, shadow: 130 },
-karakuri: { src: 'assets/chars/enemy-karakuri.png', h: 210, shadow: 120 }
+karakuri: { src: 'assets/chars/enemy-karakuri.png', h: 210, shadow: 120 },
+kuwa: { src: 'assets/chars/enemy-kuwa.png', h: 150, shadow: 110 },
+moguru: { src: 'assets/chars/enemy-moguru.png', h: 215, shadow: 160 }
 };
 function cogFallback(art) {
 const c = document.createElement('canvas'); c.width = art.h; c.height = art.h;
@@ -80,9 +82,9 @@ d.className = 'enemy'; d.id = 'enemy-' + i;
 d.style.left = (50 + (i - (B.enemies.length - 1) / 2) * 34) + '%';
 const plate = document.createElement('div'); plate.className = 'eplate';
 const nm = document.createElement('div'); nm.className = 'ename';
-nm.textContent = e.name + (e.kind === 'boss'? `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`: '');
+nm.textContent = e.name + (e.gears? `（歯車 あと${e.gearLeft}）`: (e.kind === 'boss'? `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`: ''));
 const hp = document.createElement('div'); hp.className = 'ehp';
-const fill = document.createElement('div'); fill.style.width = (Math.max(0, e.hp) / e.maxHp * 100) + '%';
+const fill = document.createElement('div'); fill.style.width = (e.gears? (e.gearLeft / e.gears * 100): (Math.max(0, e.hp) / e.maxHp * 100)) + '%';
 hp.appendChild(fill); plate.appendChild(nm); plate.appendChild(hp);
 d.appendChild(plate);
 d.appendChild(enemyVisual(e));
@@ -94,9 +96,10 @@ e._el = d;
 function refreshEnemyHP() {
 B.enemies.forEach(e => {
 if (e._el) {
-e._el._fill.style.width = (Math.max(0, e.hp) / e.maxHp * 100) + '%';
-if (e.kind === 'boss') e._el._nm.textContent = e.name + `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`;
-if (e.hp <= 0) e._el.style.opacity = '0.25';
+e._el._fill.style.width = (e.gears? (e.gearLeft / e.gears * 100): (Math.max(0, e.hp) / e.maxHp * 100)) + '%';
+if (e.gears) e._el._nm.textContent = e.name + `（歯車 あと${e.gearLeft}）`;
+else if (e.kind === 'boss') e._el._nm.textContent = e.name + `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`;
+if (e.gears? e.gearLeft <= 0: e.hp <= 0) e._el.style.opacity = '0.25';
 }
 });
 }
@@ -124,11 +127,11 @@ return new Promise(async (resolve) => {
 const state = cfg.state;
 B = {
 state, cfg, charged: false, round: 0, busy: true, midDone: false,
-enemies: cfg.enemies.map(e => ({...e, hp: e.maxHp, weakMode: e.weakMode || 'normal'}))
+enemies: cfg.enemies.map(e => ({...e, hp: e.maxHp, weakMode: e.weakMode || 'normal', gearLeft: e.gears || 0}))
 };
 ui.classList.remove('hidden');
 document.getElementById('hud').classList.add('hidden');
-Engine.Snd.bgm(cfg.enemies.some(e => e.kind === 'boss') ? 'boss' : 'battle');
+Engine.Snd.bgm(cfg.enemies.some(e => e.kind === 'boss' || e.kind === 'moguru') ? 'boss' : 'battle');
 renderEnemy(); renderStatus(); setCmds(false);
 Engine.Snd.gear();
 await logSeq([cfg.intro || `${B.enemies[0].name} が あらわれた！`], 900);
@@ -138,6 +141,9 @@ await logSeq([
 '「歯車チャージ」は1ターン溜めて、次の「こうげき」が大ダメージ＋歯車はずしになる。',
 'ピンチのときは「ほし草」。HPが20回復する。……さあ、やってみよう！'
 ], 1250);
+}
+if (cfg.hint) {
+await logSeq(cfg.hint, 1250);
 }
 if (cfg.firstStrike === 'enemy') {
 log('わるびーの先手！　からくり人形の腕がうなった！');
@@ -179,10 +185,12 @@ if (r) r(result);
 
 async function enemyAttack(e) {
 const s = B.state;
-const dmg = rnd(Math.max(1, e.atk - 2), e.atk + 2);
+// モーぐるマシン: 歯車が外れるほど暴走が激しくなる（攻撃力アップ）
+const atk = e.gears ? e.atk + (e.gears - e.gearLeft) * 2 : e.atk;
+const dmg = rnd(Math.max(1, atk - 2), atk + 2);
 s.hp -= dmg; s.guts = Math.min(100, s.guts + 34);
 Engine.Snd.hurt();
-log(`${e.name} のこうげき！　あおびーに ${dmg} のダメージ！`);
+log(e.gears ? `${e.name} の突進！　あおびーに ${dmg} のダメージ！` : `${e.name} のこうげき！　あおびーに ${dmg} のダメージ！`);
 renderStatus();
 await wait(950);
 }
@@ -192,6 +200,13 @@ for (const e of B.enemies) {
 if (e.hp <= 0 ||!B) continue;
 await enemyAttack(e);
 if (await checkLose(resolve)) return false;
+// モーぐるマシン: 歯車が残り1つになると暴走が加速し、ときどき2回突進する
+if (e.gears && e.gearLeft === 1 && B && Math.random() < 0.4) {
+log('暴走が加速した！　モーぐるマシンが もう一度突っ込んでくる！');
+await wait(850);
+await enemyAttack(e);
+if (await checkLose(resolve)) return false;
+}
 }
 if (!B) return false;
 // ボス: 3ターンごとに歯車付け替え（弱点切替）
@@ -234,6 +249,30 @@ log(`ほし草を使った。HPが ${heal} 回復！`);
 renderStatus(); await wait(950);
 } else { // attack
 const type = B.charged? 'gear': 'normal';
+if (target.gears) {
+// モーぐるマシン専用ルール: HPではなく「歯車を3つ外すと勝利」。通常攻撃は装甲に弾かれる
+if (target._el) { target._el.classList.remove('hit'); void target._el.offsetWidth; target._el.classList.add('hit');}
+if (type === 'gear') {
+B.charged = false;
+target.gearLeft--;
+Engine.Snd.gear();
+log(`あおびーの歯車アタック！　${target.name} の歯車が1つ外れた！（あと ${target.gearLeft}）`);
+refreshEnemyHP(); renderStatus();
+await wait(1100);
+if (target.gearLeft <= 0) {
+Engine.Snd.win();
+log(`${target.name} は ぷしゅー…と煙を出して止まった！`);
+await wait(1200);
+end('win', resolve);
+return;
+}
+} else {
+Engine.Snd.hit();
+log('あおびーのこうげき！　……装甲が硬い！　弾かれてしまった。（歯車チャージを溜めて当てれば、歯車を外せそうだ）');
+refreshEnemyHP(); renderStatus();
+await wait(1000);
+}
+} else {
 let dmg = B.charged? rnd(16, 22): rnd(7, 10);
 let note = '';
 if (target.kind === 'boss') {
@@ -255,6 +294,7 @@ await wait(1100);
 end('win', resolve);
 return;
 }
+} // 通常敵の攻撃処理ここまで
 }
 const cont = await enemyTurn(resolve);
 if (!B) return;

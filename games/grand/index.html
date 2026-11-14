@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>あおびーと失われた歯車 第1章（試作）</title>
+<title>あおびーと失われた歯車 第1章・第2章（試作）</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
         <p class="eyebrow">AOBEE GRAND RPG · 試作版</p>
         <img class="title-art" src="assets/title-art.png" alt="はぐるま村と大歯車、あおびーとわるびーのイラスト">
         <h1>あおびーと<br>失われた歯車</h1>
-        <p class="subtitle">第1章「止まった村と歯車泥棒」</p>
+        <p class="subtitle">第1章「止まった村と歯車泥棒」／第2章「暴走！ まきばの大風車」</p>
         <div class="title-btns">
           <button id="btn-new" class="bigbtn">はじめから</button>
           <button id="btn-continue" class="bigbtn">つづきから</button>
@@ -37,6 +37,7 @@
           <li>ダッシュ： Shift を押しながら移動（工房でブーツをもらってから）</li>
           <li>戦闘： 「こうげき」「歯車チャージ（1ターン溜めて大ダメージ＋歯車はずし）」「ほし草（回復）」の3つだけ。コマンドは ↑↓＋Z/Enter でも、1/2/3キーでも、スマホの十字キー＋Aボタンでも選べる</li>
           <li>強がりゲージ： たまるとピンチで1回だけHP1で踏みとどまる</li>
+          <li>第2章： 動物は近づくと反対へ逃げる。柵エリアへ追い込もう。装甲の硬い敵は、歯車チャージで歯車を外して止める</li>
           <li>負けても大丈夫。工房に戻るだけ（ほんの少しだけ記録が残る）</li>
           <li>セーブ： マップが変わるたびに自動</li>
         </ul>
@@ -67,12 +68,14 @@
       </div>
     </div>
 
-    <!-- クリア画面 -->
+    <!-- クリア画面（第1章・第2章で共用。文面はJSで差し替える） -->
     <div id="clear-screen" class="overlay hidden">
       <div class="panel">
-        <h2>第1章 クリア！</h2>
+        <h2 id="clear-title">第1章 クリア！</h2>
         <div id="clear-stats"></div>
-        <p class="clear-next">大歯車は戻った。でも、歯が1枚欠けたまま…。<br>わるびーは何を隠しているのか——第2章へつづく。</p>
+        <p class="clear-next" id="clear-next">大歯車は戻った。でも、歯が1枚欠けたまま…。<br>わるびーは何を隠しているのか——第2章へつづく。</p>
+        <button id="btn-to-ch2" class="bigbtn">第2章へすすむ</button>
+        <a id="clear-link" class="bigbtn sub" href="../aobee_farm_v48_soil_water.html?v=ui50" target="_blank" rel="noopener" style="display:none">元ネタの牧場ゲームで遊ぶ ↗</a>
         <button id="btn-clear-back" class="bigbtn">タイトルへ</button>
       </div>
     </div>
