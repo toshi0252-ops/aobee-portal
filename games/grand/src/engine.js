@@ -665,6 +665,20 @@ const Engine = (() => {
           ctx.closePath(); ctx.fill();
         }
       }
+      // 風車の丘: ボス発生マス（10,3）の目印（発生条件を満たした時だけ、上下に揺れる「！」看板）
+      if (this.mapId === 'hill') {
+        const st2 = this.hooks.hooksState ? this.hooks.hooksState() : {};
+        if (st2.boss2Ready) {
+          const bx = 10 * TILE + 16, by = 3 * TILE;
+          const bob2 = Math.round(Math.sin(performance.now() / 350) * 2);
+          ctx.fillStyle = 'rgba(23,45,59,0.88)';
+          ctx.beginPath(); ctx.roundRect(bx - 11, by - 26 + bob2, 22, 20, 6); ctx.fill();
+          ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#ffd21f'; ctx.fillText('！', bx, by - 15 + bob2);
+          ctx.strokeStyle = 'rgba(255,210,31,0.75)'; ctx.lineWidth = 1.6;
+          ctx.beginPath(); ctx.roundRect(bx - 15, by + 2, 30, 30, 6); ctx.stroke();
+        }
+      }
       // 村の大歯車タワー
       if (this.mapId === 'village') {
         ctx.fillStyle = '#8a929c'; ctx.fillRect(9 * TILE + 12, 0, 8, 30); ctx.fillRect(10 * TILE + 12, 0, 8, 30);

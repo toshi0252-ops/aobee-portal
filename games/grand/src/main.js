@@ -78,7 +78,8 @@
     boots: !!S.flags.boots,
     bridgeOpen: !!S.flags.bridgeOpen,
     gearRestored: !!S.flags.gearRestored,
-    windmillFast: S.chapter >= 2 && !S.flags.boss2Done // 第2章ボス停止までは風車が暴走回転
+    windmillFast: S.chapter >= 2 && !S.flags.boss2Done, // 第2章ボス停止までは風車が暴走回転
+    boss2Ready: S.chapter >= 2 && !!S.flags.warubeeSeen && !S.flags.boss2Done && !S.flags.boss2Started // 丘のボス発生マスに目印を出す条件
   });
 
   /* ---------- 第2章: 動物誘導 ---------- */
@@ -490,6 +491,7 @@
   function startEnding2() {
     S.hoshiba = 1;
     S.herbs += 2;
+    refreshHUD();
     Snd.pickup();
     Dialogue.play(Data.dlg.minoriEnding, () => {
       S.flags.cleared2 = true;
