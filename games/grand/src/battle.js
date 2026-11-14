@@ -23,6 +23,8 @@ statusEl.innerHTML =
 `強がり<div class="bar guts"><div style="width:${s.guts}%"></div></div>` +
 (B.charged? '<span style="color:#ffd94d;font-weight:700">⚙ 歯車チャージ完了！</span>': '');
 document.getElementById('herb-count').textContent = s.herbs;
+// ログ帯の下端をステータス窓の実高さに合わせて動的に逃がす（窓の高さはLv表示やチャージ表示で変わり、固定値だとヒント等の文章が窓と重なるため）
+logEl.style.bottom = (statusEl.offsetHeight + 20) + 'px';
 const ab = cmdButtons().find(b => b.dataset && b.dataset.cmd === 'attack');
 const lbl = ab && ab.children ? [...ab.children].find(c => c.className === 'cmd-label') : null;
 if (lbl) lbl.textContent = B.charged ? '歯車アタック！' : 'こうげき';
