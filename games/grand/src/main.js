@@ -18,6 +18,7 @@
   function freshState() {
     return {
       hp: 40, maxHp: 40, herbs: 2, guts: 0,
+      level: 1, exp: 0, // 簡易レベル制（上限5、最大HP = 40 + (Lv-1)×8）
       fragments: 0, losses: 0, playMs: 0, startedAt: Date.now(),
       flags: {}, // opening, boots, trailIntro, cogDone, millIntro, millGear, bridgeOpen, bossDone, cleared
       talks: {}, // NPCごとの会話回数（2回目以降のセリフ出し分け用）
@@ -32,6 +33,7 @@
   let S = freshState();
   let curMap = 'village';
   let started = false;
+  let visitDone = {}; // マップ滞在中のみ有効な雑魚の撃破記録（セーブしない）。マップ再入場で復活させ、レベリング可能にする
 
   /* ---------- セーブ ---------- */
   function save() {
@@ -70,7 +72,7 @@
   }
   function refreshHUD() {
     $('hud-obj').textContent = '⚙ ' + objective();
-    $('hud-sub').textContent = (S.chapter >= 2 ? `星歯 ${S.hoshiba}/7 ・ ` : '') + `欠片 ${S.fragments}/4 ・ ほし草 ${S.herbs} ・ HP ${Math.max(0, S.hp)}/${S.maxHp}`;
+    $('hud-sub').textContent = (S.chapter >= 2 ? `星歯 ${S.hoshiba}/7 ・ ` : '') + `Lv${S.level || 1} ・ 欠片 ${S.fragments}/4 ・ ほし草 ${S.herbs} ・ HP ${Math.max(0, S.hp)}/${S.maxHp}`;
   }
 
   /* ---------- フック ---------- */
@@ -126,7 +128,7 @@
         refreshHUD(); save();
         if (S.animalsCaught >= 5) {
           S.flags.herdDone = true;
-          Dialogue.play(Data.dlg.minoriHerdDone, () => { S.herbs += 2; Snd.pickup(); refreshHUD(); save(); });
+          Dialogue.play(Data.dlg.minoriHerdDone, () => { S.herbs += 3; Snd.pickup(); refreshHUD(); save(); });
         }
       }
     }
@@ -190,17 +192,18 @@
       return;
     }
     // 初戦闘ゾーン（小道6行目を横切る）※敗北時は工房に戻され、再入場で再挑戦できる
-    if (curMap === 'trail' && y === 6 && !S.flags.cogDone) {
-      startCogBattle();
-      return;
+    // チュートリアル完了後は通常個体として、マップ再入場ごとに復活する（レベリング用）
+    if (curMap === 'trail' && y === 6) {
+      if (!S.flags.cogDone) { startCogBattle(false); return; }
+      if (!visitDone.trailCog) { startCogBattle(true); return; }
     }
-    // 第2章: クワコグ戦（まきばの道）
-    if (curMap === 'road' && x === 9 && !S.flags.kuwaRoad) {
+    // 第2章: クワコグ戦（まきばの道）。初回クリアはフラグに残しつつ、再入場で復活する
+    if (curMap === 'road' && x === 9 && !visitDone.kuwaRoad) {
       startKuwaBattle('kuwaRoad');
       return;
     }
-    // 第2章: クワコグ戦（牧場・南の畑付近）
-    if (curMap === 'ranch' && x === 7 && y === 12 && !S.flags.kuwaRanch) {
+    // 第2章: クワコグ戦（牧場・南の畑付近）。同上
+    if (curMap === 'ranch' && x === 7 && y === 12 && !visitDone.kuwaRanch) {
       startKuwaBattle('kuwaRanch');
       return;
     }
@@ -240,6 +243,7 @@
   }
 
   function onMapEnter(id) {
+    visitDone = {}; // マップに入り直すたびに固定雑魚が復活する
     refreshHUD();
     if (started) save();
     if (id === 'trail' && !S.flags.trailIntro) {
@@ -307,12 +311,18 @@
       else if (npc.id === 'minori') {
         if (S.flags.boss2Done && !S.flags.cleared2) {
           startEnding2();
-        } else if (S.flags.cleared2) Dialogue.play(Data.dlg.minoriAfter2);
-        else if (!S.flags.minoriMet) {
-          Dialogue.play(Data.dlg.minoriFirst, () => { S.flags.minoriMet = true; refreshHUD(); save(); });
-        } else if (!S.flags.herdDone) {
-          Dialogue.play(Data.dlg.minoriHerd[Math.min(S.animalsCaught, 4)]);
-        } else Dialogue.play(Data.dlg.minoriAfter);
+        } else {
+          // 回復スポット: みのりさんに話すたび、お茶でHP全回復（何度でも可）。段階会話の頭にお茶の一言を付ける
+          S.hp = S.maxHp;
+          const tea = [Data.L('みのりさん', 'お茶をどうぞ。ほし草のお茶よ。……はい、これで元気いっぱいのはず。', 'minori')];
+          const withTea = (lines, cb) => Dialogue.play(tea.concat(lines), cb || (() => { refreshHUD(); save(); }));
+          if (S.flags.cleared2) withTea(Data.dlg.minoriAfter2);
+          else if (!S.flags.minoriMet) {
+            withTea(Data.dlg.minoriFirst, () => { S.flags.minoriMet = true; refreshHUD(); save(); });
+          } else if (!S.flags.herdDone) {
+            withTea(Data.dlg.minoriHerd[Math.min(S.animalsCaught, 4)]);
+          } else withTea(Data.dlg.minoriAfter);
+        }
       }
       else if (npc.id === 'warubee' && curMap === 'mill' && !S.flags.bossDone && !S.flags.bossStarted) {
         S.flags.bossStarted = true; startBoss();
@@ -331,18 +341,26 @@
   }
 
   /* ---------- 戦闘 ---------- */
-  async function startCogBattle() {
-    Dialogue.play(Data.dlg.cogIntro, async () => {
+  async function startCogBattle(repeat) {
+    const begin = async () => {
       const res = await Battle.start({
         state: S, enemies: [{ ...Data.enemies.cog }],
-        intro: 'サビつきコグ が あらわれた！', tutorial: true
+        intro: 'サビつきコグ が あらわれた！', tutorial: !repeat
       });
       if (res === 'win') {
-        S.flags.cogDone = true;
-        Dialogue.play(Data.dlg.cogOutro, () => { refreshHUD(); save(); });
+        if (repeat) {
+          // 通常個体としての再戦: 進行フラグは触らず、この滞在中だけ撃破扱いにする
+          visitDone.trailCog = true;
+          refreshHUD(); save();
+        } else {
+          S.flags.cogDone = true;
+          Dialogue.play(Data.dlg.cogOutro, () => { refreshHUD(); save(); });
+        }
       } else onLose();
       refreshHUD();
-    });
+    };
+    if (repeat) begin();
+    else Dialogue.play(Data.dlg.cogIntro, begin);
   }
   function startMillCogBattle() {
     Dialogue.play(Data.dlg.millCogIntro, async () => {
@@ -367,7 +385,8 @@
         intro: 'クワコグ が あらわれた！'
       });
       if (res === 'win') {
-        S.flags[flagKey] = true;
+        S.flags[flagKey] = true; // 初回クリアの記録（進行用）
+        visitDone[flagKey] = true; // この滞在中は再出現しない（再入場で復活）
         Dialogue.play(Data.dlg.kuwaOutro, () => { refreshHUD(); save(); });
       } else onLose();
       refreshHUD();
@@ -524,7 +543,14 @@
     Snd.bgm('field');
     if (fromSave) {
       const sv = loadSave();
+      const hadLevel = !!(sv && sv.S && typeof sv.S.level === 'number' && typeof sv.S.exp === 'number');
       S = Object.assign(freshState(), sv.S);
+      if (!hadLevel) {
+        // レベル制導入前の旧セーブ移行: 第2章到達済みなら Lv2、それ以外は Lv1
+        if ((S.chapter || 1) >= 2 || S.flags.cleared || S.flags.bossDone) {
+          S.level = 2; S.exp = 30; S.maxHp = 48; S.hp = 48;
+        } else { S.level = 1; S.exp = 0; }
+      }
       S.startedAt = Date.now(); S.playMs = S.playMs || 0;
       curMap = sv.map || 'village';
       Engine.start();

@@ -165,11 +165,11 @@ const Data = (() => {
   };
 
   const enemies = {
-    cog:      { id: 'cog', name: 'サビつきコグ', kind: 'cog', maxHp: 26, atk: 5 },
-    millCog:  { id: 'millCog', name: '番人コグ', kind: 'cog', maxHp: 36, atk: 7 },
-    karakuri: { id: 'karakuri', name: 'からくり人形＆わるびー', kind: 'boss', maxHp: 62, atk: 8 },
-    kuwa:     { id: 'kuwa', name: 'クワコグ', kind: 'kuwa', maxHp: 30, atk: 6 },
-    moguru:   { id: 'moguru', name: 'モーぐるマシン', kind: 'moguru', maxHp: 9999, atk: 7, gears: 3 }
+    cog:      { id: 'cog', name: 'サビつきコグ', kind: 'cog', maxHp: 26, atk: 5, exp: 10 },
+    millCog:  { id: 'millCog', name: '番人コグ', kind: 'cog', maxHp: 36, atk: 7, exp: 20 },
+    karakuri: { id: 'karakuri', name: 'からくり人形＆わるびー', kind: 'boss', maxHp: 62, atk: 8, exp: 40 },
+    kuwa:     { id: 'kuwa', name: 'クワコグ', kind: 'kuwa', maxHp: 30, atk: 6, exp: 14 },
+    moguru:   { id: 'moguru', name: 'モーぐるマシン', kind: 'moguru', maxHp: 9999, atk: 6, gears: 3, exp: 50 }
   };
 
   const L = (name, text, face) => ({ name, text, face: face || null });
@@ -350,7 +350,7 @@ const Data = (() => {
       L('みのりさん', '全部戻ったわ！　ありがとう、あおびー。動物たちも、ほら、安心してる。', 'minori'),
       L('みのりさん', 'これで北の風車の丘へ行けるわ。……ねえ、さっきから丘の上に誰かいる気がするの。気をつけてね。', 'minori'),
       L('みのりさん', 'お礼に、ほし草を持っていって。丘は危ないから、無理しないでね。', 'minori'),
-      L('', 'ほし草を2つもらった。')
+      L('', 'ほし草を3つもらった。')
     ],
     minoriAfter: [
       L('みのりさん', '丘の上の風車、止めてくれたら牧場は元通りよ。……無理はしないでね。あおびーのペースでいいの。', 'minori')

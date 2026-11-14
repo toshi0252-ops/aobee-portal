@@ -19,7 +19,7 @@ for (const t of lines) { log(t); await wait(per);}
 function renderStatus() {
 const s = B.state;
 statusEl.innerHTML =
-`あおびー Lv1<br>HP ${Math.max(0, s.hp)}/${s.maxHp}<div class="bar hp"><div style="width:${Math.max(0, s.hp) / s.maxHp * 100}%"></div></div>` +
+`あおびー Lv${s.level || 1}<br>HP ${Math.max(0, s.hp)}/${s.maxHp}<div class="bar hp"><div style="width:${Math.max(0, s.hp) / s.maxHp * 100}%"></div></div>` +
 `強がり<div class="bar guts"><div style="width:${s.guts}%"></div></div>` +
 (B.charged? '<span style="color:#ffd94d;font-weight:700">⚙ 歯車チャージ完了！</span>': '');
 document.getElementById('herb-count').textContent = s.herbs;
@@ -174,6 +174,34 @@ await logSeq(['あおびーは たおれた……'], 1100);
 end('lose', resolve || B._resolve);
 return true;
 }
+/* 勝利時の精算: 雑魚ドロップ（ほし草30%）＋経験値付与＋レベルアップ（最大HP+8/レベル・全回復） */
+const EXP_THRESHOLDS = [0, 30, 75, 140, 230]; // 添字+1 = レベル（上限5）
+async function settleVictory() {
+const s = B.state;
+const droppable = B.enemies.some(e => !e.gears && e.kind !== 'boss'); // ボス・歯車制ボスはドロップなし
+if (droppable && Math.random() < 0.3) {
+s.herbs++;
+Engine.Snd.pickup();
+log('たおした敵が ほし草を 落とした！（ほし草 +1）');
+renderStatus();
+await wait(900);
+}
+const gain = B.enemies.reduce((sum, e) => sum + (e.exp || 0), 0);
+if (gain > 0 && typeof s.exp === 'number') {
+s.exp += gain;
+let lv = 1;
+EXP_THRESHOLDS.forEach((t, i) => { if (s.exp >= t) lv = i + 1; });
+if (lv > (s.level || 1)) {
+s.level = lv;
+s.maxHp = 40 + (lv - 1) * 8;
+s.hp = s.maxHp;
+Engine.Snd.win();
+log(`あおびーは レベル${lv} に あがった！`);
+renderStatus();
+await wait(1300);
+}
+}
+}
 function end(result, resolve) {
 Engine.Snd.bgm('field');
 ui.classList.add('hidden');
@@ -183,11 +211,12 @@ B = null;
 if (r) r(result);
 }
 
-async function enemyAttack(e) {
+async function enemyAttack(e, mult = 1) {
 const s = B.state;
-// モーぐるマシン: 歯車が外れるほど暴走が激しくなる（攻撃力アップ）
-const atk = e.gears ? e.atk + (e.gears - e.gearLeft) * 2 : e.atk;
-const dmg = rnd(Math.max(1, atk - 2), atk + 2);
+// モーぐるマシン: 歯車が外れるほど暴走が激しくなる（攻撃力 +1/個）
+const atk = e.gears ? e.atk + (e.gears - e.gearLeft) * 1 : e.atk;
+let dmg = rnd(Math.max(1, atk - 2), atk + 2);
+if (mult !== 1) dmg = Math.max(1, Math.ceil(dmg * mult)); // 2回目の突進は倍率を掛ける（半分・切り上げ）
 s.hp -= dmg; s.guts = Math.min(100, s.guts + 34);
 Engine.Snd.hurt();
 log(e.gears ? `${e.name} の突進！　あおびーに ${dmg} のダメージ！` : `${e.name} のこうげき！　あおびーに ${dmg} のダメージ！`);
@@ -200,11 +229,11 @@ for (const e of B.enemies) {
 if (e.hp <= 0 ||!B) continue;
 await enemyAttack(e);
 if (await checkLose(resolve)) return false;
-// モーぐるマシン: 歯車が残り1つになると暴走が加速し、ときどき2回突進する
-if (e.gears && e.gearLeft === 1 && B && Math.random() < 0.4) {
+// モーぐるマシン: 歯車が残り1つになると暴走が加速し、ときどき2回突進する（2回目は半ダメ）
+if (e.gears && e.gearLeft === 1 && B && Math.random() < 0.25) {
 log('暴走が加速した！　モーぐるマシンが もう一度突っ込んでくる！');
 await wait(850);
-await enemyAttack(e);
+await enemyAttack(e, 0.5);
 if (await checkLose(resolve)) return false;
 }
 }
@@ -263,6 +292,7 @@ if (target.gearLeft <= 0) {
 Engine.Snd.win();
 log(`${target.name} は ぷしゅー…と煙を出して止まった！`);
 await wait(1200);
+await settleVictory();
 end('win', resolve);
 return;
 }
@@ -273,7 +303,8 @@ refreshEnemyHP(); renderStatus();
 await wait(1000);
 }
 } else {
-let dmg = B.charged? rnd(16, 22): rnd(7, 10);
+const lvBonus = (s.level || 1) - 1; // レベル攻撃ボーナス: 通常 +(Lv-1)×2 / チャージ +(Lv-1)×3
+let dmg = B.charged? rnd(16, 22) + lvBonus * 3: rnd(7, 10) + lvBonus * 2;
 let note = '';
 if (target.kind === 'boss') {
 if (target.weakMode === type) { dmg = Math.round(dmg * 1.8); note = '　弱点を突いた！';}
@@ -291,6 +322,7 @@ if (B.enemies.every(e => e.hp <= 0)) {
 Engine.Snd.win();
 log(`${target.name} を たおした！`);
 await wait(1100);
+await settleVictory();
 end('win', resolve);
 return;
 }
