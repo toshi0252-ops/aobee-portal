@@ -6,7 +6,8 @@ const html=fs.readFileSync('games/aobee_star_temple_portal.html','utf8');
 function boot(saved){
  const canvas=createCanvas(960,540),els=new Map(),storage=new Map(saved?[[saved.key,saved.value]]:[]);let now=10000;
  function el(id){if(els.has(id))return els.get(id);const e={id,style:{display:id==='start'?'flex':id==='dialog'?'none':'',setProperty(){}},hidden:false,textContent:'',innerHTML:'',dataset:{},offsetWidth:112,classList:{toggle(){},add(){},remove(){}},getContext:()=>canvas.getContext('2d'),getBoundingClientRect:()=>({left:0,right:960,top:0,width:960,height:540}),addEventListener(){},setAttribute(){},getAttribute(){return null},setPointerCapture(){},hasPointerCapture(){return false},releasePointerCapture(){},focus(){doc.activeElement=e},click(){e.onclick?.()},append(){},appendChild(){},insertAdjacentHTML(){},querySelector(){return el(id+' child')},querySelectorAll(){return []}};els.set(id,e);return e;}
- const doc={hidden:false,getElementById:el,querySelector:s=>el(s.startsWith('#')?s.slice(1):s),querySelectorAll:()=>[],createElement:t=>el('new-'+els.size),addEventListener(){},activeElement:null};doc.body=el('body');doc.documentElement=el('html');
+ const listeners={};
+ const doc={hidden:false,getElementById:el,querySelector:s=>el(s.startsWith('#')?s.slice(1):s),querySelectorAll:()=>[],createElement:t=>el('new-'+els.size),addEventListener(type,fn){(listeners[type]??=[]).push(fn)},activeElement:null};doc.body=el('body');doc.documentElement=el('html');
  const window={addEventListener(){},visualViewport:null};
  const ctx=vm.createContext({document:doc,window,Image,console,innerWidth:960,innerHeight:540,performance:{now:()=>now},requestAnimationFrame(){},setTimeout(){},clearTimeout(){},MutationObserver:class{observe(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},confirm:()=>true,location:{reload(){}},getComputedStyle:()=>({position:'fixed'}),Date:{now:()=>now}});
  ctx.globalThis=ctx;
@@ -25,7 +26,7 @@ function boot(saved){
    if(run('area')!==state.area)return;
   }
  }
- return {run,flush,act,walk,canvas,storage,advance:n=>now+=n,el};
+ return {run,flush,act,walk,canvas,storage,advance:n=>now+=n,el,key(type,event){doc['on'+type]?.(event);for(const fn of listeners[type]||[])fn(event)}};
 }
 function checkpoint(g,label){
  g.run('saveGame(true)');const key=g.run('SAVE_KEY'),value=g.storage.get(key);assert(value,label+' checkpoint saved');
