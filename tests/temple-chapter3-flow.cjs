@@ -46,7 +46,7 @@ function play(help){let g=complete(help?'trust':'ask',help?'gentle':'rapid'),{ru
  const xy=run('player.x+","+player.y');run('move(1,0);simulationStep(10000)');assert.equal(run('player.x+","+player.y'),xy);
  run("$('chapter3Explore').onclick()");g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第3章クリア/);
  run("$('questJournal').onclick()");assert.match(g.el('questJournalList').textContent,/✓ 第3章クリア/);run("closeQuestJournal();$('chapter3Record').onclick()");assert.equal(g.el('chapter3Clear').hidden,false);run("$('chapter3Explore').onclick()");
- walk(12,15);assert.equal(run('area'),'village');g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第3章クリア/);run('TempleChapter3.start()');flush();assert.equal(run('area'),'ch3_port');assert.equal(run('TempleChapter2.getState().reported'),true);assert.equal(run('chapter1Story.reportSeen'),true);
+ walk(12,15);assert.equal(run('area'),'village');g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第3章クリア/);run('TempleChapter3.start()');flush();assert.equal(run('area'),'ch3_port');assert.equal(run('TempleChapter2.getState().reported'),true);assert.equal(run('chapter1Story.reportSeen'),true);return g;
 }
-play(true);play(false);
+if(require.main===module){play(true);play(false);}else module.exports={play};
 console.log('PASS chapter 3 full story: prior-chapter lock, menu departure, wrong lamps, manual tides, low-tide optional tools, high-tide ship rescue, drainage/records, independent navigation supply, transfer interlock, guardian retry and both valve orders, checkpoints, ending/record/journal/free return, earlier chapters preserved');

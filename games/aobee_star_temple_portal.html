@@ -228,7 +228,7 @@ function saveGame(silent=false){
  catch(err){if(!silent)toast('このブラウザでは保存できません');return false}
 }
 function validSave(d){
- if(!d||![1,2,3].includes(d.version)||!['village','forest','ruins','annex','seal','ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate','ch2_tower1','ch2_tower2','ch2_tower3','ch2_tower4','ch3_port','ch3_shore','ch3_observatory','ch3_lighthouse','ch3_beacon'].includes(d.area))return false;
+ if(!d||![1,2,3].includes(d.version)||!['village','forest','ruins','annex','seal','ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate','ch2_tower1','ch2_tower2','ch2_tower3','ch2_tower4','ch3_port','ch3_shore','ch3_observatory','ch3_lighthouse','ch3_beacon','ch4_landing','ch4_settlement','ch4_archive','ch4_storage','ch4_scribe','ch4_chart'].includes(d.area))return false;
  const p=d.player;if(!p||!Number.isInteger(p.x)||!Number.isInteger(p.y)||p.x<0||p.x>=24||p.y<0||p.y>=18||!Number.isInteger(p.hp)||p.hp<1||p.hp>3)return false;
  if(p.dir!==undefined&&!['up','down','left','right'].includes(p.dir))return false;
  for(const [key,max]of [['phase',5],['stars',3],['ruinBossHP',5],['runeOrder',3]])if(d[key]!==undefined&&(!Number.isInteger(d[key])||d[key]<0||d[key]>max))return false;
@@ -1316,4 +1316,163 @@ const TempleChapter3=(()=>{
  return {start,getState:()=>({...state,pumps:[...state.pumps],valves:[...state.valves]}),getBattleState:()=>({cycle,wave})};
 })();
 
-</script><style>#chapter3Clear[hidden]{display:none}#chapter3Clear{position:fixed;inset:0;z-index:52;display:grid;place-items:center;background:#102c43eb;padding:12px}#chapter3Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#284d60;border:1px solid #d7cc9f;border-radius:14px;padding:24px;color:#f0e9cb}#chapter3Clear h2{color:#ffe0a0}#chapter3Clear p{line-height:1.7}#chapter3Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#203c49;font-weight:bold}</style><div id="chapter3Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter3ClearTitle"><section><h2 id="chapter3ClearTitle">第3章 クリア</h2><p>船を導く灯りは、消えなかった。<br>次の星図は、海図にない島へ。</p><p id="chapter3ClearSummary"></p><p id="chapter3SaveStatus"></p><button id="chapter3Explore" type="button">港と村の探索を続ける</button></section></div><script>$('chapter3Explore').onclick=()=>{$('chapter3Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter3Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter3Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter3Explore').focus();}});</script></body></html>
+</script><style>#chapter3Clear[hidden]{display:none}#chapter3Clear{position:fixed;inset:0;z-index:52;display:grid;place-items:center;background:#102c43eb;padding:12px}#chapter3Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#284d60;border:1px solid #d7cc9f;border-radius:14px;padding:24px;color:#f0e9cb}#chapter3Clear h2{color:#ffe0a0}#chapter3Clear p{line-height:1.7}#chapter3Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#203c49;font-weight:bold}</style><div id="chapter3Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter3ClearTitle"><section><h2 id="chapter3ClearTitle">第3章 クリア</h2><p>船を導く灯りは、消えなかった。<br>次の星図は、海図にない島へ。</p><p id="chapter3ClearSummary"></p><p id="chapter3SaveStatus"></p><button id="chapter3Explore" type="button">港と村の探索を続ける</button></section></div><script>$('chapter3Explore').onclick=()=>{$('chapter3Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter3Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter3Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter3Explore').focus();}});</script><script>
+/* Chapter 4: reconstruct evidence; retain stored light without releasing it. */
+const TempleChapter4=(()=>{
+ const zones=['ch4_landing','ch4_settlement','ch4_archive','ch4_storage','ch4_scribe','ch4_chart'];
+ const names={ch4_landing:'海図にない島・入り江',ch4_settlement:'記録の消えた集落',ch4_archive:'図書塔・記録室',ch4_storage:'星光の貯蔵庫',ch4_scribe:'封印の記録機構',ch4_chart:'神殿を指す星見台'};
+ const fresh=()=>({started:false,survey:false,archiveOpen:false,read:[],sequence:0,sorted:false,cogFound:false,clockFixed:false,nameConfirmed:false,cooling:false,lightHeld:false,backup:false,protected:0,scribeStopped:false,disclosure:'',reported:false});
+ let state=fresh(),clock=0,cycle='waiting',due=0;
+ const here=()=>zones.includes(area),bookKeys=['seal','recent','accident'],bookTitles=['島の封鎖','最近の転送変更','昔の逆流事故'],order=[2,0,1];
+ function goal(){
+  if(state.reported)return '第4章クリア！ 島の探索を続けられるよ。神殿への星図を手に入れた';
+  if(area==='ch4_chart')return '北の観測端末で、四つの地域を結ぶ星図を照合しよう';
+  if(area==='ch4_scribe')return !state.backup?'西の端末で記録の複製を保護しよう':state.scribeStopped?'集落へ戻り、記録守と子どもに報告しよう':'赤い予兆を避け、放出後に 昔の事故→島の封鎖→最近の変更 の順で記録を保護しよう';
+  if(area==='ch4_storage')return !state.cooling?'西の弁で貯蔵庫を冷却。一斉返却はしない':!state.lightHeld?'中央の保全台で、蓄積光を安全に保持しよう':'北の保管室へ。記録を消す機構を止めよう';
+  if(!state.survey)return '入り江の碑文を調べ、この島の存在を確かめよう';
+  if(!state.archiveOpen)return '集落の記録守に、島を調べる目的を話そう';
+  if(!state.sorted)return '図書塔で三つの記録を読み、古い順に証拠台へ写そう';
+  if(!state.scribeStopped)return '貯蔵庫を安全に保ち、奥の記録機構を止めよう';
+  if(!state.nameConfirmed)return '集落の子どもに名札を確かめ、記録の持ち主へ返そう';
+  return '集落の二つの石碑で、記録の公開方法を選ぼう';
+ }
+ function sync(){$('chapter4Start').hidden=!TempleChapter3.getState().reported;$('chapter4Start').textContent=state.started?'島へ戻る':'第4章へ出発';$('chapter4Record').hidden=!state.reported;}
+ function resetCycle(){clock=0;cycle='waiting';due=0;}
+ function enter(next,x=12,y=14){area=next;player.x=x;player.y=y;player.dir='up';templeMove=null;templeAttack=null;clearStick();resetCycle();objective(goal());toast(names[next]);saveGame(true);}
+ function start(){if(!TempleChapter3.getState().reported||!s101CanInteract())return;if(state.started){enter(state.survey?'ch4_settlement':'ch4_landing');return;}
+  say([['語り','第4章　消された島と星の記録'],['船大工見習い',TempleChapter3.getState().toolsReturned?'返してくれた工具で、船を直せたよ。島まで、気をつけて。':'船の修理は間に合った。海図にはないけど、教えてくれた座標なら進めるよ。'],['ミオ','港からの転送は止まった。でも島にたまった光は、まだここにある。'],['わるびー','この紋章……見覚えがある。でも、思い出せないところを、勝手に埋めたくない。'],['あおびー','覚えていることと、記録を、一つずつ確かめよう。']],()=>{state.started=true;sync();enter('ch4_landing');});
+ }
+ function interact(){
+  if(area==='ch4_landing'){
+   if(s103Facing(6,9)){state.survey=true;say([['入り江の碑文','逆流事故ののち、この島と航路の記録を封ず。'],['ミオ','港の新しい転送変更より、ずっと古い碑文だよ。'],['あおびー','島が消された理由と、今ここに光が来た理由は、別々なんだね。']],()=>objective(goal()));return;}
+   if(s103Facing(17,6)){state.cogFound=true;say([['あおびー','古い時計の歯車だ。集落で使えるかもしれない。']]);return;}
+  }
+  if(area==='ch4_settlement'){
+   if(s103Facing(10,7)){
+    if(!state.survey){say([['記録守','この島が何なのか、入り江の碑文から確かめてきなさい。']]);return;}
+    if(!state.archiveOpen){state.archiveOpen=true;say([['記録守','封じたのは、昔の事故を繰り返させないためだ。だが、暮らしていた人のことまで消してしまった。'],['あおびー','守るための記録が、誰かを消すために使われちゃだめだよ。'],['記録守','図書塔を開こう。読んだ記録は、消さずに持ち帰ってほしい。']],()=>objective(goal()));return;}
+    say(state.scribeStopped?[['記録守','昔の封鎖と最近の書き換えは別件だった。見つけた名札は、本人に確かめて返してあげてほしい。'],['記録守','記録を公開するか、まず持ち主に託すか。西か東の石碑で、方針を決めよう。']]:[['記録守','三つの記録を古い順に写せば、貯蔵庫の安全な道が分かる。']]);return;
+   }
+   if(s103Facing(17,10)){
+    if(!state.sorted){say([['名を忘れた子','この島には、ぼくの名前も残っていないのかな。'],['あおびー','いっしょに探そう。思い出せないことは、急がなくていいから。']]);return;}
+    if(!state.nameConfirmed){state.nameConfirmed=true;say([['ミオ','この名札、記録の端に残っていた。きみのものか、確かめてくれる？'],['語り','子どもは刻まれた名を指でなぞり、小さな声で繰り返した。ミオは本人に確かめてから、星図に書き留めた。'],['名札を取り戻した子','自分の名前は、分かった。でも、まだ思い出せないこともあるんだ。'],['あおびー','うん。今は、分かったことを大切にしよう。']],()=>objective(goal()));}
+    else say([['名札を取り戻した子','名前を呼んでもらえるって、こんな感じだったんだね。']]);return;
+   }
+   if(s103Facing(6,10)){if(!state.cogFound){toast('時計の歯車が足りない。入り江の東を確かめよう');return;}state.clockFixed=true;say([['語り','古い歯車をはめると、集落の時計が静かに時を刻み始めた。'],['記録守','時刻は戻っても、過去は元どおりにはならない。だから、これからの記録を残そう。']]);return;}
+   for(const [x,choice]of [[8,'share'],[16,'owners']])if(s103Facing(x,11)){
+    if(!state.scribeStopped||!state.nameConfirmed){toast('先に記録機構を止め、名札を持ち主へ返そう');return;}
+    if(state.disclosure){enter('ch4_chart');return;}
+    state.disclosure=choice;say([['あおびー',choice==='share'?'まず、みんなで事故の記録を読めるようにしよう。個人の記録は、持ち主の同意を確かめよう。':'個人の記録は持ち主に託そう。事故と設備の記録は、みんなが読めるようにしよう。'],['記録守','分かった。守る理由も、封じた責任も、説明していこう。'],['ミオ','貯蔵庫の奥に、神殿を指す観測線がある。星見台で、最後の照合をしよう。']],()=>enter('ch4_chart'));return;
+   }
+  }
+  if(area==='ch4_archive'){
+   for(const [i,x]of [5,12,19].entries())if(s103Facing(x,5)){
+    const lines=[['島の封鎖','昔の逆流事故のあと、島と航路の記録を封じた。事故の再発防止が目的だったが、住民の名まで失われた。'],['最近の転送変更','古い管理者認証鍵で、港から島の貯蔵庫へ光を送る経路が上書きされた。操作日時は新しい。使用者名は欠落している。'],['昔の逆流事故','星脈の光が一斉に戻り、受け止めきれず逆流した。この記録は、島の封鎖より前のもの。']];
+    if(!state.read.includes(bookKeys[i]))state.read.push(bookKeys[i]);say([[lines[i][0],lines[i][1]],...(state.read.length===3?[['ミオ','三つそろった。下の証拠台で、起きた順に写してみよう。']]:[])]);return;
+   }
+   for(const [i,x]of [6,12,18].entries())if(s103Facing(x,11)){
+    if(state.sorted){toast('年代の照合は完了。原本も写しも残してある');return;}
+    if(state.read.length<3){toast('まず北の三つの記録を読み比べよう');return;}
+    if(i===order[state.sequence])state.sequence++;else{state.sequence=0;say([['ミオ','順番が合わない。事故が起き、島が封じられ、ずっと後で転送先が変わったんだよね。']]);return;}
+    if(state.sequence===3){state.sorted=true;say([['ミオ','昔の逆流事故、島の封鎖、最近の経路変更。別々の出来事が、重なっていたんだ。'],['わるびー','古い認証鍵を使った人の名前は、まだ欠けてる。ここだけでは決めつけられない。'],['語り','照合した記録から、貯蔵庫の安全な制御経路と、子どもの名札が見つかった。']],()=>objective(goal()));}else toast('証拠を写した '+state.sequence+'/3');saveGame(true);return;
+   }
+  }
+  if(area==='ch4_storage'){
+   if(s103Facing(6,11)){state.cooling=true;toast('冷却弁を固定。光の圧力が落ち着き始めた');objective(goal());saveGame(true);return;}
+   if(s103Facing(17,11)){say([['警告記録','蓄積光の一斉返却は禁止。各地の受け入れを整えずに返すと、逆流事故が再発する。'],['あおびー','今すぐ戻すことが、助けることになるとは限らないんだ。']]);return;}
+   if(s103Facing(12,9)){if(!state.cooling){toast('先に西の冷却弁を固定しよう');return;}state.lightHeld=true;say([['ミオ','光を逃がさず、安全な保全回路へ移した。今はここで保持できる。'],['わるびー','返す方法は、神殿で探す。まず記録を消す機構を止めよう。']],()=>objective(goal()));return;}
+  }
+  if(area==='ch4_scribe'){
+   if(state.scribeStopped){toast('記録は保護済み。集落へ戻ろう');return;}
+   if(s103Facing(6,11)){state.backup=true;toast('三つの記録を複製した。放出後に証拠を保護しよう');objective(goal());saveGame(true);return;}
+   if(s103Facing(17,11)){say([['忘却の書記','矛盾する記録を、削除して統一する。'],['あおびー','違っているなら、違いを残して確かめる。誰かの記録を消して、そろえたりしないよ。']]);return;}
+   for(const [i,x]of [6,12,18].entries())if(s103Facing(x,6)){
+    if(!state.backup){toast('先に西の端末で、原本と複製を保護しよう');return;}
+    if(cycle!=='open'){toast('赤い予兆から離れ、放出が止まってから操作しよう');return;}
+    if(i!==order[state.protected]){state.protected=0;resetCycle();toast('照合順が違う。複製は残っているのでやり直せる');saveGame(true);return;}
+    state.protected++;resetCycle();
+    if(state.protected===3){state.scribeStopped=true;say([['忘却の書記','削除命令を停止。異なる記録を、出典付きで保管する。'],['あおびー','忘れてしまったことも、記録が違うことも、そのまま一緒に確かめていこう。'],['ミオ','貯蔵庫の光も安定してる。集落へ戻って、記録を返そう。']],()=>objective(goal()));}else toast('記録を保護 '+state.protected+'/3');saveGame(true);return;
+   }
+  }
+  if(area==='ch4_chart'&&s103Facing(12,5)){
+   if(state.reported){showRecord();return;}
+   say([['ミオ','村、森、港、島。四つの観測線が、ひとつの神殿へ集まってる。'],['わるびー','ここで光を保持したまま、各地が受け取れる道を作れば……。'],['あおびー','一度に返さず、みんなで受け止めるんだね。神殿で、その方法を探そう。'],['記録守','この島の記録を、今度は隠さずに持っていってほしい。'],['名札を取り戻した子','思い出せた名前も、まだ思い出せないことも、ここに残していくよ。'],['語り','消された島の夜に、静かな灯りがともる。神殿を指す星図の線は、もう一人だけのものではなかった。']],()=>{state.reported=true;objective(goal());sync();showRecord();});return;
+  }
+  toast('記録や端末の隣から、そちらを向いて調べよう');
+ }
+ function blocked(x,y){
+  if(!Number.isInteger(x)||!Number.isInteger(y)||x<=0||x>=23||y<=0||y>=17)return true;
+  if(area==='ch4_landing')return [[6,9],[17,6]].some(([a,b])=>x===a&&y===b)||(x===12&&y===2&&!state.survey);
+  if(area==='ch4_settlement')return [[10,7],[17,10],[6,10],[8,11],[16,11]].some(([a,b])=>x===a&&y===b)||(x===6&&y===2&&!state.archiveOpen)||(x===18&&y===2&&!state.sorted);
+  if(area==='ch4_archive')return [[5,5],[12,5],[19,5],[6,11],[12,11],[18,11]].some(([a,b])=>x===a&&y===b);
+  if(area==='ch4_storage')return (y===8&&(!state.lightHeld||x!==13))||[[6,11],[17,11],[12,9]].some(([a,b])=>x===a&&y===b);
+  if(area==='ch4_scribe')return [[6,11],[17,11],[6,6],[12,6],[18,6]].some(([a,b])=>x===a&&y===b);
+  return area==='ch4_chart'&&y<=5;
+ }
+ function travel(){const {x,y}=player;
+  if(x===12&&y===15){
+   if(area==='ch4_landing'){area='ch3_port';player.x=12;player.y=13;templeMove=null;objective('メニューから島へ戻れます');saveGame(true);return;}
+   if(area==='ch4_settlement'){enter('ch4_landing',12,3);return;}
+   if(area==='ch4_scribe'){enter('ch4_storage',12,3);return;}
+   enter('ch4_settlement',area==='ch4_archive'?6:area==='ch4_storage'?18:12,3);return;
+  }
+  if(area==='ch4_landing'&&x===12&&y===2&&state.survey){enter('ch4_settlement');return;}
+  if(area==='ch4_settlement'){
+   if(x===6&&y===2&&state.archiveOpen){enter('ch4_archive');return;}
+   if(x===18&&y===2&&state.sorted){enter('ch4_storage');return;}
+  }
+  if(area==='ch4_storage'&&x===12&&y===2&&state.lightHeld){enter('ch4_scribe');return;}
+ }
+ function showRecord(){
+  $('chapter4SaveStatus').textContent=saveGame(true)?'クリア状態を保存しました。':'保存できませんでした。探索に戻ってセーブを再試行してください。';
+  $('chapter4ClearSummary').textContent='蓄積光：安全に保持 ／ 記録：保護'+(state.clockFixed?' ／ 集落の時計を修理':'');chapterClearOpen=true;clearStick();$('chapter4Clear').hidden=false;syncEdgeControls();$('chapter4Explore').focus();
+ }
+ const oldWall=wall;wall=function(x,y){return here()?blocked(x,y):oldWall(x,y)};
+ const oldMove=move;move=function(dx,dy){if(!here()){oldMove(dx,dy);return;}if(!s101CanInteract()||playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;
+  player.dir=dx<0?'left':dx>0?'right':dy<0?'up':'down';const nx=player.x+dx,ny=player.y+dy;if(!blocked(nx,ny)){const ox=player.x,oy=player.y;player.x=nx;player.y=ny;templeMove={x:ox,y:oy,tx:nx,ty:ny,area,time:performance.now()};travel();}saveGame(true);
+ };
+ const oldAction=action;action=function(){if(!here()||!s101CanInteract()){oldAction();return;}if(playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;templeAttack=null;interact();if($('dialog').style.display!=='block')saveGame(true);};
+ function danger(x,y){return y<=9&&(state.protected===0?x<=9:state.protected===1?x>=15:x>=10&&x<=14);}
+ const oldStep=simulationStep;simulationStep=function(t){oldStep(t);if(area!=='ch4_scribe'||state.scribeStopped||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
+  clock+=1000/60;if(!due){due=clock+900;return;}if(clock<due)return;
+  if(cycle==='waiting'){cycle='warning';due=clock+1100;toast('赤い範囲に記録消去の光が集まっている。外へ！');return;}
+  if(cycle==='warning'){cycle='open';due=clock+3200;if(danger(player.x,player.y)){player.hp--;if(player.hp<=0){player.hp=3;state.protected=0;state.backup=false;player.x=12;player.y=14;templeMove=null;resetCycle();toast('入口で回復。原本は失われず、複製から再挑戦できる');}updateHud();saveGame(true);}return;}
+  cycle='waiting';due=clock+800;
+ };
+ const oldDraw=draw;draw=function(){if(!here()){oldDraw();return;}
+  const g=ctx;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=false;const cy=Math.max(0,Math.min(180,templePose().y*40-250));g.save();g.translate(0,-cy);
+  const rect=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},label=(s,x,y)=>{g.font='600 13px sans-serif';g.textAlign='center';const w=g.measureText(s).width+18;rect(x-w/2,y-15,w,24,'#272c42ed');g.fillStyle='#f0e4c6';g.fillText(s,x,y+2)},post=(x,y,on=false)=>{rect(x*40+7,y*40+6,26,29,on?'#c3d2b1':'#9da4ad');rect(x*40+11,y*40+12,18,3,'#4e6470');rect(x*40+11,y*40+19,13,3,'#4e6470');};
+  for(let y=0;y<18;y++)for(let x=0;x<24;x++){rect(x*40,y*40,40,40,(x+y)%2?'#666e80':'#6b7383');rect(x*40+3,y*40+3,34,2,'#88929c');if(x===0||x===23||y===0||y===17){rect(x*40,y*40,40,40,'#2c3e58');rect(x*40+8,y*40+17,25,2,'#7a9dad');}}
+  label(names[area],480,72);
+  if(area==='ch4_landing'){rect(40,80,150,560,'#365a77');for(let y=100;y<620;y+=30)rect(55,y,100,2,'#8ca9b3');post(6,9,state.survey);post(17,6,state.cogFound);label('古い碑文',260,365);label('歯車の落とし物',700,245);label('集落へ',500,110);label('港へ戻る',500,640);}
+  if(area==='ch4_settlement'){
+   rect(335,160,160,95,'#8d8190');rect(327,150,176,20,'#535b73');rect(605,305,155,95,'#788590');rect(598,295,169,20,'#525f75');post(10,7);post(17,10,state.nameConfirmed);post(6,10,state.clockFixed);label('記録守',420,300);label(state.nameConfirmed?'名札を取り戻した子':'名を忘れた子',700,428);label('集落の時計',260,425);label('図書塔',260,110);label('貯蔵庫',740,110);
+   post(8,11,!!state.disclosure);post(16,11,!!state.disclosure);label('事故の記録をみんなへ',340,485);label('持ち主への返却から',660,485);label('入り江へ',500,640);
+  }
+  if(area==='ch4_archive'){
+   for(const [i,x]of [5,12,19].entries()){rect(x*40-28,155,96,82,'#78624f');for(let n=0;n<5;n++)rect(x*40-20+n*17,164,12,55,['#a5a99a','#938ca5','#b0a27e'][n%3]);post(x,5,state.read.includes(bookKeys[i]));label(bookTitles[i],x*40+20,245);}
+   for(const [i,x]of [6,12,18].entries()){post(x,11,state.sorted||order.slice(0,state.sequence).includes(i));label(bookTitles[i],x*40+20,485);}label('証拠台：古い順に写す',500,395);label('集落へ',500,640);
+  }
+  if(area==='ch4_storage'){
+   rect(420,120,160,140,'#444d69');g.strokeStyle=state.lightHeld?'#c9e1b1':'#e2c391';g.lineWidth=7;g.beginPath();g.arc(500,190,48,0,7);g.stroke();for(let x=1;x<23;x++)if(!state.lightHeld||x!==13)rect(x*40,320,40,26,'#313e5a');post(6,11,state.cooling);post(17,11);post(12,9,state.lightHeld);label('冷却弁',260,435);label('一斉返却の警告',700,435);label('保全台',500,365);label('北：記録機構へ',500,105);label('集落へ',500,640);
+  }
+  if(area==='ch4_scribe'){
+   if(cycle==='warning'&&!state.scribeStopped)for(let y=1;y<17;y++)for(let x=1;x<23;x++)if(danger(x,y))rect(x*40+2,y*40+2,36,36,'#dc849ba0');
+   rect(445,100,110,76,state.scribeStopped?'#9eafa7':'#7b7295');for(let n=0;n<3;n++)rect(458+n*28,115,20,44,'#ccc6ab');label(state.scribeStopped?'忘却の書記・保護モード':'忘却の書記',500,90);
+   for(const [i,x]of [6,12,18].entries()){post(x,6,state.scribeStopped||order.slice(0,state.protected).includes(i));label(bookTitles[i],x*40+20,285);}post(6,11,state.backup);post(17,11);label('複製を保護',260,435);label('削除命令の記録',700,435);label('貯蔵庫へ',500,640);
+  }
+  if(area==='ch4_chart'){
+   const points=[[250,180],[740,180],[250,350],[740,350]];g.strokeStyle='#d5d2ab';g.lineWidth=3;for(const [x,y]of points){g.beginPath();g.moveTo(x,y);g.lineTo(500,240);g.stroke();}for(const [i,[x,y]]of points.entries())label(['村','森','港','島'][i],x,y);post(12,5,state.reported);label('神殿への星図を照合',500,110);label('集落へ',500,640);
+  }
+  const pose=templePose(),px=pose.x*40,py=pose.y*40;g.fillStyle='#252f4588';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();if(pic.complete&&pic.naturalWidth){const i={down:0,up:1,left:2,right:3}[player.dir]||0,cw=pic.naturalWidth/4,ch=pic.naturalHeight/2;g.drawImage(pic,i*cw,0,cw,ch,px-7,py-21,54,54);}g.restore();
+ };
+ const oldSnapshot=snapshot;snapshot=function(){return {...oldSnapshot(),chapter4:{...state,read:[...state.read]}}};
+ function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of Object.keys(n))if(typeof n[k]==='boolean')n[k]=s[k]===true;for(const k of ['sequence','protected'])n[k]=Number.isInteger(s[k])&&s[k]>=0&&s[k]<=3?s[k]:0;n.disclosure=['share','owners'].includes(s.disclosure)?s.disclosure:'';n.read=Array.isArray(s.read)?[...new Set(s.read.filter(v=>bookKeys.includes(v)))]:[];return n;}
+ const oldRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter4);$('chapter4Clear').hidden=true;resetCycle();const r=oldRestore(d);if(r===false)return false;if(here()){state.started=true;templeMove=null;}if(state.started)objective(goal());sync();return r;};
+ const oldControls=storyControls;storyControls=function(){oldControls();sync();};
+ const oldJournal=openQuestJournal;openQuestJournal=function(){oldJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第4章・消された島と星の記録】\n'+[['島の碑文',state.survey],['年代の照合',state.sorted],['名札を持ち主に確認',state.nameConfirmed],['蓄積光を安全に保持',state.lightHeld],['記録機構を停止',state.scribeStopped],['神殿への星図・第4章クリア',state.reported],['任意：集落の時計を修理',state.clockFixed]].map(([s,b])=>(b?'✓ ':'・')+s).join('\n')+'\n\n'+$('questJournalList').textContent;};
+ document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter4Start" type="button" hidden>第4章へ出発</button><button id="chapter4Record" type="button" hidden>第4章の記録</button>');$('chapter4Start').onclick=start;$('chapter4Record').onclick=()=>{if(s101CanInteract()&&state.reported)showRecord();};$('questJournal').onclick=openQuestJournal;sync();
+ return {start,getState:()=>({...state,read:[...state.read]}),getBattleState:()=>({cycle})};
+})();
+
+</script><style>#chapter4Clear[hidden]{display:none}#chapter4Clear{position:fixed;inset:0;z-index:53;display:grid;place-items:center;background:#292b46ed;padding:12px}#chapter4Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#505570;border:1px solid #d7cc9f;border-radius:14px;padding:24px;color:#f0e9cb}#chapter4Clear h2{color:#ffe0a0}#chapter4Clear p{line-height:1.7}#chapter4Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#343b53;font-weight:bold}</style><div id="chapter4Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter4ClearTitle"><section><h2 id="chapter4ClearTitle">第4章 クリア</h2><p>消された記録を、消さずに持ち帰る。<br>神殿への星図が、開いた。</p><p id="chapter4ClearSummary"></p><p id="chapter4SaveStatus"></p><button id="chapter4Explore" type="button">島と港の探索を続ける</button></section></div><script>$('chapter4Explore').onclick=()=>{$('chapter4Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter4Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter4Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter4Explore').focus();}});</script></body></html>
