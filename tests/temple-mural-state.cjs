@@ -1,0 +1,25 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync('games/aobee_star_temple_portal.html','utf8');
+for(const [,s]of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))new vm.Script(s);
+const core=html.slice(html.indexOf('let runeOrder='),html.indexOf('const villageNpcs='));
+const c=vm.createContext({});
+vm.runInContext(`let area='annex',player={x:12,y:14,hp:3},lastObjective='',lastDialogue=[],ruinIntro=falseDummy=undefined;function objective(s){lastObjective=s}function toast(){}function say(s,fn){lastDialogue=s;if(fn)fn()}function change(a,p){area=a;if(p)Object.assign(player,p)}function enterSeal(){};${core}`.replace(',ruinIntro=falseDummy=undefined',''),c);
+const run=s=>vm.runInContext(s,c);
+run('player.x=17;player.y=6;annexMove()');assert.equal(run('runeOrder'),0);assert.equal(run('player.hp'),3);
+run('player.x=6;annexMove();annexMove()');assert.equal(run('runeOrder'),1);
+run('player.x=7;annexMove();player.x=6;annexMove()');assert.equal(run('runeOrder'),1);
+run('readAnnexMural()');assert.match(run('lastDialogue[0][1]'),/二枚の葉/);
+run('player.x=17;annexMove();player.x=12;player.y=11;annexMove()');assert.equal(run('annexSolved'),true);assert.match(run('annexObjective()'),/0\/2/);
+run('player.x=12;player.y=15;annexMove()');assert.equal(run('area'),'ruins');assert.match(run('lastObjective'),/0\/2/);
+run('player.x=12;player.y=9;ruinMove()');assert.equal(run('ruinKey'),false);
+run('player.x=5;player.y=10;ruinMove()');assert.match(run('lastObjective'),/1\/2/);
+run('player.x=18;player.y=10;ruinMove()');assert.match(run('lastObjective'),/星の鍵/);assert.match(run('lastDialogue[1][1]'),/中央/);
+run('player.x=12;player.y=9;ruinMove()');assert.equal(run('ruinKey'),true);
+assert.match(run('ruinObjective()'),/守護機械/);
+run('ruinBossHP=0');assert.match(run('ruinObjective()'),/祭壇/);
+// Opposite completion order: two switches first, mural second.
+run("ruinKey=false;annexSolved=false;runeOrder=0;annexLastTile=null;area='annex'");assert.match(run('ruinObjective()'),/壁画/);
+run('player.x=6;player.y=6;annexMove();player.x=17;annexMove();player.x=12;player.y=11;annexMove()');assert.match(run('annexObjective()'),/星の鍵/);
+assert(!html.includes("objective('遺跡の床スイッチ 0/2')"));
+assert(html.includes("if(area==='ruins')objective(ruinObjective())"));
+console.log('PASS all inline scripts parse; wrong order, repeated tile, safe backtrack, both completion orders, key prerequisites/unlock, guardian/altar objectives');

@@ -105,21 +105,34 @@ const annex=[
 '########################'];
 let runeOrder=0,annexSolved=false,chapterFinished=false;
 const runeSpots=[[6,6],[17,6],[12,11]];
+const runeNames=['種','芽','花'];
+let annexLastTile=null;
+function ruinObjective(){
+ if(ruinKey)return ruinBossHP>0?'北の封印扉を抜け、守護機械のもとへ':'北の祭壇へ進もう';
+ if(ruinSwitches.size<2)return '本堂の床スイッチに光を通そう '+ruinSwitches.size+'/2';
+ return annexSolved?'本堂中央の光る台座で星の鍵を取ろう':'西の小部屋で壁画の謎を解こう';
+}
+function annexObjective(){return annexSolved?(ruinSwitches.size===2?'本堂中央の光る台座で星の鍵を取ろう':'本堂へ戻り、残りの床スイッチを踏もう '+ruinSwitches.size+'/2'):'壁画を調べ、命が育つ順に石板を踏もう '+runeOrder+'/3'}
 function annexMove(){
- if(player.x===12&&player.y===15){change('ruins',{x:4,y:12});objective(annexSolved?'遺跡の床スイッチを探そう':'古代の小部屋を調べよう');return}
- let idx=runeSpots.findIndex(([x,y])=>player.x===x&&player.y===y);
- if(idx>=0&&!annexSolved){
-  if(idx===runeOrder){runeOrder++;toast('石板が光った！ '+runeOrder+'/3');
-   if(runeOrder===3){annexSolved=true;objective('本堂に戻り、星の鍵を探そう');say([['石板','三つの光が歯車の順序を示した。'],['あおびー','これで本堂の封印が弱まったみたい！']])}}
-  else{runeOrder=0;toast('光が消えた……順番が違う');say([['あおびー','順番があるみたい。左、右、中央……かな？']])}
+ if(player.x===12&&player.y===15){annexLastTile=null;change('ruins',{x:4,y:12});objective(ruinObjective());return}
+ const tile=player.x+','+player.y;if(tile===annexLastTile)return;annexLastTile=tile;
+ const idx=runeSpots.findIndex(([x,y])=>player.x===x&&player.y===y);
+ if(idx<0||annexSolved)return;
+ if(idx<runeOrder){toast('この石板には、もう光が宿っている');return}
+ if(idx===runeOrder){
+  runeOrder++;objective(annexObjective());toast(runeNames[idx]+'の石板に光が宿った '+runeOrder+'/3');
+  if(runeOrder===3){annexSolved=true;objective(annexObjective());say([['壁画','種から芽へ、芽から花へ。受け継がれた光が、本堂へ流れていく。'],['あおびー','本堂でも光が動いたみたい。戻って確かめよう！']])}
+ }else{
+  runeOrder=0;objective(annexObjective());toast('光が種へ戻った。体力やアイテムは失わない');say([['あおびー','花を咲かせるには、その前に何が必要かな。'],['あおびー','壁画をもう一度見てみよう。光った石板は踏み直しても大丈夫だよ。']]);
  }
 }
+function readAnnexMural(){say([['古い壁画','土に眠る小さな命。雨を受けて伸びる二枚の葉。やがて、光へひらく花。'],['あおびー','床にも同じ印がある。育っていく順に、光を渡すのかな。']],()=>objective(annexObjective()))}
 let ruinSwitches=new Set(),ruinKey=false,ruinBossHP=5,ruinBossX=12,ruinBossY=3,ruinBossClock=0,ruinComplete=false,ruinIntro=false,bossIntro=false,bossAttackAt=0,bossWarnAt=0,bossLastHit=0;
 function ruinMove(){
- if(player.x===3&&player.y===12){change('annex');objective('石板を 左→右→中央 の順に踏もう');return}
- if(player.x===12&&player.y===15){change('forest',{x:20,y:3});return}
+ if(player.x===3&&player.y===12){change('annex');objective(annexObjective());return}
+ if(player.x===12&&player.y===15){change('forest',{x:20,y:4});return}
  for(const [x,y,id] of [[5,10,'west'],[18,10,'east']])if(player.x===x&&player.y===y&&!ruinSwitches.has(id)){
- ruinSwitches.add(id);say([['遺跡の石板','星の光が歯車へ流れ込んだ。'],['あおびー',ruinSwitches.size===2?'ふたつとも光った！ 次は西の小部屋の石板だ！':'もうひとつ、同じ仕掛けがあるみたい。']],()=>objective(ruinSwitches.size===2?'西の小部屋で石板を解こう':'遺跡の床スイッチ '+ruinSwitches.size+'/2'));return}
+ ruinSwitches.add(id);say([['遺跡の石板','星の光が歯車へ流れ込んだ。'],['あおびー',ruinSwitches.size===2?(annexSolved?'本堂の中央に光が集まっている！':'ふたつとも光った！ 次は西の小部屋だ！'):'もうひとつ、同じ仕掛けがあるみたい。']],()=>objective(ruinObjective()));return}
  if(ruinSwitches.size===2&&annexSolved&&player.x===12&&player.y===9&&!ruinKey){ruinKey=true;say([['あおびー','星の鍵を見つけた！'],['語り','鍵に刻まれた歯車の紋章が、あおびーの瞳に共鳴した。'],['あおびー','どうして、ぼくと同じ模様なの……？']],()=>objective('北の封印扉を開けよう'));return}
  if(ruinKey&&player.y<=6&&ruinBossHP>0){objective('遺跡の守護機械を倒そう（攻撃5回）');if(!bossIntro){bossIntro=true;say([['守護機械','星を持つ者よ。その光を何のために使う？'],['あおびー','村のみんなを守るため！'],['守護機械','ならば、その覚悟を示せ。']])}}
  if(ruinBossHP<=0&&player.x===12&&player.y<=2){enterSeal();return;}
@@ -137,7 +150,7 @@ function say(lines,fn){
  if($('dialog').style.display!=='block'&&pendingDialogues.length){const next=pendingDialogues.shift();say(next.lines,next.fn);}
  if($('start').style.display==='none'&&$('dialog').style.display!=='block')saveGame(true);
 }
-function objective(s){$('objective').textContent=s}function updateHud(){$('hp').textContent='♥'.repeat(player.hp)+'♡'.repeat(3-player.hp);$('stars').textContent=stars}function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1700)}function change(a,spawn=null){area=a;if(a==='annex'){player.x=12;player.y=14;objective('石板を 左→右→中央 の順に踏もう')}else if(a==='ruins'){player.x=12;player.y=14;objective('遺跡の床スイッチ 0/2');if(!ruinIntro){ruinIntro=true;say([['あおびー','ここが森の地下遺跡……。古い歯車がまだ動いてる！'],['記録','かけらの光を補助装置へ。暴走を抑え、光の流れを保つ。'],['あおびー','この光は、ここを守るためにも使われていたんだ。']])}}else if(a==='forest'){player.x=12;player.y=14;if(!forestEnemiesInitialized){forestEnemiesInitialized=true;enemy=[{x:5,y:5,hp:2},{x:18,y:10,hp:2}]}}else{player.x=12;player.y=13;
+function objective(s){$('objective').textContent=s}function updateHud(){$('hp').textContent='♥'.repeat(player.hp)+'♡'.repeat(3-player.hp);$('stars').textContent=stars}function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1700)}function change(a,spawn=null){area=a;if(a==='annex'){annexLastTile=null;player.x=12;player.y=14;objective(annexObjective())}else if(a==='ruins'){player.x=12;player.y=14;objective(ruinObjective());if(!ruinIntro){ruinIntro=true;say([['あおびー','ここが森の地下遺跡……。古い歯車がまだ動いてる！'],['記録','かけらの光を補助装置へ。暴走を抑え、光の流れを保つ。'],['あおびー','この光は、ここを守るためにも使われていたんだ。']])}}else if(a==='forest'){player.x=12;player.y=14;if(!forestEnemiesInitialized){forestEnemiesInitialized=true;enemy=[{x:5,y:5,hp:2},{x:18,y:10,hp:2}]}}else{player.x=12;player.y=13;
 if(ruinComplete&&!chapterFinished)objective('長老に装置の安定化を報告しよう');
 }if(spawn){player.x=spawn.x;player.y=spawn.y;}toast(a==='forest'?'迷いの森':a==='ruins'?'森の地下遺跡':a==='annex'?'歯車の小部屋':'ほしの村');saveGame(true)}function wall(x,y){if(!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>=24||y>=18)return true;if(area==='village'&&villageNpcs.some(n=>x===n.x&&y===n.y))return true;if(area==='forest'&&x===11&&y===5&&!gateOpen)return true;if(area==='forest'&&x===11&&y===5&&gateOpen)return false;const rows=area==='village'?village:area==='ruins'?ruins:area==='annex'?annex:forest;if(area==='ruins'&&y===7&&!ruinKey)return true;return x<0||y<0||x>=24||y>=18||!rows[y]?.[x]||'#Ht'.includes(rows[y][x])}function move(dx,dy){if($('start').style.display!=='none')return;if(dialog.length||$('dialog').style.display==='block'||end)return;let nx=player.x+dx,ny=player.y+dy;player.dir=dx<0?'left':dx>0?'right':dy<0?'up':'down';if(!wall(nx,ny)&&!(area==='forest'&&enemy.some(e=>e.x===nx&&e.y===ny))){player.x=nx;player.y=ny}if(area==='village'&&player.y>=15&&player.x>=11&&player.x<=12){if(phase<2){toast('まず村で祭りの準備をしよう');player.y=14}else change('forest')}else if(area==='forest'&&player.y>=16&&player.x>=11&&player.x<=12)change('village');if(area==='ruins')ruinMove();if(area==='annex')annexMove();if(area==='forest'){checkClues();checkStars();if(player.x===6&&player.y===11&&!secretFound){secretFound=true;toast('草むらの下に古い石碑が！');say([['石碑','三つの星を揃え、森の東の石門を開け。'],['あおびー','星のかけらに反応する仕掛けなんだ！']])}}}
 function checkClues(){
@@ -152,7 +165,7 @@ function action(){if($('start').style.display!=='none')return;if($('dialog').sty
  const signs=[{x:9,y:11,lines:[['案内板','北：星灯り広場　西：タネ婆の家　東：トトの家'],['案内板','南：迷いの森。夜の森は危険。']]},{x:12,y:8,lines:[['あおびー','村の星のモニュメントだ。祭りの日には光るんだって。'],['あおびー',phase>=2?'……今は、少しだけ暗い。':'今夜が楽しみだな！']]},{x:7,y:4,lines:[['あおびー','タネ婆の家だ。薬草のいい匂いがする。']]},{x:17,y:4,lines:[['あおびー','トトの家だ。窓に星飾りがいっぱい！']]}];
  const sign=signs.find(q=>q.x===x&&q.y===y);if(sign){say(sign.lines);return}
 }
-if(area==='annex'){toast('古い石板が並んでいる……');return}if(area==='ruins'){if(ruinBossHP>0&&ruinKey&&weaponHitTest(ruinBossX,ruinBossY)){if(Date.now()-bossLastHit<currentWeapon().duration){toast('次の一撃まで少し待とう');return}bossLastHit=Date.now();ruinBossHP--;toast('守護機械に命中！ 残り'+ruinBossHP);if(ruinBossHP===0){say([['守護機械','……おまえの光は、誰かを照らす光なのだな。'],['語り','守護機械は動きを止め、奥の封印が解けた。']],()=>objective('北の祭壇を調べよう'))}return}if(!ruinKey&&y===7&&x>=10&&x<=14){say([['封印扉','星の鍵が必要だ。'],['あおびー','床の仕掛けを解いてみよう。']]);return}toast('古代の石壁だ……');return}if(area==='village'){if(facingNpc('elder')){if(phase===0){phase=1;objective('村人ふたりと話して祭りの準備をしよう');say([['長老','今夜は星灯りの祭りじゃ。みんなの様子を見てきておくれ。'],['あおびー','うん！ みんなに声をかけてくるね。']])}else if(phase===1&&festivalTalk.size===2){phase=2;festivalDone=true;objective('森でミオの手がかりを探そう 0/3');say([['長老','おお、準備は整ったか。……だが、空を見てごらん。'],['語り','守護星が不気味に明滅し、ひときわ大きな音を立てて砕けた。'],['村人','ミオが森へ走っていったの！ まだ戻らない！'],['長老','……古い地下道が……いや、何でもない。'],['あおびー','ミオを探してくる。あおびーに任せてよ！'],['長老','森の石門には星のかけらが三つ必要じゃ。どうか気をつけて。']])}else if(phase===1){say([['長老','祭りの準備をしている村人ふたりに話を聞いておくれ。']])}else say([['長老','森で何か見つけたら、気をつけて進むのじゃ。']]);return}if(facingNpc('herbalist')){if(phase===1){festivalTalk.add('west');objective('祭りの準備 '+festivalTalk.size+'/2人。終わったら長老へ');say([['タネ婆','星灯りに使う薬草はそろったよ。ミオが観測台にいたのを見たけど……'],['あおびー','ありがとう！ あとでミオにも声をかけるね。']])}else say([['タネ婆','森で困ったら、無理をせず戻っておいで。']]);return}if(facingNpc('toto')){if(phase===1){festivalTalk.add('east');objective('祭りの準備 '+festivalTalk.size+'/2人。終わったら長老へ');say([['トト','祭りの準備、もう少しで終わるよ！ 今夜はきっときれいだね。'],['あおびー','うん、楽しみだね！']])}else say([['トト','森の奥で黒い耳の子を見たよ。誰かを助けていたみたい……']]);return}}let e=enemy.find(e=>area==='forest'&&weaponHitTest(e.x,e.y));if(e){e.hp--;toast('星の一撃！');if(e.hp<=0)enemy.splice(enemy.indexOf(e),1);return}if(area==='forest'&&x===11&&y===5){if(!mioRescued){say([['石門','ミオを見つけるまでは先へ進めない。'],['あおびー','森の手がかりを探そう。']])}else if(stars<3){say([['石門','三つの星の光が必要だ。'],['あおびー','森に散ったかけらを探そう。']])}else{gateOpen=true;objective('森の北東へ進もう');say([['石門','星の光が石門に吸い込まれた。'],['あおびー','開いた！ 奥に誰かいる……！']])}return}if(area==='forest'&&x===16&&y===8&&!chestOpen){chestOpen=true;player.hp=3;updateHud();say([['あおびー','古い宝箱だ！ 星のしずくで体力が回復した！']]);return}if(area==='forest'&&forest[y]?.[x]==='t'){toast('葉っぱが揺れた……')}else toast('何もないみたい')}
+if(area==='annex'){if(Math.abs(player.x-12)+Math.abs(player.y-8)<=2)readAnnexMural();else toast('中央の壁画に近づいて調べよう。石板は踏むと反応する');return}if(area==='ruins'){if(ruinBossHP>0&&ruinKey&&weaponHitTest(ruinBossX,ruinBossY)){if(Date.now()-bossLastHit<currentWeapon().duration){toast('次の一撃まで少し待とう');return}bossLastHit=Date.now();ruinBossHP--;toast('守護機械に命中！ 残り'+ruinBossHP);if(ruinBossHP===0){say([['守護機械','……おまえの光は、誰かを照らす光なのだな。'],['語り','守護機械は動きを止め、奥の封印が解けた。']],()=>objective('北の祭壇を調べよう'))}return}if(!ruinKey&&y===7&&x>=10&&x<=14){say([['封印扉','星の鍵が必要だ。'],['あおびー','床の仕掛けを解いてみよう。']]);return}toast('古代の石壁だ……');return}if(area==='village'){if(facingNpc('elder')){if(phase===0){phase=1;objective('村人ふたりと話して祭りの準備をしよう');say([['長老','今夜は星灯りの祭りじゃ。みんなの様子を見てきておくれ。'],['あおびー','うん！ みんなに声をかけてくるね。']])}else if(phase===1&&festivalTalk.size===2){phase=2;festivalDone=true;objective('森でミオの手がかりを探そう 0/3');say([['長老','おお、準備は整ったか。……だが、空を見てごらん。'],['語り','守護星が不気味に明滅し、ひときわ大きな音を立てて砕けた。'],['村人','ミオが森へ走っていったの！ まだ戻らない！'],['長老','……古い地下道が……いや、何でもない。'],['あおびー','ミオを探してくる。あおびーに任せてよ！'],['長老','森の石門には星のかけらが三つ必要じゃ。どうか気をつけて。']])}else if(phase===1){say([['長老','祭りの準備をしている村人ふたりに話を聞いておくれ。']])}else say([['長老','森で何か見つけたら、気をつけて進むのじゃ。']]);return}if(facingNpc('herbalist')){if(phase===1){festivalTalk.add('west');objective('祭りの準備 '+festivalTalk.size+'/2人。終わったら長老へ');say([['タネ婆','星灯りに使う薬草はそろったよ。ミオが観測台にいたのを見たけど……'],['あおびー','ありがとう！ あとでミオにも声をかけるね。']])}else say([['タネ婆','森で困ったら、無理をせず戻っておいで。']]);return}if(facingNpc('toto')){if(phase===1){festivalTalk.add('east');objective('祭りの準備 '+festivalTalk.size+'/2人。終わったら長老へ');say([['トト','祭りの準備、もう少しで終わるよ！ 今夜はきっときれいだね。'],['あおびー','うん、楽しみだね！']])}else say([['トト','森の奥で黒い耳の子を見たよ。誰かを助けていたみたい……']]);return}}let e=enemy.find(e=>area==='forest'&&weaponHitTest(e.x,e.y));if(e){e.hp--;toast('星の一撃！');if(e.hp<=0)enemy.splice(enemy.indexOf(e),1);return}if(area==='forest'&&x===11&&y===5){if(!mioRescued){say([['石門','ミオを見つけるまでは先へ進めない。'],['あおびー','森の手がかりを探そう。']])}else if(stars<3){say([['石門','三つの星の光が必要だ。'],['あおびー','森に散ったかけらを探そう。']])}else{gateOpen=true;objective('森の北東へ進もう');say([['石門','星の光が石門に吸い込まれた。'],['あおびー','開いた！ 奥に誰かいる……！']])}return}if(area==='forest'&&x===16&&y===8&&!chestOpen){chestOpen=true;player.hp=3;updateHud();say([['あおびー','古い宝箱だ！ 星のしずくで体力が回復した！']]);return}if(area==='forest'&&forest[y]?.[x]==='t'){toast('葉っぱが揺れた……')}else toast('何もないみたい')}
 function draw(){ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);let rows=area==='village'?village:area==='ruins'?ruins:area==='annex'?annex:forest;let ox=0,oy=Math.floor(Math.max(0,Math.min(18-H/T,player.y-H/T/2)));for(let sy=0;sy<Math.ceil(H/T)+1;sy++)for(let sx=0;sx<24;sx++){let x=sx+ox,y=sy+oy,ch=rows[y]?.[x]||'#',px=sx*T,py=sy*T;ctx.fillStyle=area==='ruins'?((x+y)%2?'#44475c':'#4b5068'):((x+y)%2?'#5c9658':'#639f60');ctx.fillRect(px,py,T,T);
 // Village layout: winding stone lanes, a central festival square, and distinct landmarks.
 if(area==='village'&&ch==='.'){
@@ -167,7 +180,7 @@ if(area==='village'&&ch==='.'){
  if(x===9&&y===11){ctx.fillStyle='#866844';ctx.fillRect(px+15,py+9,8,27);ctx.fillStyle='#e5d1a4';ctx.fillRect(px+5,py+5,29,17);ctx.fillStyle='#5b5140';ctx.font='16px serif';ctx.fillText('↟',px+13,py+20)}
 }
 ctx.fillStyle='#ffffff0b';ctx.fillRect(px+4,py+4,3,3);if(ch==='#'){ctx.fillStyle='#315a47';ctx.fillRect(px,py,T,T);ctx.fillStyle='#49745a';ctx.fillRect(px+2,py+2,36,8)}if(ch==='t'){ctx.fillStyle='#674e37';ctx.fillRect(px+16,py+20,9,18);ctx.fillStyle='#296a3e';ctx.beginPath();ctx.arc(px+20,py+16,17,0,7);ctx.fill();ctx.fillStyle='#3d8a4a';ctx.beginPath();ctx.arc(px+13,py+11,9,0,7);ctx.fill()}if(ch==='H'){ctx.fillStyle='#ba8461';ctx.fillRect(px,py,T,T);ctx.fillStyle='#d6a277';ctx.fillRect(px+4,py+3,32,32)}if(ch==='d'){ctx.fillStyle='#7e4e34';ctx.fillRect(px+9,py+7,22,33)}if(area==='forest'&&x===11&&y===5){ctx.fillStyle=gateOpen?'#bca97a':'#536474';ctx.fillRect(px+3,py+2,34,36);ctx.fillStyle='#f9d986';ctx.font='23px serif';ctx.fillText(gateOpen?'✧':'✦',px+12,py+29)}if(area==='forest'&&x===16&&y===8&&!chestOpen){ctx.fillStyle='#805027';ctx.fillRect(px+7,py+14,27,20);ctx.fillStyle='#f9d77c';ctx.fillRect(px+9,py+12,23,6)}if(area==='annex'){
- for(let i=0;i<3;i++){let [rx,ry]=runeSpots[i];if(x===rx&&y===ry){ctx.fillStyle=annexSolved||i<runeOrder?'#f6d37a':'#7793a8';ctx.beginPath();ctx.arc(px+20,py+20,14,0,7);ctx.fill();ctx.fillStyle='#1b3143';ctx.font='17px sans-serif';ctx.fillText(String(i+1),px+14,py+26)}}
+ for(let i=0;i<3;i++){let [rx,ry]=runeSpots[i];if(x===rx&&y===ry){ctx.fillStyle=annexSolved||i<runeOrder?'#f6d37a':'#7793a8';ctx.beginPath();ctx.arc(px+20,py+20,14,0,7);ctx.fill();ctx.fillStyle='#1b3143';ctx.font='17px sans-serif';ctx.fillText(runeNames[i],px+12,py+26)}}
  if(x===12&&y===15){ctx.fillStyle='#b4e6ed';ctx.font='28px serif';ctx.fillText('⇩',px+7,py+30)}
  }if(area==='ruins'){if(x===3&&y===12){ctx.fillStyle='#d3b6f4';ctx.font='28px serif';ctx.fillText('◇',px+9,py+30)}if(y===7&&x>=10&&x<=14){ctx.fillStyle=ruinKey?'#938a7b':'#24283c';ctx.fillRect(px,py,T,T)}if([[5,10],[18,10]].some(([a,b])=>a===x&&b===y)){ctx.fillStyle=ruinSwitches.has(x===5?'west':'east')?'#f8d979':'#7894ab';ctx.beginPath();ctx.arc(px+20,py+20,13,0,7);ctx.fill()}if(x===12&&y===9&&!ruinKey&&ruinSwitches.size===2){ctx.fillStyle='#ffdf83';ctx.font='30px serif';ctx.fillText('⚿',px+8,py+32)}if(x===12&&y===15){ctx.fillStyle='#a9d6e5';ctx.font='25px serif';ctx.fillText('⇩',px+8,py+30)}}if(ch==='='){ctx.fillStyle='#bca97a';ctx.fillRect(px,py,T,T);ctx.fillStyle='#8d785b';ctx.fillRect(px+4,py+4,32,32)}}function pos(x,y){return [(x-ox)*T,(y-oy)*T]}if(area==='ruins'&&ruinKey&&ruinBossHP>0){let [bx,by]=pos(ruinBossX,ruinBossY);if(bossWarnAt){ctx.fillStyle='rgba(255,80,70,.3)';for(let xx=8;xx<=16;xx++)ctx.fillRect(xx*T,by-2,40,5*T);}ctx.fillStyle='#a57bba';ctx.beginPath();ctx.arc(bx+20,by+20,24,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.font='16px system-ui';ctx.fillText('✦',bx+14,by+25);ctx.font='12px system-ui';ctx.fillText('守護機械 '+ruinBossHP,bx-4,by-8)}if(area==='ruins'&&ruinBossHP===0){let [bx,by]=pos(12,1);ctx.fillStyle='#ffda82';ctx.font='24px serif';ctx.fillText('✧',bx+12,by+28)}if(area==='village'){[[10,6,'長老','#f6d58b'],[5,5,'村人','#f4a5b9'],[14,5,'村人','#d1a8ed']].forEach(([x,y,n,c])=>{let [px,py]=pos(x,y);ctx.fillStyle=c;ctx.beginPath();ctx.arc(px+20,py+20,14,0,7);ctx.fill();ctx.fillStyle='#182b4a';ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillText(n,px+20,py-3)})}else if(area==='forest'){if(phase>=2&&!mioRescued){[[7,12,'ribbon','🎀'],[3,8,'tracks','⌁'],[16,11,'charm','✧']].forEach(([x,y,id,sym])=>{if(clues.has(id))return;let [cx,cy]=pos(x,y);ctx.fillStyle='#fff3b0';ctx.font='24px system-ui';ctx.textAlign='center';ctx.fillText(sym,cx+20,cy+29)});if(clues.size===3){let [mx,my]=pos(5,3);ctx.fillStyle='#f8d6a7';ctx.beginPath();ctx.arc(mx+20,my+20,13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#182b4a';ctx.font='11px system-ui';ctx.fillText('ミオ',mx+20,my-3)}}[[4,3],[19,4],[18,13]].forEach(([x,y],i)=>{if(taken.has('s'+i))return;let [px,py]=pos(x,y);ctx.fillStyle='#ffe78b';ctx.font='32px serif';ctx.textAlign='center';ctx.fillText('✦',px+20,py+31)});enemy.forEach(e=>{let [px,py]=pos(e.x,e.y);ctx.fillStyle='#b9589a';ctx.beginPath();ctx.arc(px+20,py+20,14,0,7);ctx.fill();ctx.fillStyle='white';ctx.fillRect(px+13,py+17,4,5);ctx.fillRect(px+23,py+17,4,5)})}let [px,py]=pos(player.x,player.y);ctx.fillStyle='#172a3666';ctx.beginPath();ctx.ellipse(px+20,py+35,15,5,0,0,7);ctx.fill();if(pic.complete&&pic.naturalWidth)(invuln>0&&Math.floor(invuln/2)%2?null:ctx.drawImage(pic,px+1,py-10,38,47));else{ctx.fillStyle='#6ac9ff';ctx.beginPath();ctx.arc(px+20,py+19,17,0,7);ctx.fill()}if(area==='forest'&&phase===3){let [wx,wy]=pos(20,2);ctx.fillStyle='#202235';ctx.beginPath();ctx.arc(wx+20,wy+19,18,0,7);ctx.fill();ctx.fillStyle='#f7e68a';ctx.font='20px serif';ctx.fillText('★',wx+20,wy+12)}ctx.textAlign='left'}
 let last=0, nextStepAt=0;function simulationStep(t){if($('start').style.display!=='none'||$('dialog').style.display==='block'||document.hidden)return;
@@ -228,8 +241,8 @@ function restoreGame(d){
  if(!validSave(d))return false;area=d.area;player={dir:'down',...d.player};phase=d.phase??0;stars=d.stars??0;enemy=(d.enemy||[]).map(e=>({...e}));forestEnemiesInitialized=d.forestEnemiesInitialized??(area!=='village'||enemy.length>0||!!d.mioRescued);
  taken=new Set(d.taken||[]);end=!!d.end;gateOpen=!!d.gateOpen;leverOn=!!d.leverOn;
  chestOpen=!!d.chestOpen;secretFound=!!d.secretFound;festivalTalk=new Set(d.festivalTalk||[]);
- festivalDone=!!d.festivalDone;ruinSwitches=new Set(d.ruinSwitches||[]);ruinKey=!!d.ruinKey;ruinBossHP=d.ruinBossHP??5;ruinComplete=!!d.ruinComplete;ruinIntro=!!d.ruinIntro;runeOrder=d.runeOrder||0;annexSolved=!!d.annexSolved;chapterFinished=!!d.chapterFinished;bossIntro=!!d.bossIntro;bossAttackAt=0;bossWarnAt=0;bossLastHit=0;clues=new Set(d.clues||[]);mioRescued=!!d.mioRescued;if(!mioRescued&&phase>=3&&!ruinComplete){phase=2;gateOpen=false;end=false}dialog=[];dialogFn=null;pendingDialogues.length=0;$('dialog').style.display='none';
- $('start').style.display='none';objective(d.objective||'冒険を続けよう');syncProgress();if(wall(player.x,player.y)){player.x=12;player.y=area==='village'?13:14;}updateHud();clearStick();toast('続きから再開したよ！')
+ festivalDone=!!d.festivalDone;ruinSwitches=new Set(d.ruinSwitches||[]);ruinKey=!!d.ruinKey;ruinBossHP=d.ruinBossHP??5;ruinComplete=!!d.ruinComplete;ruinIntro=!!d.ruinIntro;runeOrder=d.runeOrder||0;annexSolved=!!d.annexSolved;annexLastTile=area==='annex'?player.x+','+player.y:null;chapterFinished=!!d.chapterFinished;bossIntro=!!d.bossIntro;bossAttackAt=0;bossWarnAt=0;bossLastHit=0;clues=new Set(d.clues||[]);mioRescued=!!d.mioRescued;if(!mioRescued&&phase>=3&&!ruinComplete){phase=2;gateOpen=false;end=false}dialog=[];dialogFn=null;pendingDialogues.length=0;$('dialog').style.display='none';
+ $('start').style.display='none';objective(d.objective||'冒険を続けよう');syncProgress();if(area==='annex')objective(annexObjective());if(area==='ruins')objective(ruinObjective());if(wall(player.x,player.y)){player.x=12;player.y=area==='village'?13:14;}updateHud();clearStick();toast('続きから再開したよ！')
 }
 // Take checkpoints only after the complete move/transition and dialogue settle.
 const originalMove=move;move=function(...args){originalMove(...args);if($('start').style.display==='none'&&$('dialog').style.display!=='block')saveGame(true);};
@@ -274,7 +287,7 @@ restoreGame=function(d){const result=templeBaseRestore(d);if(result===false)retu
 const templeBaseStep=simulationStep;
 simulationStep=function(t){if(!templeGearOpen)templeBaseStep(t);};
 document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="equipment" type="button">装備：剣</button>');
-document.body.insertAdjacentHTML('beforeend','<div id="equipmentPanel" hidden role="dialog" aria-modal="true" aria-labelledby="equipmentTitle"><section><h2 id="equipmentTitle">武器を選ぶ</h2><p>開発中の武器を試せます。物語の入手イベントは準備中です。</p><button id="equip-sword">剣 · 前方を斬る</button><button id="equip-spear">槍 · 2マス先まで突く</button><button id="equip-hammer">ハンマー · 大きく振り下ろす</button><button id="equipmentClose">探索に戻る</button></section></div>');
+document.body.insertAdjacentHTML('beforeend','<div id="equipmentPanel" hidden role="dialog" aria-modal="true" aria-labelledby="equipmentTitle"><section><h2 id="equipmentTitle">武器を選ぶ</h2><p>剣は前方を斬り、槍は離れた敵を突き、ハンマーは広く攻撃できます。戦い方に合わせて選びましょう。</p><button id="equip-sword">剣 · 前方を斬る</button><button id="equip-spear">槍 · 2マス先まで突く</button><button id="equip-hammer">ハンマー · 大きく振り下ろす</button><button id="equipmentClose">探索に戻る</button></section></div>');
 function updateEquipment(){$('equipment').textContent='装備：'+currentWeapon().name;for(const key of Object.keys(templeWeapons))$('equip-'+key).setAttribute('aria-pressed',String(key===templeWeapon));}
 function closeEquipment(){$('equipmentPanel').hidden=true;templeGearOpen=false;clearStick();$('equipment').focus();}
 $('equipment').onclick=()=>{if($('start').style.display!=='none'||$('dialog').style.display==='block')return;templeGearOpen=true;clearStick();$('equipmentPanel').hidden=false;$('equip-'+templeWeapon).focus();};
@@ -352,11 +365,24 @@ draw=function(){
  if(area==='ruins'){
  for(let x=1;x<23;x++){rect(x*40,280,40,40,ruinKey?'#687775':'#203842');if(!ruinKey){rect(x*40+2,283,36,7,'#778480');rect(x*40+3,296,16,17,'#3a535b');}}
  for(const [x,y,id]of [[5,10,'west'],[18,10,'east']]){ellipse(x*40+20,y*40+20,15,12,ruinSwitches.has(id)?'#d8c38b':'#809994');star(x*40+20,y*40+19,8,'#36515b');}
- if(ruinSwitches.size===2&&annexSolved&&!ruinKey)star(500,377,15,'#f3d28b');
+ // The receiver shows which half of the mechanism is missing.
+ rect(478,360,44,34,'#263e47');
+ for(const [x,y,id]of [[5,10,'west'],[18,10,'east']])if(ruinSwitches.has(id))line(x*40+20,y*40+20,500,377,'#dcc57e',3);
+ if(annexSolved)line(150,500,500,377,'#9fcee0',3);
+ if(ruinSwitches.size===2&&annexSolved&&!ruinKey){star(500,377,15,'#f3d28b');label('星の鍵',500,350);}
+ else if(!ruinKey)label('光の台座',500,350);
  label('歯車の小部屋',140,481);label('森へ',500,626);star(140,500,15,'#b9a6c8');
  if(ruinKey&&ruinBossHP>0){if(bossWarnAt){rect(320,40,360,240,'#e3936355');for(let x=8;x<=16;x++)star(x*40+20,240,8,'#f9d29e');}ellipse(500,142,33,12,'#112d3a88');rect(471,91,58,50,'#6c7c83');rect(478,85,44,18,'#9caeb0');star(500,116,19,'#dfd0a1');rect(473,154,54,5,'#233a46');rect(473,154,54*ruinBossHP/5,5,'#e7c68a');label('守護機械',500,77);}if(ruinBossHP===0)star(500,62,20,'#f4dba1');
  }
- if(area==='annex'){for(const [i,[x,y]]of runeSpots.entries()){ellipse(x*40+20,y*40+20,18,15,annexSolved||i<runeOrder?'#e4c786':'#829697');g.font='600 16px serif';g.textAlign='center';g.fillStyle='#233c47';g.fillText(String(i+1),x*40+20,y*40+26);}label('本堂へ',500,630);}
+ if(area==='annex'){
+ function plantMark(i,x,y,color){g.save();g.translate(x,y);g.strokeStyle=color;g.fillStyle=color;g.lineWidth=3;
+  if(i===0){g.beginPath();g.ellipse(0,0,4,7,.6,0,Math.PI*2);g.fill();}
+  else{g.beginPath();g.moveTo(0,9);g.lineTo(0,-3);g.stroke();g.beginPath();g.ellipse(-5,0,6,3,.5,0,7);g.ellipse(5,-4,6,3,-.5,0,7);g.fill();if(i===2){for(let k=0;k<5;k++){const a=k*Math.PI*2/5;g.beginPath();g.arc(Math.cos(a)*5,-10+Math.sin(a)*5,4,0,7);g.fill();}g.fillStyle='#263e47';g.fillRect(-2,-12,4,4);}}g.restore();
+ }
+ for(let i=0;i<2;i++)if(runeOrder>i||annexSolved){const [x,y]=runeSpots[i],[nx,ny]=runeSpots[i+1];line(x*40+20,y*40+20,nx*40+20,ny*40+20,'#e4c786',3);}
+ for(const [i,[x,y]]of runeSpots.entries()){const lit=annexSolved||i<runeOrder;ellipse(x*40+20,y*40+20,19,17,lit?'#e4c786':'#829697');g.font='600 17px sans-serif';g.textAlign='center';g.fillStyle='#233c47';plantMark(i,x*40+20,y*40+19,'#233c47');label(runeNames[i]+(lit?'・点灯':''),x*40+20,y*40+56);}
+ rect(414,294,172,64,'#263e47');rect(418,298,164,56,'#b2ab8a');g.font='600 18px sans-serif';g.textAlign='center';g.fillStyle='#263e47';[0,1,2].forEach(i=>plantMark(i,450+i*50,326,'#263e47'));label('古い壁画・近づいて調べる',500,383);label('本堂へ',500,630);
+ }
  drawS101(g);drawS103(g);drawS104(g);drawS102(g);drawS105(g);drawChapter1Story(g);aobee(templePose().x*40,templePose().y*40);g.restore();
  const shade=g.createLinearGradient(0,0,0,H);shade.addColorStop(0,'#14343b28');shade.addColorStop(.45,'#ffffff00');shade.addColorStop(1,'#10283440');g.fillStyle=shade;g.fillRect(0,0,W,H);
 };
@@ -672,8 +698,9 @@ function drawS105(g){
  g.fillStyle='#b6d8b5';g.beginPath();g.arc(p[0]*40+20,p[1]*40+20,10,0,Math.PI*2);g.fill();g.fillStyle='#f0e8cf';g.fillText('守り手',p[0]*40+20,p[1]*40-2);g.restore();
 }
 const s105Journal=openQuestJournal;
-openQuestJournal=function(){s105Journal();if(!questJournalOpen)return;const q=s105View();if(q.state!=='locked')$('questJournalList').textContent+='\n'+(q.state==='claimed'?'守り手は巣へ帰った。章ボス支援：'+((questBook.export().inventory.guardian_support||0)>0?'準備済み（章ボス実装待ち）。':'使用済み。'):q.state==='available'?'森の南西、倒木の西にいる守り手に相談。':'倒木の南から北へ押し、守り手の進む先を空けて隣から声をかけよう。');};
+openQuestJournal=function(){s105Journal();if(!questJournalOpen)return;const q=s105View();if(q.state!=='locked')$('questJournalList').textContent+='\n'+(q.state==='claimed'?'守り手は巣へ帰った。章ボス支援：'+((questBook.export().inventory.guardian_support||0)>0?'準備済み（封印の間で自動発動）。':'使用済み。'):q.state==='available'?'森の南西、倒木の西にいる守り手に相談。':'倒木の南から北へ押し、守り手の進む先を空けて隣から声をかけよう。');};
 </script><script>// A-D approved by the user on 2026-10-16. Legacy chapter clears remain valid.
+let chapterClearOpen=false;
 let chapter1Story={mode:'unseen',bossHP:9,reportSeen:false};
 let sealCycle='waiting',sealNextAt=0,sealHitAt=-Infinity,sealClock=0;
 const sealDirections={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
@@ -681,9 +708,9 @@ function sealStage(){return chapter1Story.bossHP>6?1:chapter1Story.bossHP>3?2:3;
 function sealDanger(x,y){const stage=sealStage();return stage===1?y<=7&&x>=8&&x<=16:stage===2?x>=10&&x<=14&&y>=3&&y<=13:Math.abs(x-12)+Math.abs(y-4)<=5;}
 function storyControls(){ $('storyReplay').hidden=!chapterFinished||chapter1Story.reportSeen; }
 function enterSeal(){
- const first=chapter1Story.mode==='unseen';area='seal';player.x=12;player.y=14;clearStick();templeMove=null;templeAttack=null;sealNextAt=0;sealClock=0;sealCycle='waiting';
+ const first=chapter1Story.mode==='unseen';end=false;area='seal';player.x=12;player.y=14;clearStick();templeMove=null;templeAttack=null;sealNextAt=0;sealClock=0;sealCycle='waiting';
  if(first){chapter1Story.mode='cooperate';say([
-  ['あおびー','どうして、ちゃんと話してくれないの？'],['わるびー','話している間にも、ここは壊れるんだよ！'],
+  ['語り','祭壇の奥で、わるびーが二つの光を必死に押さえていた。装置の上には、星をむさぼる影が揺れている。'],['あおびー','わるびー！ ミオを助けてくれたんだね。どうして、ちゃんと話してくれないの？'],['わるびー','話している間にも、ここは壊れるんだよ！'],
   ['あおびー','だったら一緒に止めよう。あおびーに任せてよ！'],['わるびー','……失敗したら、許さないからね'],
   ['案内','西の光るスイッチに立って決定すると合図できます。わるびーが東のスイッチを受け持ちます。']
  ]);}
@@ -694,9 +721,12 @@ function reportChapter1(){say([
  ['長老','守るつもりで隠したことが、みんなを危険にさらした。'],
  ['長老','地下の古い装置のことは知っておった。だが、今の異変のすべてを知っているわけではない。'],
  ['あおびー','次は、みんなで考えよう。'],['ミオ','小さな灯りは戻ったよ。でも、調べたいことがまだある。'],
- ['タネ婆','祭りの本番は、もう少し先だね。今はみんなが無事でよかったよ。'],
- ['語り','星灯りの一部が戻った。祭りの本番を待ちながら、森のさらに奥へ続く手がかりを追う。']
- ],()=>{chapter1Story.mode='reported';chapter1Story.reportSeen=true;chapterFinished=true;phase=5;storyControls();objective('第1章クリア！ 村や森の依頼を続けられるよ');});}
+ ['タネ婆','大きな祭りはおあずけでも、今夜はみんなで灯りを囲もう。無事に帰ってきたお祝いだよ。'],
+ ['語り','広場に小さな灯りがともる。揺れる光の向こうで、村人たちの笑い声が戻った。'],
+ ['ミオ','わるびーも、いつか一緒に来てくれるかな。'],['あおびー','うん。今度はちゃんと、お礼を言いたいな。'],
+ ['語り','森の入口で、黒い耳が一度だけ揺れた。わるびーは振り返らず、さらに奥へ続く道を見つめていた。'],
+ ['わるびー','……まだ、ひとつ止めただけだ。'],['語り','ほしの村の夜を守った、小さな冒険。新しい謎を胸に、あおびーたちは最初の一歩を踏み出した。']
+ ],()=>{chapter1Story.mode='reported';chapter1Story.reportSeen=true;chapterFinished=true;phase=5;end=false;storyControls();objective('第1章クリア！ 村や森の依頼を続けられるよ');showChapterClear();});}
 const storySnapshot=snapshot;
 snapshot=function(){return {...storySnapshot(),chapter1Story:{...chapter1Story}};};
 const storyRestore=restoreGame;
@@ -705,13 +735,20 @@ restoreGame=function(d){const result=storyRestore(d);if(result===false)return fa
  chapter1Story=s&&['unseen','cooperate','battle','won','reported'].includes(s.mode)&&Number.isInteger(s.bossHP)&&s.bossHP>=0&&s.bossHP<=9?{mode:s.mode,bossHP:s.bossHP,reportSeen:s.reportSeen===true}:{mode:'unseen',bossHP:9,reportSeen:false};
  if(chapter1Story.mode==='battle'&&chapter1Story.bossHP===0)chapter1Story.mode='won';
  if(['won','reported'].includes(chapter1Story.mode))chapter1Story.bossHP=0;
- sealCycle='waiting';sealNextAt=0;sealClock=0;sealHitAt=-Infinity;storyControls();
- if(area==='seal'&&chapter1Story.mode==='unseen')enterSeal();return result;
+ sealCycle='waiting';sealNextAt=0;sealClock=0;sealHitAt=-Infinity;
+ if(chapter1Story.mode==='reported'){chapter1Story.reportSeen=true;chapterFinished=true;phase=5;end=false;}
+ if(['cooperate','battle','won'].includes(chapter1Story.mode))end=false;
+ storyControls();
+ if(area==='seal'&&chapter1Story.mode==='unseen')enterSeal();
+ else if(area==='seal')objective(chapter1Story.mode==='battle'?'星喰いの影：予兆を避け、放出後の隙を狙おう':chapter1Story.mode==='cooperate'?'西のスイッチに立ち、わるびーに合図しよう':'南の出口から森へ戻り、長老に報告しよう');
+ else if(chapter1Story.mode==='won')objective('村へ戻り、長老に装置の安定化を報告しよう');
+ else if(chapter1Story.reportSeen)objective('第1章クリア！ 村や森の依頼を続けられるよ');
+ return result;
 };
 const storyWall=wall;
 wall=function(x,y){if(area==='seal')return !Number.isInteger(x)||!Number.isInteger(y)||x<=0||x>=23||y<=0||y>=17||(x===16&&y===11);return storyWall(x,y);};
 const storyMove=move;
-move=function(...args){storyMove(...args);if(area==='seal'&&player.x===12&&player.y===16){change('forest',{x:20,y:3});objective(chapter1Story.mode==='won'?'長老に装置の安定化を報告しよう':'北東の遺跡から封印の間へ戻れるよ');saveGame(true);}};
+move=function(...args){storyMove(...args);if(area==='seal'&&player.x===12&&player.y===16){change('forest',{x:20,y:4});objective(chapter1Story.mode==='won'?'長老に装置の安定化を報告しよう':'北東の遺跡から封印の間へ戻れるよ');saveGame(true);}};
 const storyAction=action;
 action=function(){
  if(!s101CanInteract()){storyAction();return;}
@@ -768,7 +805,7 @@ $('playMenu').onclick=()=>{playMenuOpen=!playMenuOpen;clearStick();hold=null;doc
 document.querySelector('footer').addEventListener('click',e=>{if(e.target.closest('button')){playMenuOpen=false;document.querySelector('footer').classList.remove('open');$('playMenu').setAttribute('aria-expanded','false')}});
 </script><script>
 function fitEdgeControls(){const r=$('wrap').getBoundingClientRect(),v=window.visualViewport;document.documentElement.style.setProperty('--edgeRight',Math.max(0,(v?v.width:innerWidth)-r.right)+'px');syncEdgeControls();}
-function syncEdgeControls(){const blocked=$('start').style.display!=='none'||$('dialog').style.display==='block'||templeGearOpen||questJournalOpen||playMenuOpen||landscapeBlocked||end;for(const z of [leftZone,rightZone]){const value=blocked?'none':'auto';if(z.style.pointerEvents!==value)z.style.pointerEvents=value;}if(blocked&&(stickPointer!==null||hold||stick.style.display!=='none'))clearStick();}
+function syncEdgeControls(){const blocked=$('start').style.display!=='none'||$('dialog').style.display==='block'||templeGearOpen||questJournalOpen||playMenuOpen||landscapeBlocked||chapterClearOpen||end;for(const z of [leftZone,rightZone]){const value=blocked?'none':'auto';if(z.style.pointerEvents!==value)z.style.pointerEvents=value;}if(blocked&&(stickPointer!==null||hold||stick.style.display!=='none'))clearStick();}
 new MutationObserver(syncEdgeControls).observe(document.body,{subtree:true,attributes:true,attributeFilter:['style','hidden','class']});
 window.addEventListener('resize',fitEdgeControls);window.visualViewport?.addEventListener('resize',fitEdgeControls);fitEdgeControls();
 </script><script>
@@ -788,4 +825,52 @@ window.addEventListener('resize',fitEdgeControls);window.visualViewport?.addEven
   if(nearNpc)toast('相手のほうを向いて話しかけてみよう。隣に立って、向きを合わせるのがコツだよ。');
  };
 })();
+</script><style>
+#chapterClear[hidden]{display:none}#chapterClear{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:#081b2ce8;color:#f5ebcf}#chapterClear section{width:min(460px,94vw);max-height:90dvh;overflow:auto;padding:24px;border:1px solid #dfc588;border-radius:16px;background:linear-gradient(145deg,#244651,#102b36);text-align:center;box-shadow:0 16px 50px #0008}#chapterClear h2{margin:8px 0 16px;color:#ffe0a0;font-size:26px}#chapterClear p{font-size:14px;line-height:1.8}#chapterClear button{display:block;width:100%;min-height:44px;margin-top:12px;padding:10px;border:1px solid #dfc588;border-radius:8px;background:#e8d29a;color:#203a43;font-weight:bold}#chapterClear .sub{background:#183743;color:#e8dcc0}@media(max-height:430px){#chapterClear section{padding:12px 20px}#chapterClear h2{font-size:21px;margin:3px 0 8px}#chapterClear p{font-size:12px;margin:5px 0}}
+</style><div id="chapterClear" hidden role="dialog" aria-modal="true" aria-labelledby="chapterClearTitle"><section><small>あおびーと星の神殿</small><h2 id="chapterClearTitle">第1章 クリア</h2><p>ほしの村に、小さな灯りが戻った。<br>あおびーの冒険は、ここから続いていく。</p><p id="chapterClearSummary"></p><p id="chapterClearSaveStatus"></p><p>村と森へ戻り、残った依頼を続けられます。</p><button id="chapterExplore" type="button">村と森の探索を続ける</button><button id="chapterTitle" class="sub" type="button">タイトルへ戻る</button></section></div><script>
+function showChapterClear(){
+ $('chapterClearSaveStatus').textContent=saveGame(true)?'クリア状態を保存しました。':'保存できませんでした。この画面を閉じて、メニューのセーブから再試行してください。';
+ chapterClearOpen=true;clearStick();templeAttack=null;
+ const qs=questDefinitions.filter(d=>questBook.view(d.id).state==='claimed');
+ $('chapterClearSummary').textContent='解決した依頼：'+qs.length+' / '+questDefinitions.length;
+ $('chapterClear').hidden=false;syncEdgeControls();$('chapterExplore').focus();
+}
+function closeChapterClear(){chapterClearOpen=false;$('chapterClear').hidden=true;clearStick();syncEdgeControls();}
+$('chapterExplore').onclick=()=>{closeChapterClear();saveGame(true);};
+$('chapterTitle').onclick=()=>{if(!saveGame(true)){$('chapterClearSaveStatus').textContent='保存できませんでした。探索に戻ってセーブを再試行してください。';return;}closeChapterClear();location.reload();};
+const finishMove=move;move=function(...args){if(!chapterClearOpen)finishMove(...args)};
+const finishAction=action;action=function(){if(!chapterClearOpen)finishAction()};
+const finishStep=simulationStep;simulationStep=function(t){if(!chapterClearOpen)finishStep(t)};
+const finishCanInteract=s101CanInteract;s101CanInteract=function(){return !chapterClearOpen&&finishCanInteract()};
+const finishRestore=restoreGame;restoreGame=function(d){closeChapterClear();return finishRestore(d)};
+const finishStart=begin;begin=function(){closeChapterClear();finishStart()};
+const finishStoryAction=action;action=function(){
+ if(s101CanInteract()&&chapter1Story.reportSeen&&area==='village'){
+  if(facingNpc('elder')){say([['長老','灯りを守ってくれて、ありがとう。残った困りごとも、みんなで解決していこう。']]);return;}
+  if(facingNpc('toto')){say([['トト','おかえり、あおびー！ 今夜の灯りは、いつもよりあったかいね。']]);return;}
+ }
+ finishStoryAction();
+};
+document.addEventListener('keydown',e=>{
+ if(!chapterClearOpen)return;
+ if(e.key==='Escape'){e.preventDefault();$('chapterExplore').click();}
+ if(e.key==='Tab'){e.preventDefault();($('chapterExplore')===document.activeElement?$('chapterTitle'):$('chapterExplore')).focus();}
+});
+</script><script>
+function chapter1Milestones(){return [
+ ['星灯り祭りの準備',festivalDone],['ミオを見つける',mioRescued],['地下遺跡の石門',gateOpen],['星の鍵を手に入れる',ruinKey],['守護機械を止める',ruinBossHP===0],['封印の間の異変を止める',['won','reported'].includes(chapter1Story.mode)],['村へ帰り、長老に報告する',chapter1Story.reportSeen]
+ ];}
+const journalWithChapter=openQuestJournal;
+openQuestJournal=function(){
+ journalWithChapter();if(!questJournalOpen)return;
+ const items=chapter1Milestones();let next=false;
+ const rows=items.map(([name,done])=>{if(done)return '✓ '+name;if(!next){next=true;return '▶ '+name}return '';}).filter(Boolean);
+ $('questJournalList').textContent='【第1章の冒険】\n'+rows.join('\n')+'\n\n今の目的：'+$('objective').textContent+'\n\n【村と森の依頼】\n'+$('questJournalList').textContent;
+};
+$('questJournal').onclick=openQuestJournal;
+document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapterRecord" type="button" hidden>第1章の記録</button>');
+const recordStoryControls=storyControls;
+storyControls=function(){recordStoryControls();$('chapterRecord').hidden=!chapter1Story.reportSeen;};
+$('chapterRecord').onclick=()=>{if(s101CanInteract())showChapterClear();};
+storyControls();
 </script></body></html>
