@@ -33,7 +33,7 @@ function checkpoint(g,label){
  for(const name of ['area','phase','mioRescued','ruinKey','ruinBossHP','annexSolved','chapterFinished'])assert.equal(restored.run(name),g.run(name),label+': '+name);
  assert.equal(restored.run('validSave(snapshot())'),true,label+' valid restored save');
 }
-if(require.main!==module){module.exports={boot,checkpoint};}else{
+function completeChapter1(){
 const g=boot(),{run,walk,act,flush}=g;
 run("$('begin').onclick()");flush();
 walk(10,7);run("player.dir='up'");act();assert.equal(run('phase'),1);
@@ -86,4 +86,7 @@ assert.equal(loaded.el('chapterRecord').hidden,false);loaded.run("$('chapterReco
 run("area='annex';player.x=12;player.y=9;annexSolved=false;runeOrder=1;draw()");fs.writeFileSync('/tmp/temple-ch1-mural.png',g.canvas.toBuffer('image/png'));
 console.log('PASS checkpoints: festival, Mio, key, guardian, shadow; cleared journal and chapter-record reopening');
 
+return loaded;
 }
+
+if(require.main===module)completeChapter1();else module.exports={boot,checkpoint,completeChapter1};

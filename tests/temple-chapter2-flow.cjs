@@ -1,9 +1,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
-const {boot}=require('./temple-chapter1-flow.cjs');
-function seed(){const g=boot();g.run("$('start').style.display='none';chapter1Story={mode:'reported',bossHP:0,reportSeen:true};chapterFinished=true;phase=5;mioRescued=true;gateOpen=true;ruinComplete=true;ruinKey=true;ruinBossHP=0;storyControls()");return g;}
+const {boot,completeChapter1}=require('./temple-chapter1-flow.cjs');
+function seed(){return completeChapter1();}
 function resume(g){g.run('saveGame(true)');const key=g.run('SAVE_KEY');const h=boot({key,value:g.storage.get(key)});h.run('restoreGame(readSave())');assert.equal(h.run('area'),g.run('area'));assert.deepEqual(JSON.parse(h.run('JSON.stringify(TempleChapter2.getState())')),JSON.parse(g.run('JSON.stringify(TempleChapter2.getState())')));return h;}
 const locked=boot();locked.run('TempleChapter2.start()');assert.equal(locked.run('area'),'village');
-function route(order,stopAtTower=false){let g=seed();let {run,walk,act,flush}=g;
+function route(order,stopAtTower=false,help=true){let g=seed();let {run,walk,act,flush}=g;
  // Start from the actual menu state; chapter button must work before bubbling closes it.
  run("playMenuOpen=true;$('chapter2Start').onclick()");flush();run('playMenuOpen=false');assert.equal(run('area'),'ch2_gate');
  // Leaving before opening the barrier must not skip the puzzle on return.
@@ -16,7 +16,7 @@ function route(order,stopAtTower=false){let g=seed();let {run,walk,act,flush}=g;
  for(const id of order){
   walk(...({water:[2,9],canopy:[21,9],cave:[6,2]}[id]));assert.equal(run('area'),'ch2_'+id);
   if(id==='water'){
-   assert.equal(run('wall(8,9)'),true);walk(8,12);run("player.dir='up'");act();assert.equal(run('wall(8,9)'),false);walk(18,13);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().leafHelped'),true);walk(17,7);run("player.dir='up'");act();
+   assert.equal(run('wall(8,9)'),true);walk(8,12);run("player.dir='up'");act();assert.equal(run('wall(8,9)'),false);if(help){walk(18,13);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().leafHelped'),true);}walk(17,7);run("player.dir='up'");act();
   }else if(id==='canopy'){
    assert.equal(run('wall(12,8)'),true);walk(7,11);act();assert.equal(run('wall(12,8)'),false);walk(17,6);run("player.dir='up'");act();
   }else{

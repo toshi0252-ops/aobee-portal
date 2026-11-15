@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs');
 const {boot}=require('./temple-chapter1-flow.cjs'),{complete}=require('./temple-chapter2-tower.cjs');
 function resume(g){g.run('saveGame(true)');const key=g.run('SAVE_KEY');const h=boot({key,value:g.storage.get(key)});h.run('restoreGame(readSave())');assert.equal(h.run('area'),g.run('area'));assert.deepEqual(JSON.parse(h.run('JSON.stringify(TempleChapter3.getState())')),JSON.parse(g.run('JSON.stringify(TempleChapter3.getState())')));return h;}
 const locked=boot();locked.run('TempleChapter3.start()');assert.equal(locked.run('area'),'village');
-function play(help){let g=complete(help?'trust':'ask',help?'gentle':'rapid'),{run,walk,act,flush}=g;
+function play(help){let g=complete(help?'trust':'ask',help?'gentle':'rapid',help),{run,walk,act,flush}=g;
  // An old Chapter 2 save has no Chapter 3 progress and offers the new chapter.
  assert.equal(run('TempleChapter3.getState().started'),false);assert.equal(g.el('chapter3Start').hidden,false);
  run("playMenuOpen=true;$('chapter3Start').onclick()");flush();run('playMenuOpen=false');assert.equal(run('area'),'ch3_port');

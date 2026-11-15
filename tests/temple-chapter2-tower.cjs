@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const {boot}=require('./temple-chapter1-flow.cjs'),{route}=require('./temple-chapter2-flow.cjs');
 function resume(g){g.run('saveGame(true)');const key=g.run('SAVE_KEY');const h=boot({key,value:g.storage.get(key)});h.run('restoreGame(readSave())');assert.deepEqual(JSON.parse(h.run('JSON.stringify(TempleChapter2.getState())')),JSON.parse(g.run('JSON.stringify(TempleChapter2.getState())')));assert.equal(h.run('area'),g.run('area'));return h;}
-function complete(trust,recovery){let g=route(['water','cave','canopy'],true),{run,walk,act,flush}=g;
+function complete(trust,recovery,help=true){let g=route(['water','cave','canopy'],true,help),{run,walk,act,flush}=g;
  // A legacy opening save at the old door must not be stranded north of the new gap.
  const d=run('snapshot()');d.player={...d.player,x:12,y:6};const legacy=boot({key:run('SAVE_KEY'),value:JSON.stringify(d)});legacy.run('restoreGame(readSave())');assert.equal(legacy.run('player.y'),14);
  walk(trust==='trust'?8:16,11);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().trust'),trust);
