@@ -228,7 +228,7 @@ function saveGame(silent=false){
  catch(err){if(!silent)toast('このブラウザでは保存できません');return false}
 }
 function validSave(d){
- if(!d||![1,2,3].includes(d.version)||!['village','forest','ruins','annex','seal','ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate'].includes(d.area))return false;
+ if(!d||![1,2,3].includes(d.version)||!['village','forest','ruins','annex','seal','ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate','ch2_tower1','ch2_tower2','ch2_tower3','ch2_tower4'].includes(d.area))return false;
  const p=d.player;if(!p||!Number.isInteger(p.x)||!Number.isInteger(p.y)||p.x<0||p.x>=24||p.y<0||p.y>=18||!Number.isInteger(p.hp)||p.hp<1||p.hp>3)return false;
  if(p.dir!==undefined&&!['up','down','left','right'].includes(p.dir))return false;
  for(const [key,max]of [['phase',5],['stars',3],['ruinBossHP',5],['runeOrder',3]])if(d[key]!==undefined&&(!Number.isInteger(d[key])||d[key]<0||d[key]>max))return false;
@@ -876,21 +876,21 @@ storyControls();
 </script><script>
 /* Chapter 2 opening: independent progress, sharing Chapter 1 saves and controls. */
 const TempleChapter2=(()=>{
- const zones=['ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate'];
- const titles={ch2_gate:'結界の向こう',ch2_hub:'深緑の三叉路',ch2_water:'水音の小径',ch2_canopy:'樹冠の渡り道',ch2_cave:'反響の洞窟',ch2_tower_gate:'根の中継塔・入口'};
- const fresh=()=>({started:false,wind:0,windSolved:false,bridge:false,canopy:false,echo:false,records:[],read:[],leafHelped:false,towerReached:false});
- let state=fresh();
+ const zones=['ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate','ch2_tower1','ch2_tower2','ch2_tower3','ch2_tower4'];
+ const titles={ch2_gate:'結界の向こう',ch2_hub:'深緑の三叉路',ch2_water:'水音の小径',ch2_canopy:'樹冠の渡り道',ch2_cave:'反響の洞窟',ch2_tower_gate:'根の中継塔・入口',ch2_tower1:'中継塔・入光層',ch2_tower2:'中継塔・分光層',ch2_tower3:'中継塔・命令層',ch2_tower4:'中継塔・根の番人'};
+ const fresh=()=>({started:false,wind:0,windSolved:false,bridge:false,canopy:false,echo:false,records:[],read:[],leafHelped:false,towerReached:false,trust:'',rescued:false,angles:[0,0,0,1],floors:[],bossStage:1,redirected:false,held:false,stopped:false,recovery:'',reported:false});
+ let state=fresh(),towerClock=0,towerCycle='waiting',towerDue=0;
  const isZone=()=>zones.includes(area);
  const recordName={water:'水辺の記録',canopy:'樹冠の記録',cave:'洞窟の記録'};
  function goal(){
-  if(area==='ch2_tower_gate')return '塔の入口まで到達。三叉路や村に戻って探索を続けられるよ';
+  if(area.startsWith('ch2_tower')||state.recovery)return towerGoal();
   if(area==='ch2_gate')return state.windSolved?'結界が開いた。北の道から深緑の森へ':'葉の流れを観察し、道標を回して北の結界へ光を通そう';
   if(area==='ch2_water'&&!state.bridge)return '流木の南から押して、水路に橋をかけよう';
   if(area==='ch2_canopy'&&!state.canopy)return '西の操作台に立ち、わるびーへ合図しよう';
   if(area==='ch2_cave'&&!state.echo)return '壁の反響を調べ、音が長く返る場所を探そう';
   return state.records.length===3?'三つの記録がそろった。三叉路の北にある中継塔へ':'三つの道で観測記録を探そう '+state.records.length+'/3（順序自由）';
  }
- function sync(){ $('chapter2Start').hidden=!chapter1Story.reportSeen; $('chapter2Start').textContent=state.started?'第2章へ戻る':'第2章へ出発'; }
+ function sync(){ $('chapter2Record').hidden=!state.reported; $('chapter2Start').hidden=!chapter1Story.reportSeen; $('chapter2Start').textContent=state.started?'第2章へ戻る':'第2章へ出発'; }
  function enter(zone,x=12,y=14){area=zone;player.x=x;player.y=y;player.dir='up';templeMove=null;templeAttack=null;clearStick();objective(goal());toast(titles[zone]);saveGame(true);}
  function start(){
   if(!chapter1Story.reportSeen||!s101CanInteract())return;
@@ -903,6 +903,8 @@ const TempleChapter2=(()=>{
   say([...lines,['ミオ','星図に写しておくね。記録はこれで'+state.records.length+'つ。'],...(state.records.length===3?[['ミオ','つながった！ 村から森へ、森から北の塔へ。光はそこで別の場所に送られている。'],['あおびー','なら、塔の中で何が起きているのか確かめよう。']]:[])],()=>objective(goal()));
  }
  function interact(){
+  if(area.startsWith('ch2_tower')&&towerInteract()!==false)return;
+
   if(area==='ch2_gate'){
    if(s103Facing(12,8)){say([['観測メモ','葉は東へ流れる。東の鈴から、長い響き。星図には「風下の道標から、北の結界へ」と記されている。'],['ミオ','まず風下に光を向けて、それから北の結界へ渡すんだね。']]);return;}
    if(s103Facing(17,9)){state.wind=(state.wind+1)%4;if(state.wind===1)toast('道標が東を向いた。鈴が長く響いた');else toast('道標：'+['北','東','南','西'][state.wind]);saveGame(true);return;}
@@ -912,6 +914,7 @@ const TempleChapter2=(()=>{
    }
   }
   if(area==='ch2_hub'&&s103Facing(15,9)){
+   if(state.recovery){say([['森の守り手','森の光は戻った。港へ向かう前に、気になる場所があればまた見ていって。']]);return;}
    say([['森の守り手','塔を動かしたら、この森の光まで持っていかれる！'],['あおびー','それなら、森も守れる方法を探そう。'],['森の守り手','簡単に言わないで。三つの古い記録を、自分の目で見てきて。'],['ミオ','水辺、樹冠、洞窟……どの道からでも調べられそう。']],()=>objective(goal()));return;
   }
   if(area==='ch2_water'){
@@ -937,7 +940,6 @@ const TempleChapter2=(()=>{
    }
    if(s103Facing(12,3)){remember('cave',[['洞窟の記録','村、森、港。三つの星灯りを結ぶ中継線。最近の追記には、従来と異なる切替先が記されている。'],['ミオ','この追記だけ、ずっと新しい。古い装置が勝手に動いたんじゃないんだ。']]);return;}
   }
-  if(area==='ch2_tower_gate'&&s103Facing(12,5)){say([['ミオ','扉の奥に、四つの層がある。光路の仕組みを解けば、上まで進めそう。'],['わるびー','この切替の跡を、ぼくは追っていた。村を襲うつもりなんてなかった。'],['あおびー','ちゃんと話してくれて、ありがとう。ここからは一緒に進もう。'],['案内','今回遊べるのは中継塔の入口までです。塔の内部と第2章の結末は、次の更新で続きます。']]);return;}
   toast('印のある場所に近づいて、そちらを向いて調べよう');
  }
  function blocked(x,y){
@@ -947,12 +949,17 @@ const TempleChapter2=(()=>{
   if(area==='ch2_water')return (y===9&&(!state.bridge||x!==8))||(x===8&&y===11&&!state.bridge)||(x===17&&y===6)||(x===18&&y===12);
   if(area==='ch2_canopy')return (y===8&&(!state.canopy||x!==12))||(x===17&&y===5);
   if(area==='ch2_cave')return (y===6&&(!state.echo||x!==12))||[[5,7],[12,7],[19,7],[12,3]].some(([a,b])=>x===a&&y===b&&!(a===12&&b===7&&state.echo));
-  return area==='ch2_tower_gate'&&y<=5;
+  if(area==='ch2_tower_gate')return y<=5||(y===8&&(!state.rescued||x!==12))||[[8,10],[16,10],[17,9]].some(([a,b])=>x===a&&y===b);
+  if(area.startsWith('ch2_tower')){const f=floor();if(f<4)return (y===8&&(!state.floors.includes(f)||x!==13))||[[6,11],[17,11],[12,9]].some(([a,b])=>x===a&&y===b&&(f===2||a!==17));return [[12,5],[6,11],[8,10],[16,10]].some(([a,b])=>x===a&&y===b);}
+  return false;
  }
  function travel(){
   const {x,y}=player;
+  if(y===2&&x===12&&area.startsWith('ch2_tower')&&area!=='ch2_tower_gate'&&floor()<4&&state.floors.includes(floor())){enter('ch2_tower'+(floor()+1));resetCycle();return;}
   if(y===15&&x===12){
-   if(area==='ch2_gate'){area='village';player.x=12;player.y=13;templeMove=null;objective('準備ができたら、メニューから第2章へ戻ろう');saveGame(true);return;}
+   if(area.startsWith('ch2_tower')&&area!=='ch2_tower_gate'){const f=floor();enter(f===1?'ch2_tower_gate':'ch2_tower'+(f-1),12,f===1?6:3);resetCycle();return;}
+
+   if(area==='ch2_gate'){area='village';player.x=12;player.y=13;templeMove=null;objective(state.recovery?towerGoal():'準備ができたら、メニューから第2章へ戻ろう');saveGame(true);return;}
    if(area==='ch2_hub'){enter('ch2_gate',12,6);return;}
    enter('ch2_hub',area==='ch2_water'?3:area==='ch2_canopy'?20:12,area==='ch2_cave'?4:9);return;
   }
@@ -977,6 +984,7 @@ const TempleChapter2=(()=>{
   saveGame(true);
  };
  const prevAction=action;action=function(){
+  if(s101CanInteract()&&area==='village'&&facingNpc('elder')&&state.recovery){if(!state.reported)report();else say([['長老','森の星図は、港へ続いておる。出発までは、残った依頼も頼んだぞ。']]);return;}
   if(!isZone()||!s101CanInteract()){prevAction();return;}
   if(playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;
   templeAttack=null;interact();if($('dialog').style.display!=='block')saveGame(true);
@@ -1020,6 +1028,29 @@ const TempleChapter2=(()=>{
    for(const x of [5,12,19]){rect(x*40+4,284,32,30,'#70848c');label('反響',x*40+20,335);}plaque(12,3);label('観測記録',500,125);
   }
   if(area==='ch2_tower_gate'){rect(365,75,270,165,'#3c5452');rect(430,110,140,130,'#152e36');g.strokeStyle='#c9cf9c';g.lineWidth=3;g.strokeRect(430,110,140,130);label('塔の扉・調べる',500,255);label('三叉路へ戻る',500,640);}
+  if(area==='ch2_tower_gate'){
+   if(!state.trust){plaque(8,10);plaque(16,10);label('信じる',340,435);label('理由を聞く',660,435);}
+   rect(40,320,880,32,'#132e30');if(state.rescued){rect(486,315,28,44,'#b9a174');}plaque(17,9);label('安全装置',700,375);
+  }
+  if(area.startsWith('ch2_tower')&&area!=='ch2_tower_gate'){
+   // Tower stonework and roots use the same world coordinates as collisions.
+   for(let y=1;y<17;y++)for(let x=1;x<23;x++){rect(x*40,y*40,40,40,(x+y)%2?'#486465':'#4b6868');rect(x*40+3,y*40+3,34,2,'#69807a');}
+   label(titles[area],480,72);const f=floor();
+   if(f<4){
+    for(let x=1;x<23;x++)if(!state.floors.includes(f)||x!==13)rect(x*40,320,40,28,'#1c393e');
+    const panels=f===2?[[6,11,1],[17,11,2]]:[[6,11,f===1?0:3]];
+    for(const [x,y,i]of panels){plaque(x,y);label('反射板：'+['北','東','南','西'][state.angles[i]],x*40+20,y*40-4);}
+    plaque(12,9);label('受光を確認',500,365);label('北：上の層へ',500,108);
+    g.strokeStyle=state.floors.includes(f)?'#e5d99a':'#8eb7bd';g.lineWidth=4;for(const [x,y,i]of panels){const [dx,dy]=[[0,-1],[1,0],[0,1],[-1,0]][state.angles[i]];g.beginPath();g.moveTo(x*40+20,y*40+20);g.lineTo(x*40+20+dx*140,y*40+20+dy*140);g.stroke();}if(state.floors.includes(f)){g.beginPath();g.moveTo(500,380);g.lineTo(540,380);g.lineTo(540,300);g.stroke();}
+   }else{
+    if(!state.stopped&&towerCycle==='warning')for(let y=1;y<17;y++)for(let x=1;x<23;x++)if(towerDanger(x,y))rect(x*40+2,y*40+2,36,36,'#df716ba0');
+    rect(447,105,106,72,state.stopped?'#779d83':'#6f777e');rect(458,93,84,24,'#a2b5ac');g.strokeStyle=state.stopped?'#a5dcb0':towerCycle==='open'?'#ffe0a0':'#7cbed0';g.lineWidth=6;g.beginPath();g.arc(500,141,23,0,7);g.stroke();
+    label(state.stopped?'根の番人・停止':'根の番人・第'+state.bossStage+'段階',500,85);plaque(12,5);label(state.bossStage===3?'停止端末':'命令端末',500,235);
+    if(state.stopped){plaque(8,10);plaque(16,10);label('急速復旧',340,435);label('森を保護して復旧',660,435);}
+    else{plaque(6,11);label('防御の光路切替',260,435);rect(286,450,28,22,'#cbb580');label('協力台・立って合図',300,490);}
+   }
+   label('南：前の層へ戻る',500,640);
+  }
   if(['ch2_water','ch2_canopy','ch2_cave'].includes(area))label('三叉路へ戻る',500,640);
   const pose=templePose(),px=pose.x*40,py=pose.y*40;
   g.fillStyle='#09282c88';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();
@@ -1028,13 +1059,98 @@ const TempleChapter2=(()=>{
   label('ミオ・わるびー同行',px+20,py+65);g.restore();
  };
  const prevSnapshot=snapshot;snapshot=function(){return {...prevSnapshot(),chapter2:{...state,records:[...state.records],read:[...state.read]}}};
- function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of ['started','windSolved','bridge','canopy','echo','leafHelped','towerReached'])n[k]=s[k]===true;n.wind=Number.isInteger(s.wind)&&s.wind>=0&&s.wind<4?s.wind:0;for(const k of ['records','read'])n[k]=Array.isArray(s[k])?[...new Set(s[k].filter(x=>Object.hasOwn(recordName,x)))]:[];return n;}
- const prevRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter2);const result=prevRestore(d);if(result===false)return false;if(isZone()){state.started=true;objective(goal());templeMove=null;}sync();return result;};
+ function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of ['started','windSolved','bridge','canopy','echo','leafHelped','towerReached','rescued','redirected','held','stopped','reported'])n[k]=s[k]===true;n.wind=Number.isInteger(s.wind)&&s.wind>=0&&s.wind<4?s.wind:0;for(const k of ['records','read'])n[k]=Array.isArray(s[k])?[...new Set(s[k].filter(x=>Object.hasOwn(recordName,x)))]:[];n.trust=['trust','ask'].includes(s.trust)?s.trust:'';n.recovery=['rapid','gentle'].includes(s.recovery)?s.recovery:'';n.angles=Array.isArray(s.angles)&&s.angles.length===4?s.angles.map(v=>Number.isInteger(v)&&v>=0&&v<4?v:0):[0,0,0,1];n.floors=Array.isArray(s.floors)?[...new Set(s.floors.filter(v=>[1,2,3].includes(v)))]:[];n.bossStage=[1,2,3].includes(s.bossStage)?s.bossStage:1;return n;}
+ const prevRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter2);$('chapter2Clear').hidden=true;resetCycle();const result=prevRestore(d);if(result===false)return false;if(isZone()){state.started=true;if(area==='ch2_tower_gate'&&!state.rescued&&player.y<8){player.x=12;player.y=14;}objective(goal());templeMove=null;}else if(state.recovery)objective(towerGoal());sync();return result;};
  const prevControls=storyControls;storyControls=function(){prevControls();sync();};
- const prevJournal=openQuestJournal;openQuestJournal=function(){prevJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第2章・迷いの森の向こう】\n'+(state.windSolved?'✓ 結界の道標':'▶ 結界の道標')+'\n'+['water','canopy','cave'].map(k=>(state.records.includes(k)?'✓ ':'・')+recordName[k]).join('\n')+'\n'+(state.leafHelped?'✓ 苗木に水を戻した\n':'')+(state.towerReached?'✓ 中継塔の入口に到達\n':'')+'\n'+$('questJournalList').textContent;};
- document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter2Start" type="button" hidden>第2章へ出発</button>');
+ const prevJournal=openQuestJournal;openQuestJournal=function(){prevJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第2章・迷いの森の向こう】\n'+(state.windSolved?'✓ 結界の道標':'▶ 結界の道標')+'\n'+['water','canopy','cave'].map(k=>(state.records.includes(k)?'✓ ':'・')+recordName[k]).join('\n')+'\n'+(state.leafHelped?'✓ 苗木に水を戻した\n':'')+(state.towerReached?'✓ 中継塔の入口に到達\n':'')+(state.floors.length?'✓ 光路の復旧 '+state.floors.length+'/3\n':'')+(state.stopped?'✓ 根の番人を停止\n':'')+(state.reported?'✓ 第2章クリア\n':'')+'\n'+$('questJournalList').textContent;};
+ document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter2Record" type="button" hidden>第2章の記録</button><button id="chapter2Start" type="button" hidden>第2章へ出発</button>');
+ $('chapter2Record').onclick=()=>{if(s101CanInteract()&&state.reported)showRecord();};
  $('chapter2Start').onclick=start;$('questJournal').onclick=openQuestJournal;sync();
- return {start,getState:()=>({...state,records:[...state.records],read:[...state.read]}),isZone};
+ function floor(){return Number(area.slice(-1))||0}
+ function resetCycle(){towerClock=0;towerCycle='waiting';towerDue=0;}
+ function towerGoal(){
+  if(state.reported)return '第2章クリア！ 森の探索と残った依頼を続けられるよ';
+  if(state.recovery)return '森の光が戻った。村の長老に報告しよう';
+  if(area==='ch2_tower_gate')return !state.trust?'西の石碑で信じる／東の石碑で理由を聞く':!state.rescued?'東の安全装置で、崩れた足場を支えよう':'北の扉を調べ、中継塔へ進もう';
+  const f=floor();
+  if(f<4)return state.floors.includes(f)?'北の階段から次の層へ。南から前の層にも戻れるよ':'光路を切り替え、中央の確認台で受光状態を確かめよう';
+  if(state.stopped)return '西：急速復旧／東：森を保護しながら復旧。どちらでも森を救える';
+  return state.bossStage===1?'根の番人：赤い床を避け、放出後に中央の命令端末を攻撃':state.bossStage===2?'根の番人：西の光路切替で防御を外し、放出後に端末を攻撃':'西の協力台で合図し、放出後に北の停止端末を調べよう';
+ }
+ function report(){
+  say([['長老','森までつながる星脈の流れを、取り戻したのじゃな。'],['ミオ','でも、切替先の記録は新しかった。誰かが光の行き先を変えている。'],['あおびー','番人は、間違った命令で森を守ろうとしていただけだったよ。'],['森の守り手',state.recovery==='gentle'?'根をいたわってくれて、ありがとう。ゆっくりでも、森はちゃんと育つ。':'光は戻った。根の手入れは、ここからぼくたちが続けるよ。'],['わるびー',state.trust==='trust'?'信じてくれて……助かった。次も、ちゃんと合図する。':'理由を聞いてくれてよかった。ひとりで抱えるより、ずっとましだった。'],['ミオ','港町の灯台が、星のない夜にだけ光っているんだって。この星図も、海へ続いてる。'],['あおびー','行こう。今度はみんなで。'],['語り','海の向こうへ、星の光が細く流れていた。深緑の森を抜けた三人の前に、次の星図が開く。']],()=>{state.reported=true;objective(towerGoal());sync();showRecord();});
+ }
+ function showRecord(){
+  $('chapter2SaveStatus').textContent=saveGame(true)?'クリア状態を保存しました。':'保存できませんでした。探索に戻ってセーブを再試行してください。';
+  $('chapter2ClearSummary').textContent=(state.recovery==='gentle'?'森を保護しながら復旧':'急速復旧')+' ／ '+(state.leafHelped?'苗木に水を戻した':'苗木の依頼は後から続けられます');
+  chapterClearOpen=true;clearStick();$('chapter2Clear').hidden=false;syncEdgeControls();$('chapter2Explore').focus();
+ }
+ function towerHit(){
+  const [dx,dy]={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.dir];
+  const forward=(12-player.x)*dx+(5-player.y)*dy,side=(12-player.x)*-dy+(5-player.y)*dx,w=currentWeapon();
+  if(forward<1||forward>w.reach||Math.abs(side)>w.width)return false;
+  for(let n=1;n<forward;n++)if(blocked(player.x+dx*n,player.y+dy*n))return false;
+  return true;
+ }
+ function towerInteract(){
+  if(area==='ch2_tower_gate'){
+   for(const [x,choice]of [[8,'trust'],[16,'ask']])if(s103Facing(x,10)){
+    if(state.trust){toast('二人の合図は決まっている。安全装置へ進もう');return;}
+    state.trust=choice;
+    say([['わるびー','ぼくが先に行く。説明している時間はない。'],['あおびー',choice==='trust'?'信じるよ。でも、合図は忘れないでね。':'待って。危ない理由を、ちゃんと聞かせて。'],['わるびー',choice==='trust'?'……わかった。一緒に止めよう。':'奥の足場が崩れかけてる。安全装置を押さえないと、道ごと落ちる。'],['語り','足場がきしみ、わるびーが向こう側で支柱を押さえた。'],['ミオ','東の安全装置から支えられる！ あおびー、お願い！']],()=>objective(towerGoal()));return;
+   }
+   if(s103Facing(17,9)){
+    if(!state.trust){toast('まず西か東の石碑で、わるびーへの返事を選ぼう');return;}
+    if(state.rescued){toast('足場の安全装置は固定されている');return;}
+    state.rescued=true;say([['語り','安全装置を押さえると、向こうからわるびーが留め金を戻した。崩れた足場がつながる。'],['あおびー','ひとりで抱えないで。一緒なら、ここまでできるよ。'],['わるびー','……わかってる。ありがとう。']],()=>objective(towerGoal()));return;
+   }
+   if(s103Facing(12,5)){if(!state.rescued){toast('先に足場の安全装置を固定しよう');return;}enter('ch2_tower1');return;}
+   return false;
+  }
+  const f=floor();
+  if(f<4){
+   const controls=f===2?[[6,11,1],[17,11,2]]:[[6,11,f===1?0:3]];
+   for(const [x,y,i]of controls)if(s103Facing(x,y)){if(state.floors.includes(f)){toast('この層の受光器は固定済み。帰り道も開いている');return;}state.angles[i]=(state.angles[i]+1)%4;toast('反射板：'+['北','東','南','西'][state.angles[i]]);saveGame(true);return;}
+   if(s103Facing(12,9)){
+    if(state.floors.includes(f)){say([['ミオ','光路は安定している。北の階段へ進めるよ。']]);return;}
+    const ok=f===1?state.angles[0]===1:f===2?state.angles[1]===1&&state.angles[2]===3:state.angles[3]===0;
+    if(!ok){say([['ミオ',f===1?'西の入光器から、東の受光器へ。反射板を光の進む方向に合わせよう。':f===2?'二つの入光器を中央へ向けよう。西の反射板は東へ、東の反射板は西へ。':'上層の受光器は北にある。光を北へ戻してみよう。']]);return;}
+    state.floors.push(f);
+    say(f===3?[['ミオ','この命令だけ、あとから上書きされている！ 森の光を、港へ強制的に送る命令だよ。'],['わるびー','やっぱり。番人まで、この命令で動いてる。'],['あおびー','番人を壊すんじゃなく、命令を止めよう。']]:[['語り','受光器に光が届き、北の階段の封印が解けた。'],['ミオ','帰り道にも光が残っている。これなら戻れるね。']],()=>objective(towerGoal()));return;
+   }
+  }else{
+   if(state.stopped){for(const [x,choice]of [[8,'rapid'],[16,'gentle']])if(s103Facing(x,10)){
+    if(state.recovery){toast('復旧方式は記録済み。村の長老へ報告しよう');return;}
+    state.recovery=choice;
+    say([['ミオ',choice==='gentle'?'森へ必要な光を残しながら、少しずつ流れを戻すね。':'詰まった光路を先に開けて、森へ光を戻すね。根の手入れは続けよう。'],['森の守り手',state.leafHelped?'苗木も守ってくれたんだね。ぼくも、森の側の弁を押さえる。':'森の側は、ぼくが見ている。合図して。'],['語り','三つの光がそろい、森の根に暖かな灯りが戻った。'],['ミオ','でも、流れ出た光の行き先はまだ港のまま。村に戻って、次の星図を確かめよう。']],()=>{area='village';player.x=12;player.y=13;templeMove=null;clearStick();objective(towerGoal());saveGame(true);});return;
+   }return false;}
+   if(state.bossStage===2&&s103Facing(6,11)){state.redirected=true;toast('西の光路を切り替え、防御が外れた！');objective(towerGoal());saveGame(true);return;}
+   if(state.bossStage===3&&player.x===7&&player.y===11){state.held=true;say([['あおびー','わるびー、別の端末をお願い！'],['わるびー','こっちは押さえた。そっちの停止を頼む！']],()=>objective(towerGoal()));return;}
+   if(towerCycle!=='open'){toast('赤い予兆を避け、光の放出が止まってから端末を狙おう');return;}
+   if(state.bossStage===3){
+    if(!state.held){toast('西の協力台に立って、わるびーへ合図しよう');return;}
+    if(!s103Facing(12,5)){toast('北の停止端末の隣から調べよう');return;}
+    state.stopped=true;templeAttack=null;say([['根の番人','不正命令を解除。森の保護を、再開する。'],['あおびー','もう大丈夫。森を守る仕事に、戻っていいんだよ。'],['ミオ','あとは復旧方式を決めよう。西が急速復旧、東が根をいたわる復旧だよ。']],()=>objective(towerGoal()));return;
+   }
+   if(state.bossStage===2&&!state.redirected){toast('防御が光をはじいている。西の切替端末を調べよう');return;}
+   if(!towerHit()){toast('武器の届く位置から、北の命令端末を狙おう');return;}
+   state.bossStage++;resetCycle();templeAttack={time:performance.now(),weapon:templeWeapon,area};objective(towerGoal());toast('命令回路を遮断！ 第'+state.bossStage+'段階');saveGame(true);return;
+  }
+  return false;
+ }
+ function towerDanger(x,y){return state.bossStage===1?y>=4&&y<=8:state.bossStage===2?x>=10&&x<=14:y>=3&&y<=12&&x>=6&&x<=18;}
+ const prevTowerStep=simulationStep;simulationStep=function(t){
+  prevTowerStep(t);
+  if(area!=='ch2_tower4'||state.stopped||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
+  towerClock+=1000/60;if(!towerDue){towerDue=towerClock+900;return;}if(towerClock<towerDue)return;
+  if(towerCycle==='waiting'){towerCycle='warning';towerDue=towerClock+1100;toast('根の番人が光を集めている。赤い床の外へ！');return;}
+  if(towerCycle==='warning'){
+   towerCycle='open';towerDue=towerClock+2400;
+   if(towerDanger(player.x,player.y)){player.hp--;if(player.hp<=0){player.hp=3;state.bossStage=1;state.redirected=false;state.held=false;player.x=12;player.y=14;templeMove=null;resetCycle();toast('入口で体力を回復。長い会話なしで再挑戦できる');}updateHud();saveGame(true);}return;
+  }towerCycle='waiting';towerDue=towerClock+800;
+ };
+
+ return {start,getState:()=>({...state,records:[...state.records],read:[...state.read],angles:[...state.angles],floors:[...state.floors]}),getBattleState:()=>({cycle:towerCycle,stage:state.bossStage}),isZone};
 })();
 
-</script></body></html>
+</script><style>#chapter2Clear[hidden]{display:none}#chapter2Clear{position:fixed;inset:0;z-index:51;display:grid;place-items:center;background:#092b2ce8;padding:12px}#chapter2Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#214b46;border:1px solid #c8d5a1;border-radius:14px;padding:24px;color:#eee8c9}#chapter2Clear h2{color:#f5dda2}#chapter2Clear p{line-height:1.7}#chapter2Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#203d39;font-weight:bold}</style><div id="chapter2Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter2ClearTitle"><section><h2 id="chapter2ClearTitle">第2章 クリア</h2><p>深緑の森に、星の光が戻った。<br>次の星図は、海の向こうへ。</p><p id="chapter2ClearSummary"></p><p id="chapter2SaveStatus"></p><button id="chapter2Explore" type="button">村と森の探索を続ける</button></section></div><script>$('chapter2Explore').onclick=()=>{$('chapter2Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter2Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter2Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter2Explore').focus();}});</script></body></html>
