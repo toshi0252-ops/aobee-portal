@@ -1657,4 +1657,56 @@ const TempleChapter5=(()=>{
  return {start,getState:()=>({...state,gates:[...state.gates],villageLoad:[...state.villageLoad],relays:[...state.relays]}),getBattleState:()=>({cycle})};
 })();
 
-</script><style>#journeyClear[hidden]{display:none}#journeyClear{position:fixed;inset:0;z-index:54;display:grid;place-items:center;background:linear-gradient(145deg,#1d3448f5,#4b5150f5);padding:12px}#journeyClear section{width:min(500px,94vw);max-height:88dvh;overflow:auto;background:linear-gradient(135deg,#36545d,#263d52);border:1px solid #e6ce94;border-radius:16px;padding:24px;color:#f0e9cb;box-shadow:0 10px 50px #0008}#journeyClear h2{color:#ffe0a0}#journeyClear p{line-height:1.8}#journeyClear button{min-height:44px;width:100%;margin-top:10px;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#263e4c;font-weight:bold}#journeyClear .sub{background:#2d4657;color:#eee0bd}</style><div id="journeyClear" hidden role="dialog" aria-modal="true" aria-labelledby="journeyClearTitle"><section><small>あおびーと星の神殿</small><h2 id="journeyClearTitle">全5章 メインストーリークリア</h2><p>誰か一人の光ではなく、<br>みんなで守る、星の灯り。</p><p id="journeySummary"></p><p id="journeySaveStatus"></p><p>各章のメニューから地域へ戻れます。<br>残った依頼は、クリア後も続けられます。</p><button id="journeyExplore" type="button">祭りのあとも探索を続ける</button><button id="journeyTitle" class="sub" type="button">タイトルへ戻る</button></section></div><script>function closeJourneyRecord(){$('journeyClear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();}$('journeyExplore').onclick=()=>{closeJourneyRecord();saveGame(true);};$('journeyTitle').onclick=()=>{if(!saveGame(true)){$('journeySaveStatus').textContent='保存できませんでした。探索に戻ってセーブを再試行してください。';return;}closeJourneyRecord();location.reload();};document.addEventListener('keydown',e=>{if($('journeyClear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('journeyExplore').click();}if(e.key==='Tab'){e.preventDefault();(document.activeElement===$('journeyExplore')?$('journeyTitle'):$('journeyExplore')).focus();}});</script></body></html>
+</script><style>#journeyClear[hidden]{display:none}#journeyClear{position:fixed;inset:0;z-index:54;display:grid;place-items:center;background:linear-gradient(145deg,#1d3448f5,#4b5150f5);padding:12px}#journeyClear section{width:min(500px,94vw);max-height:88dvh;overflow:auto;background:linear-gradient(135deg,#36545d,#263d52);border:1px solid #e6ce94;border-radius:16px;padding:24px;color:#f0e9cb;box-shadow:0 10px 50px #0008}#journeyClear h2{color:#ffe0a0}#journeyClear p{line-height:1.8}#journeyClear button{min-height:44px;width:100%;margin-top:10px;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#263e4c;font-weight:bold}#journeyClear .sub{background:#2d4657;color:#eee0bd}</style><div id="journeyClear" hidden role="dialog" aria-modal="true" aria-labelledby="journeyClearTitle"><section><small>あおびーと星の神殿</small><h2 id="journeyClearTitle">全5章 メインストーリークリア</h2><p>誰か一人の光ではなく、<br>みんなで守る、星の灯り。</p><p id="journeySummary"></p><p id="journeySaveStatus"></p><p>各章のメニューから地域へ戻れます。<br>残った依頼は、クリア後も続けられます。</p><button id="journeyExplore" type="button">祭りのあとも探索を続ける</button><button id="journeyTitle" class="sub" type="button">タイトルへ戻る</button></section></div><script>function closeJourneyRecord(){$('journeyClear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();}$('journeyExplore').onclick=()=>{closeJourneyRecord();saveGame(true);};$('journeyTitle').onclick=()=>{if(!saveGame(true)){$('journeySaveStatus').textContent='保存できませんでした。探索に戻ってセーブを再試行してください。';return;}closeJourneyRecord();location.reload();};document.addEventListener('keydown',e=>{if($('journeyClear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('journeyExplore').click();}if(e.key==='Tab'){e.preventDefault();(document.activeElement===$('journeyExplore')?$('journeyTitle'):$('journeyExplore')).focus();}});</script><style>#templeNavigation{padding:12px;margin:0 0 18px;border:1px solid #c8b47c;border-radius:10px;background:#142d39}#templeNavigation h3{margin:0 0 10px;color:#ffe3a2;font-size:16px}#templeNavigation p{line-height:1.7;margin:8px 0}#templeNavigation small{display:block;line-height:1.6;color:#c9d5dd}</style><script>
+// Location-first journal guidance. Describes real exits without changing progression.
+const templePlaces={
+ village:'ほしの村・星灯りの広場',forest:'星かげの森',ruins:'地下遺跡・本堂',annex:'地下遺跡・壁画の小部屋',seal:'地下遺跡・封印の間',
+ ch2_gate:'結界の向こう',ch2_hub:'深緑の三叉路',ch2_water:'水音の小径',ch2_canopy:'樹冠の渡り道',ch2_cave:'反響の洞窟',ch2_tower_gate:'根の中継塔・入口',ch2_tower1:'中継塔・入光層',ch2_tower2:'中継塔・分光層',ch2_tower3:'中継塔・命令層',ch2_tower4:'中継塔・根の番人',
+ ch3_port:'星を映さぬ港',ch3_shore:'潮待ちの防波堤',ch3_observatory:'海底観測所',ch3_lighthouse:'灯台・分配室',ch3_beacon:'灯台・潮の番人',
+ ch4_landing:'海図にない島・入り江',ch4_settlement:'記録の消えた集落',ch4_archive:'図書塔・記録室',ch4_storage:'星光の貯蔵庫',ch4_scribe:'封印の記録機構',ch4_chart:'神殿を指す星見台',
+ ch5_court:'星の神殿・庭園',ch5_village:'村の星門',ch5_forest:'森の星門',ch5_port:'港の星門',ch5_island:'島の星門',ch5_core:'星核の間',ch5_festival:'ほしの村・星灯りの祭り'
+};
+function templeRouteHint(){
+ const c2=TempleChapter2.getState(),c5=TempleChapter5.getState();
+ const routes={
+ village:'広場の北に長老。南の道から森へ。解放した章へはメニューから出発できます。',
+ forest:'南は村、北東は地下遺跡。遺跡への道は、ミオの救助・星のかけら3つ・石門の解放で開きます。',
+ ruins:'西の小部屋に壁画。南は森。北の奥へ進むには星の鍵と守護機械の停止が必要です。',
+ annex:'中央の壁画を調べられます。南の出口から本堂へ戻れます。',
+ seal:'南の出口から森へ戻れます。協力台や相手に近づき、そちらを向いて調べましょう。',
+ ch2_gate:(c2.windSolved?'北の結界は通れます。':'北の結界は道標の仕掛けで開きます。')+'南から村へ戻れます。',
+ ch2_hub:'西は水音の小径、東は樹冠、北西は洞窟。北中央の塔には観測記録3つが必要。南は結界の道です。',
+ ch2_water:'南から三叉路へ戻れます。流木は南側から調べて押せます。',
+ ch2_canopy:'南から三叉路へ戻れます。西の操作台は、その上に立って調べましょう。',
+ ch2_cave:'南から三叉路へ戻れます。壁の近くで向きを変えながら調べ、反響を聞き比べましょう。',
+ ch2_tower_gate:'南は三叉路。北の扉は、足場を支えたあと近づいて調べると入れます。',
+ ch3_port:'西は防波堤、北西は海底観測所、北東は灯台。南は村。観測所は船の救助後、灯台は認証記録の確認後に入れます。',
+ ch3_shore:'南から港へ戻れます。東側の潮待ち標識で満潮と干潮を切り替えられます。船が戻るのは満潮です。',
+ ch3_observatory:'南は港。二つの排水装置を動かすと、北側の記録へ進めます。',
+ ch3_lighthouse:'南は港。航路灯を確保し、転送経路を隔離すると北の番人へ進めます。',
+ ch3_beacon:'南から灯台の分配室へ戻れます。水門と停止端末は、放出後の隙に調べましょう。',
+ ch4_landing:'南は港。碑文を確認すると、北から島の集落へ進めます。',
+ ch4_settlement:'南は入り江。北西は図書塔、北東は貯蔵庫。図書塔は記録守への相談後、貯蔵庫は年代の照合後に開きます。',
+ ch4_archive:'南から集落へ戻れます。北側の記録を読み、南側の証拠台で照合します。',
+ ch4_storage:'南は集落。冷却と光の安全保持を済ませると、北の記録機構へ進めます。',
+ ch4_scribe:'南から貯蔵庫へ戻れます。複製を確保してから、放出後に記録を保護しましょう。',
+ ch4_chart:'南から集落へ戻れます。北の観測端末を近くから調べましょう。',
+ ch5_court:(c5.truth?'西は村、北西は森、北東は港、東は島の星門。四つの接続後、北中央から星核へ。':'まず北側の星守の話を聞くと、四つの星門へ進めます。')+(c5.networkBalanced?'南から祭りの村へ帰れます。':'南から島の集落へ戻れます。'),
+ ch5_core:'南から庭園へ戻れます。北が星核端末。赤い予兆の外で待ち、放出後に行動しましょう。',
+ ch5_festival:'北側の長老に話しかけましょう。南から、ふだんの村の探索に戻れます。'
+ };
+ if(/^ch2_tower[1-4]$/.test(area))return '南はひとつ前の階（1階からは塔の入口）。'+(area==='ch2_tower4'?'根の番人を止めたら、村の長老へ報告しましょう。':'この階の光路を復旧すると、北から次の階へ進めます。');
+ if(['ch5_village','ch5_forest','ch5_port','ch5_island'].includes(area))return '南から庭園へ戻れます。西と東で準備し、北の端末で接続を確認しましょう。';
+ return routes[area]||'南北は画面の上下です。相手や装置の近くで、そちらを向いて調べましょう。';
+}
+$('questJournalList').insertAdjacentHTML('beforebegin','<aside id="templeNavigation" aria-label="現在地と道案内"><h3 id="templeLocation"></h3><p id="templeCurrentGoal"></p><p id="templeRoute"></p><small>北＝画面の上 ／ 南＝下 ／ 西＝左 ／ 東＝右<br>移動：左画面をスライド・矢印・WASD<br>調べる／攻撃：右画面をタップ・Space・Z・Enter</small></aside>');
+const templeJournalWithNavigation=openQuestJournal;
+openQuestJournal=function(){
+ templeJournalWithNavigation();if(!questJournalOpen)return;
+ $('templeLocation').textContent='現在地：'+(templePlaces[area]||area);
+ $('templeCurrentGoal').textContent='今の目的：'+$('objective').textContent;
+ $('templeRoute').textContent=templeRouteHint();
+};
+$('questJournal').onclick=openQuestJournal;
+
+</script></body></html>
