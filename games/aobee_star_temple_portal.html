@@ -1,4 +1,4 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>あおびーと星の神殿 第1章</title><style>*{box-sizing:border-box}body{margin:0;background:#101b2d;color:#fff;font-family:system-ui,'Noto Sans JP',sans-serif;text-align:center}header{padding:8px;font-weight:900;color:#ffe7a3}#wrap{position:relative;max-width:720px;margin:auto}canvas{width:100%;aspect-ratio:4/3;display:block;background:#172f31;image-rendering:pixelated;border:2px solid #b8a46b;border-radius:9px}#hud{position:absolute;left:10px;top:8px;text-align:left;background:#091c2bc9;border-radius:8px;padding:7px;font-size:13px;font-weight:700}#dialog{position:absolute;left:4%;bottom:4%;width:92%;background:#10233ff2;border:2px solid #e5c47b;border-radius:12px;padding:14px;text-align:left;min-height:110px;display:none;z-index:4;box-shadow:0 8px 30px #0008}#speaker{color:#ffd778;font-weight:900;margin-bottom:5px}#line{line-height:1.55;font-size:15px}#hint{font-size:11px;text-align:right;color:#c9d7eb;margin-top:5px}#controls{max-width:720px;margin:12px auto;display:flex;justify-content:space-between;padding:0 16px;align-items:center;touch-action:none}.pad{display:grid;grid-template-columns:repeat(3,57px);grid-template-rows:repeat(3,48px);gap:3px}.btn{background:#344b6e;border:1px solid #8da6c4;border-radius:12px;color:white;font-size:22px;font-weight:bold;touch-action:none;user-select:none}.btn:active{background:#7896bc}.action{width:88px;height:70px;background:#a56944}#start{position:absolute;inset:0;background:#0a1730ee;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}#start h1{font-size:clamp(23px,5vw,38px);color:#ffdf91;text-shadow:0 3px 0 #6a482e}#start button,#reset{background:#f6ce76;color:#292132;border:0;padding:13px 26px;border-radius:14px;font-weight:900;font-size:17px}#reset{font-size:12px;padding:5px 10px}#toast{position:absolute;top:24%;left:10%;width:80%;background:#10243eea;padding:13px;border-radius:12px;display:none;z-index:3}footer{font-size:12px;color:#b7c7d7;padding:5px 10px 20px}#floatZone{position:absolute;left:0;top:0;width:50%;height:100%;z-index:2;touch-action:none;user-select:none}#stick{position:absolute;display:none;width:112px;height:112px;border:2px solid #d3edff9c;border-radius:50%;background:#194c6b55;pointer-events:none;transform:translate(-50%,-50%);z-index:5}#knob{position:absolute;width:48px;height:48px;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #e3faff;border-radius:50%;background:#8cc8f5b9;box-shadow:0 2px 10px #001b32aa}#floatZone.off{display:none}@media(pointer:coarse){.pad{display:none}#controls{justify-content:flex-end}}@media(pointer:fine){#floatZone{display:none}}
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>あおびーと星の神殿</title><style>*{box-sizing:border-box}body{margin:0;background:#101b2d;color:#fff;font-family:system-ui,'Noto Sans JP',sans-serif;text-align:center}header{padding:8px;font-weight:900;color:#ffe7a3}#wrap{position:relative;max-width:720px;margin:auto}canvas{width:100%;aspect-ratio:4/3;display:block;background:#172f31;image-rendering:pixelated;border:2px solid #b8a46b;border-radius:9px}#hud{position:absolute;left:10px;top:8px;text-align:left;background:#091c2bc9;border-radius:8px;padding:7px;font-size:13px;font-weight:700}#dialog{position:absolute;left:4%;bottom:4%;width:92%;background:#10233ff2;border:2px solid #e5c47b;border-radius:12px;padding:14px;text-align:left;min-height:110px;display:none;z-index:4;box-shadow:0 8px 30px #0008}#speaker{color:#ffd778;font-weight:900;margin-bottom:5px}#line{line-height:1.55;font-size:15px}#hint{font-size:11px;text-align:right;color:#c9d7eb;margin-top:5px}#controls{max-width:720px;margin:12px auto;display:flex;justify-content:space-between;padding:0 16px;align-items:center;touch-action:none}.pad{display:grid;grid-template-columns:repeat(3,57px);grid-template-rows:repeat(3,48px);gap:3px}.btn{background:#344b6e;border:1px solid #8da6c4;border-radius:12px;color:white;font-size:22px;font-weight:bold;touch-action:none;user-select:none}.btn:active{background:#7896bc}.action{width:88px;height:70px;background:#a56944}#start{position:absolute;inset:0;background:#0a1730ee;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}#start h1{font-size:clamp(23px,5vw,38px);color:#ffdf91;text-shadow:0 3px 0 #6a482e}#start button,#reset{background:#f6ce76;color:#292132;border:0;padding:13px 26px;border-radius:14px;font-weight:900;font-size:17px}#reset{font-size:12px;padding:5px 10px}#toast{position:absolute;top:24%;left:10%;width:80%;background:#10243eea;padding:13px;border-radius:12px;display:none;z-index:3}footer{font-size:12px;color:#b7c7d7;padding:5px 10px 20px}#floatZone{position:absolute;left:0;top:0;width:50%;height:100%;z-index:2;touch-action:none;user-select:none}#stick{position:absolute;display:none;width:112px;height:112px;border:2px solid #d3edff9c;border-radius:50%;background:#194c6b55;pointer-events:none;transform:translate(-50%,-50%);z-index:5}#knob{position:absolute;width:48px;height:48px;left:50%;top:50%;transform:translate(-50%,-50%);border:2px solid #e3faff;border-radius:50%;background:#8cc8f5b9;box-shadow:0 2px 10px #001b32aa}#floatZone.off{display:none}@media(pointer:coarse){.pad{display:none}#controls{justify-content:flex-end}}@media(pointer:fine){#floatZone{display:none}}
 /* Landscape immersive layout: preserve the 4:3 game world without stretching sprites. */
 html,body{width:100%;height:100%;overflow:hidden}body{display:flex;align-items:center;justify-content:center}header{position:fixed;top:env(safe-area-inset-top,0px);left:50%;transform:translateX(-50%);z-index:8;pointer-events:none;padding:3px 10px;background:#101b2d9c;border-radius:0 0 8px 8px;font-size:12px;white-space:nowrap}header small{font-size:10px}#wrap{width:min(100vw,calc(100dvh * 16 / 9));height:min(100dvh,calc(100vw * 9 / 16));max-width:none;margin:auto;flex:none}canvas{width:100%;height:100%;aspect-ratio:auto;border-radius:0;border:0}#controls{position:fixed;inset:0;max-width:none;margin:0;padding:0;pointer-events:none;z-index:5}#controls .pad{display:none}#act{position:absolute;right:max(3vw,env(safe-area-inset-right,12px));bottom:max(8vh,env(safe-area-inset-bottom,12px));width:clamp(66px,11vw,92px);height:clamp(62px,19vh,82px);font-size:clamp(12px,2vw,17px);pointer-events:auto;opacity:.85}#hud{top:22px;left:8px;font-size:clamp(10px,1.8vw,13px);padding:4px 6px}#dialog{min-height:0;bottom:3%;padding:9px 12px}#line{font-size:clamp(12px,2.2vw,15px)}#hint{font-size:10px}#start{padding:8px}#start h1{margin:4px;font-size:clamp(18px,4vw,30px)}#start p{margin:5px;font-size:clamp(10px,1.8vw,14px)}#start button{padding:9px 18px;font-size:15px}footer{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:7;padding:2px;font-size:0;pointer-events:none}#reset{font-size:10px;padding:3px 7px;pointer-events:auto;opacity:.7}#floatZone{width:50%;height:100%}#stick{width:clamp(80px,15vw,112px);height:clamp(80px,15vw,112px)}#knob{width:42%;height:42%}@media(pointer:fine){#controls{display:none}#floatZone{display:none}}@media(orientation:portrait) and (pointer:coarse){body{align-items:center}#wrap{width:100vw;height:56.25vw}#rotateNote{display:flex!important}}#rotateNote{display:none;position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:10;background:#162b44ed;border:1px solid #e5c47b;padding:7px 12px;border-radius:9px;font-size:13px;white-space:nowrap}
 /* Xperia 21:9: touch areas extend across the entire physical viewport. */
@@ -228,7 +228,7 @@ function saveGame(silent=false){
  catch(err){if(!silent)toast('このブラウザでは保存できません');return false}
 }
 function validSave(d){
- if(!d||![1,2,3].includes(d.version)||!['village','forest','ruins','annex','seal'].includes(d.area))return false;
+ if(!d||![1,2,3].includes(d.version)||!['village','forest','ruins','annex','seal','ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate'].includes(d.area))return false;
  const p=d.player;if(!p||!Number.isInteger(p.x)||!Number.isInteger(p.y)||p.x<0||p.x>=24||p.y<0||p.y>=18||!Number.isInteger(p.hp)||p.hp<1||p.hp>3)return false;
  if(p.dir!==undefined&&!['up','down','left','right'].includes(p.dir))return false;
  for(const [key,max]of [['phase',5],['stars',3],['ruinBossHP',5],['runeOrder',3]])if(d[key]!==undefined&&(!Number.isInteger(d[key])||d[key]<0||d[key]>max))return false;
@@ -873,4 +873,168 @@ const recordStoryControls=storyControls;
 storyControls=function(){recordStoryControls();$('chapterRecord').hidden=!chapter1Story.reportSeen;};
 $('chapterRecord').onclick=()=>{if(s101CanInteract())showChapterClear();};
 storyControls();
+</script><script>
+/* Chapter 2 opening: independent progress, sharing Chapter 1 saves and controls. */
+const TempleChapter2=(()=>{
+ const zones=['ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate'];
+ const titles={ch2_gate:'結界の向こう',ch2_hub:'深緑の三叉路',ch2_water:'水音の小径',ch2_canopy:'樹冠の渡り道',ch2_cave:'反響の洞窟',ch2_tower_gate:'根の中継塔・入口'};
+ const fresh=()=>({started:false,wind:0,windSolved:false,bridge:false,canopy:false,echo:false,records:[],read:[],leafHelped:false,towerReached:false});
+ let state=fresh();
+ const isZone=()=>zones.includes(area);
+ const recordName={water:'水辺の記録',canopy:'樹冠の記録',cave:'洞窟の記録'};
+ function goal(){
+  if(area==='ch2_tower_gate')return '塔の入口まで到達。三叉路や村に戻って探索を続けられるよ';
+  if(area==='ch2_gate')return state.windSolved?'結界が開いた。北の道から深緑の森へ':'葉の流れを観察し、道標を回して北の結界へ光を通そう';
+  if(area==='ch2_water'&&!state.bridge)return '流木の南から押して、水路に橋をかけよう';
+  if(area==='ch2_canopy'&&!state.canopy)return '西の操作台に立ち、わるびーへ合図しよう';
+  if(area==='ch2_cave'&&!state.echo)return '壁の反響を調べ、音が長く返る場所を探そう';
+  return state.records.length===3?'三つの記録がそろった。三叉路の北にある中継塔へ':'三つの道で観測記録を探そう '+state.records.length+'/3（順序自由）';
+ }
+ function sync(){ $('chapter2Start').hidden=!chapter1Story.reportSeen; $('chapter2Start').textContent=state.started?'第2章へ戻る':'第2章へ出発'; }
+ function enter(zone,x=12,y=14){area=zone;player.x=x;player.y=y;player.dir='up';templeMove=null;templeAttack=null;clearStick();objective(goal());toast(titles[zone]);saveGame(true);}
+ function start(){
+  if(!chapter1Story.reportSeen||!s101CanInteract())return;
+  if(state.started){enter(state.windSolved?'ch2_hub':'ch2_gate',12,14);return;}
+  say([['長老','村の灯りは落ち着いた。だが、森の奥でも星が消え始めているらしい。'],['長老','古い星図を持っていきなさい。ただし、わしの記録が正しいとは限らん。'],['あおびー','知らないことは、知らないって言ってくれたらいいよ。みんなで確かめよう。'],['ミオ','まだ消えていない線がある。わたしが星図を読むね。'],['語り','第2章　迷いの森の向こう'],['案内','新しい森では、三つの道を好きな順に探索できます。村にはいつでも戻れます。']],()=>{state.started=true;sync();enter('ch2_gate');});
+ }
+ function remember(id,lines){
+  if(state.records.includes(id)){say([['観測記録',lines[0][1]],['ミオ','この記録は星図に写してあるよ。']]);return;}
+  state.records.push(id);state.read.push(id);
+  say([...lines,['ミオ','星図に写しておくね。記録はこれで'+state.records.length+'つ。'],...(state.records.length===3?[['ミオ','つながった！ 村から森へ、森から北の塔へ。光はそこで別の場所に送られている。'],['あおびー','なら、塔の中で何が起きているのか確かめよう。']]:[])],()=>objective(goal()));
+ }
+ function interact(){
+  if(area==='ch2_gate'){
+   if(s103Facing(12,8)){say([['観測メモ','葉は東へ流れる。東の鈴から、長い響き。星図には「風下の道標から、北の結界へ」と記されている。'],['ミオ','まず風下に光を向けて、それから北の結界へ渡すんだね。']]);return;}
+   if(s103Facing(17,9)){state.wind=(state.wind+1)%4;if(state.wind===1)toast('道標が東を向いた。鈴が長く響いた');else toast('道標：'+['北','東','南','西'][state.wind]);saveGame(true);return;}
+   if(s103Facing(12,5)){
+    if(state.wind===1){state.windSolved=true;say([['語り','東の鈴が澄んだ音を返し、北の結界に細い道が開いた。'],['あおびー','音と葉っぱが、同じ方向を教えてくれたんだ。']],()=>objective(goal()));}
+    else say([['ミオ','このままだと光が途中で散ってしまう。風下の道標と、北の結界をつなごう。']]);return;
+   }
+  }
+  if(area==='ch2_hub'&&s103Facing(15,9)){
+   say([['森の守り手','塔を動かしたら、この森の光まで持っていかれる！'],['あおびー','それなら、森も守れる方法を探そう。'],['森の守り手','簡単に言わないで。三つの古い記録を、自分の目で見てきて。'],['ミオ','水辺、樹冠、洞窟……どの道からでも調べられそう。']],()=>objective(goal()));return;
+  }
+  if(area==='ch2_water'){
+   if(s103Facing(8,11)){
+    if(state.bridge){toast('流木の橋は、もう水路にかかっている');return;}
+    if(player.x!==8||player.y!==12||player.dir!=='up'){toast('流木の南に立って、北へ押してみよう');return;}
+    state.bridge=true;say([['語り','流木を押すと、水路をまたぐ橋になった。せき止められていた水も、苗木の方へ流れ始める。'],['ミオ','道を作るだけじゃなく、森にも水を戻せたね。']],()=>objective(goal()));return;
+   }
+   if(s103Facing(17,6)){remember('water',[['水辺の記録','中継塔は、森の光をすべて送る装置ではない。必要な光を森に残し、余った分を次の地域へ渡す。'],['あおびー','光を送ること自体が、悪いわけじゃないんだ。']]);return;}
+   if(s103Facing(18,12)){
+    if(!state.bridge){toast('苗木の根元まで水が届いていない。上流を確かめよう');return;}
+    state.leafHelped=true;say([['語り','苗木の根元に小さな葉が開いた。'],['あおびー','よかった。塔を調べる前に、この森も守っていこう。']]);return;
+   }
+  }
+  if(area==='ch2_canopy'){
+   if(player.x===7&&player.y===11){state.canopy=!state.canopy;say([['あおびー','わるびー、向こうの操作台をお願い！'],['わるびー','合図はちゃんとしてよ。……今だ！'],['語り',state.canopy?'二つの滑車がそろい、樹冠へ続く足場がつながった。':'足場を元の位置に戻した。']],()=>objective(goal()));return;}
+   if(s103Facing(17,5)){remember('canopy',[['樹冠の記録','根の中継塔。光路の切替は、複数の操作台で確認してから実行すること。'],['わるびー','一人では勝手に変えられない。誰かが、その確認まで書き換えたんだ。']]);return;}
+  }
+  if(area==='ch2_cave'){
+   for(const [x,y,long]of [[5,7,false],[12,7,true],[19,7,false]])if(s103Facing(x,y)){
+    if(long){state.echo=true;say([['反響','コン……コォォン……。壁の奥へ、長く音が続いている。'],['ミオ','ここだけ空洞がある。押してみよう。'],['語り','壁が静かにずれ、奥の記録室が現れた。']],()=>objective(goal()));}
+    else say([['反響','コン、コツ。音はすぐに途切れた。'],['あおびー','この奥は詰まっているみたい。ほかの壁も確かめよう。']]);return;
+   }
+   if(s103Facing(12,3)){remember('cave',[['洞窟の記録','村、森、港。三つの星灯りを結ぶ中継線。最近の追記には、従来と異なる切替先が記されている。'],['ミオ','この追記だけ、ずっと新しい。古い装置が勝手に動いたんじゃないんだ。']]);return;}
+  }
+  if(area==='ch2_tower_gate'&&s103Facing(12,5)){say([['ミオ','扉の奥に、四つの層がある。光路の仕組みを解けば、上まで進めそう。'],['わるびー','この切替の跡を、ぼくは追っていた。村を襲うつもりなんてなかった。'],['あおびー','ちゃんと話してくれて、ありがとう。ここからは一緒に進もう。'],['案内','今回遊べるのは中継塔の入口までです。塔の内部と第2章の結末は、次の更新で続きます。']]);return;}
+  toast('印のある場所に近づいて、そちらを向いて調べよう');
+ }
+ function blocked(x,y){
+  if(!Number.isInteger(x)||!Number.isInteger(y)||x<=0||x>=23||y<=0||y>=17)return true;
+  if(area==='ch2_gate')return (y===5&&(!state.windSolved||x!==12))||(x===12&&y===8)||(x===17&&y===9);
+  if(area==='ch2_hub')return (x===15&&y===9)||(x===12&&y===2&&state.records.length<3);
+  if(area==='ch2_water')return (y===9&&(!state.bridge||x!==8))||(x===8&&y===11&&!state.bridge)||(x===17&&y===6)||(x===18&&y===12);
+  if(area==='ch2_canopy')return (y===8&&(!state.canopy||x!==12))||(x===17&&y===5);
+  if(area==='ch2_cave')return (y===6&&(!state.echo||x!==12))||[[5,7],[12,7],[19,7],[12,3]].some(([a,b])=>x===a&&y===b&&!(a===12&&b===7&&state.echo));
+  return area==='ch2_tower_gate'&&y<=5;
+ }
+ function travel(){
+  const {x,y}=player;
+  if(y===15&&x===12){
+   if(area==='ch2_gate'){area='village';player.x=12;player.y=13;templeMove=null;objective('準備ができたら、メニューから第2章へ戻ろう');saveGame(true);return;}
+   if(area==='ch2_hub'){enter('ch2_gate',12,6);return;}
+   enter('ch2_hub',area==='ch2_water'?3:area==='ch2_canopy'?20:12,area==='ch2_cave'?4:9);return;
+  }
+  if(area==='ch2_gate'&&state.windSolved&&x===12&&y===3){enter('ch2_hub');return;}
+  if(area==='ch2_hub'){
+   if(x===2&&y===9){enter('ch2_water');return;}
+   if(x===21&&y===9){enter('ch2_canopy');return;}
+   if(x===6&&y===2){enter('ch2_cave');return;}
+   if(x===12&&y===2){
+    if(state.records.length<3){player.y=3;toast('塔の扉には、三つの観測記録を重ねた星図が必要だ');return;}
+    state.towerReached=true;enter('ch2_tower_gate');say([['語り','根の間から、古い塔が姿を現した。三つの記録の光が、閉ざされた扉を照らす。'],['ミオ','ここが、根の中継塔。星図の線は、まだ先へ続いてる。']],()=>objective(goal()));return;
+   }
+  }
+ }
+ const prevWall=wall;wall=function(x,y){return isZone()?blocked(x,y):prevWall(x,y)};
+ const prevMove=move;move=function(dx,dy){
+  if(!isZone()){prevMove(dx,dy);return;}
+  if(!s101CanInteract()||playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;
+  player.dir=dx<0?'left':dx>0?'right':dy<0?'up':'down';
+  const nx=player.x+dx,ny=player.y+dy;
+  if(!blocked(nx,ny)){const ox=player.x,oy=player.y;player.x=nx;player.y=ny;templeMove={x:ox,y:oy,tx:nx,ty:ny,area,time:performance.now()};travel();}
+  saveGame(true);
+ };
+ const prevAction=action;action=function(){
+  if(!isZone()||!s101CanInteract()){prevAction();return;}
+  if(playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;
+  templeAttack=null;interact();if($('dialog').style.display!=='block')saveGame(true);
+ };
+ const prevDraw=draw;draw=function(){
+  if(!isZone()){prevDraw();return;}
+  const g=ctx;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=false;
+  const cy=Math.max(0,Math.min(180,templePose().y*40-250));g.save();g.translate(0,-cy);
+  const rect=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)};
+  const label=(s,x,y)=>{g.font='600 13px sans-serif';g.textAlign='center';const w=g.measureText(s).width+18;rect(x-w/2,y-15,w,24,'#102b32ed');g.fillStyle='#f6e4b5';g.fillText(s,x,y+2)};
+  for(let y=0;y<18;y++)for(let x=0;x<24;x++){
+   const px=x*40,py=y*40,edge=x===0||y===0||x===23||y===17;
+   rect(px,py,40,40,area==='ch2_cave'?((x+y)%2?'#394751':'#3c4d58'):((x+y)%2?'#284f43':'#2a5144'));
+   if(edge){rect(px,py,40,40,'#15382f');rect(px+4,py+5,32,22,'#366850');}
+   else{rect(px+(x*7+y*3)%30+3,py+(y*11)%32,3,2,'#659168');}
+  }
+  // Edge canopies and floor details stay on blocked boundary tiles.
+  if(area!=='ch2_cave')for(let y=0;y<18;y++)for(const x of [0,23]){
+   const px=x*40+20,py=y*40+16;rect(px-4,py+12,8,24,'#624f38');
+   for(const [dx,dy,r,c]of [[0,0,22,'#173d32'],[-10,-5,14,'#326650'],[9,-9,13,'#3d7357']]){g.fillStyle=c;g.beginPath();g.arc(px+dx,py+dy,r,0,7);g.fill();}
+  }
+  const plaque=(x,y,c='#b4b99a')=>{rect(x*40+7,y*40+10,26,25,'#254049');rect(x*40+10,y*40+7,20,24,c);rect(x*40+13,y*40+13,14,2,'#4f665d');rect(x*40+13,y*40+19,10,2,'#4f665d');};
+  // Glowing roots distinguish the deep forest from Chapter 1.
+  g.strokeStyle='#6cb5a14d';g.lineWidth=3;for(const x of [100,860]){g.beginPath();g.moveTo(x,40);g.lineTo(x+30,220);g.lineTo(x-20,480);g.lineTo(x+60,680);g.stroke();}
+  label(titles[area],480,72);
+  if(area==='ch2_gate'){
+   for(let x=1;x<23;x++)rect(x*40,200,40,20,state.windSolved?'#729d8944':'#82cbb790');
+   plaque(12,8);plaque(17,9,'#ccb580');label('北の結界・調べる',500,195);label('星図と観測メモ',500,320);label('道標：'+['北','東','南','西'][state.wind],700,355);label('村へ',500,640);
+   for(let i=0;i<6;i++){rect(590+i*32,270+(i%2)*14,12,5,'#d5d790');}label('葉は東へ →',730,250);
+  }
+  if(area==='ch2_hub'){label('水辺 ←',110,360);label('樹冠 →',850,360);label('洞窟',260,88);label('中継塔 '+state.records.length+'/3',500,110);label('森の守り手',620,375);rect(610,355,20,20,'#99b99a');label('結界へ',500,640);}
+  if(area==='ch2_water'){
+   rect(40,355,880,45,'#437e92');for(let i=0;i<12;i++)rect(60+i*70,366+(i%3)*8,34,2,'#a1d1c2');
+   rect(326,state.bridge?350:444,28,state.bridge?58:28,'#b29464');label(state.bridge?'流木の橋':'流木・南から押す',340,state.bridge?340:438);plaque(17,6);rect(731,496,18,8,'#795d3c');rect(739,478,3,19,state.leafHelped?'#a3cf80':'#8e9564');for(const dx of [-6,6]){g.fillStyle=state.leafHelped?'#a3cf80':'#8e9564';g.beginPath();g.ellipse(740+dx,482,8,4,dx<0?.5:-.5,0,7);g.fill();}label('観測記録',700,245);label(state.leafHelped?'芽吹いた苗木':'乾いた苗木',740,495);
+  }
+  if(area==='ch2_canopy'){
+   rect(40,322,880,36,'#102d31');if(state.canopy){rect(486,315,28,53,'#c1a676');for(let y=318;y<368;y+=8)rect(487,y,26,2,'#765c40');}plaque(17,5);for(const x of [7,18]){rect(x*40+7,449,26,21,'#bca97a');rect(x*40+10,453,20,3,'#5d736a');}label('操作台・立って合図',300,450);label('わるびーの操作台',740,450);label('観測記録',700,205);
+  }
+  if(area==='ch2_cave'){
+   for(let x=1;x<23;x++)if(!state.echo||x!==12)rect(x*40,240,40,38,'#182c39');
+   for(const x of [5,12,19]){rect(x*40+4,284,32,30,'#70848c');label('反響',x*40+20,335);}plaque(12,3);label('観測記録',500,125);
+  }
+  if(area==='ch2_tower_gate'){rect(365,75,270,165,'#3c5452');rect(430,110,140,130,'#152e36');g.strokeStyle='#c9cf9c';g.lineWidth=3;g.strokeRect(430,110,140,130);label('塔の扉・調べる',500,255);label('三叉路へ戻る',500,640);}
+  if(['ch2_water','ch2_canopy','ch2_cave'].includes(area))label('三叉路へ戻る',500,640);
+  const pose=templePose(),px=pose.x*40,py=pose.y*40;
+  g.fillStyle='#09282c88';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();
+  // Reuse the approved atlas; no new character design or generated artwork.
+  if(pic.complete&&pic.naturalWidth){const index={down:0,up:1,left:2,right:3}[player.dir]||0,cw=pic.naturalWidth/4,ch=pic.naturalHeight/2;g.drawImage(pic,index*cw,0,cw,ch,px-7,py-21,54,54);}
+  label('ミオ・わるびー同行',px+20,py+65);g.restore();
+ };
+ const prevSnapshot=snapshot;snapshot=function(){return {...prevSnapshot(),chapter2:{...state,records:[...state.records],read:[...state.read]}}};
+ function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of ['started','windSolved','bridge','canopy','echo','leafHelped','towerReached'])n[k]=s[k]===true;n.wind=Number.isInteger(s.wind)&&s.wind>=0&&s.wind<4?s.wind:0;for(const k of ['records','read'])n[k]=Array.isArray(s[k])?[...new Set(s[k].filter(x=>Object.hasOwn(recordName,x)))]:[];return n;}
+ const prevRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter2);const result=prevRestore(d);if(result===false)return false;if(isZone()){state.started=true;objective(goal());templeMove=null;}sync();return result;};
+ const prevControls=storyControls;storyControls=function(){prevControls();sync();};
+ const prevJournal=openQuestJournal;openQuestJournal=function(){prevJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第2章・迷いの森の向こう】\n'+(state.windSolved?'✓ 結界の道標':'▶ 結界の道標')+'\n'+['water','canopy','cave'].map(k=>(state.records.includes(k)?'✓ ':'・')+recordName[k]).join('\n')+'\n'+(state.leafHelped?'✓ 苗木に水を戻した\n':'')+(state.towerReached?'✓ 中継塔の入口に到達\n':'')+'\n'+$('questJournalList').textContent;};
+ document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter2Start" type="button" hidden>第2章へ出発</button>');
+ $('chapter2Start').onclick=start;$('questJournal').onclick=openQuestJournal;sync();
+ return {start,getState:()=>({...state,records:[...state.records],read:[...state.read]}),isZone};
+})();
+
 </script></body></html>
