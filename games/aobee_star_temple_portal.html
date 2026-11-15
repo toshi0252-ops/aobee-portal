@@ -228,7 +228,7 @@ function saveGame(silent=false){
  catch(err){if(!silent)toast('このブラウザでは保存できません');return false}
 }
 function validSave(d){
- if(!d||![1,2,3].includes(d.version)||!['village','forest','ruins','annex','seal','ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate','ch2_tower1','ch2_tower2','ch2_tower3','ch2_tower4'].includes(d.area))return false;
+ if(!d||![1,2,3].includes(d.version)||!['village','forest','ruins','annex','seal','ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate','ch2_tower1','ch2_tower2','ch2_tower3','ch2_tower4','ch3_port','ch3_shore','ch3_observatory','ch3_lighthouse','ch3_beacon'].includes(d.area))return false;
  const p=d.player;if(!p||!Number.isInteger(p.x)||!Number.isInteger(p.y)||p.x<0||p.x>=24||p.y<0||p.y>=18||!Number.isInteger(p.hp)||p.hp<1||p.hp>3)return false;
  if(p.dir!==undefined&&!['up','down','left','right'].includes(p.dir))return false;
  for(const [key,max]of [['phase',5],['stars',3],['ruinBossHP',5],['runeOrder',3]])if(d[key]!==undefined&&(!Number.isInteger(d[key])||d[key]<0||d[key]>max))return false;
@@ -1153,4 +1153,167 @@ const TempleChapter2=(()=>{
  return {start,getState:()=>({...state,records:[...state.records],read:[...state.read],angles:[...state.angles],floors:[...state.floors]}),getBattleState:()=>({cycle:towerCycle,stage:state.bossStage}),isZone};
 })();
 
-</script><style>#chapter2Clear[hidden]{display:none}#chapter2Clear{position:fixed;inset:0;z-index:51;display:grid;place-items:center;background:#092b2ce8;padding:12px}#chapter2Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#214b46;border:1px solid #c8d5a1;border-radius:14px;padding:24px;color:#eee8c9}#chapter2Clear h2{color:#f5dda2}#chapter2Clear p{line-height:1.7}#chapter2Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#203d39;font-weight:bold}</style><div id="chapter2Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter2ClearTitle"><section><h2 id="chapter2ClearTitle">第2章 クリア</h2><p>深緑の森に、星の光が戻った。<br>次の星図は、海の向こうへ。</p><p id="chapter2ClearSummary"></p><p id="chapter2SaveStatus"></p><button id="chapter2Explore" type="button">村と森の探索を続ける</button></section></div><script>$('chapter2Explore').onclick=()=>{$('chapter2Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter2Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter2Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter2Explore').focus();}});</script></body></html>
+</script><style>#chapter2Clear[hidden]{display:none}#chapter2Clear{position:fixed;inset:0;z-index:51;display:grid;place-items:center;background:#092b2ce8;padding:12px}#chapter2Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#214b46;border:1px solid #c8d5a1;border-radius:14px;padding:24px;color:#eee8c9}#chapter2Clear h2{color:#f5dda2}#chapter2Clear p{line-height:1.7}#chapter2Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#203d39;font-weight:bold}</style><div id="chapter2Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter2ClearTitle"><section><h2 id="chapter2ClearTitle">第2章 クリア</h2><p>深緑の森に、星の光が戻った。<br>次の星図は、海の向こうへ。</p><p id="chapter2ClearSummary"></p><p id="chapter2SaveStatus"></p><button id="chapter2Explore" type="button">村と森の探索を続ける</button></section></div><script>$('chapter2Explore').onclick=()=>{$('chapter2Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter2Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter2Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter2Explore').focus();}});</script><script>
+/* Chapter 3: preserve navigation lights while isolating offshore star transfer. */
+const TempleChapter3=(()=>{
+ const zones=['ch3_port','ch3_shore','ch3_observatory','ch3_lighthouse','ch3_beacon'];
+ const names={ch3_port:'第3章・星を映さぬ港',ch3_shore:'潮待ちの防波堤',ch3_observatory:'海底観測所',ch3_lighthouse:'灯台・分配室',ch3_beacon:'灯台・潮の番人'};
+ const fresh=()=>({started:false,lowTide:false,beacons:0,boatRescued:false,toolsFound:false,toolsReturned:false,pumps:[false,false],authRead:false,photoRead:false,lampSeparated:false,transferPrepared:false,valves:[false,false],stopped:false,reported:false});
+ let state=fresh(),clock=0,cycle='waiting',due=0,wave=0;
+ const here=()=>zones.includes(area);
+ function goal(){
+  if(state.reported)return '第3章クリア！ 港の探索や残った依頼を続けられるよ';
+  if(state.stopped)return '航路灯は点灯したまま。港の灯台守に報告しよう';
+  if(area==='ch3_beacon')return state.valves.every(Boolean)?'二つの水門は固定済み。放出後に北の停止端末を調べよう':'波の赤い予兆を避け、放出後に西と東の水門を固定しよう';
+  if(area==='ch3_lighthouse')return !state.lampSeparated?'西の端末で、航路灯を独立した電源につなごう':!state.transferPrepared?'東の端末で、異常転送の経路だけを隔離しよう':'航路灯を確保した。北の階段から潮の番人へ';
+  if(!state.boatRescued)return '西の防波堤で帰れない船を助けよう。灯りの順は観測メモに';
+  if(!state.authRead)return '北西の海底観測所で、灯台の転送記録を調べよう';
+  return '北東の灯台へ。航路灯と転送設備を切り離そう';
+ }
+ function sync(){$('chapter3Start').hidden=!TempleChapter2.getState().reported;$('chapter3Start').textContent=state.started?'港へ戻る':'第3章へ出発';$('chapter3Record').hidden=!state.reported;}
+ function enter(next,x=12,y=14){area=next;player.x=x;player.y=y;player.dir='up';templeMove=null;templeAttack=null;clearStick();clock=0;due=0;cycle='waiting';objective(goal());toast(names[next]);saveGame(true);}
+ function start(){
+  if(!TempleChapter2.getState().reported||!s101CanInteract())return;
+  if(state.started){enter('ch3_port');return;}
+  const prev=TempleChapter2.getState();
+  say([['語り','第3章　星を映さぬ港'],['ミオ','森の星図の線が、あの灯台まで続いてる。'],['わるびー',prev.trust==='trust'?'今度は先に話す。この港には、前に来たことがある。':'聞いてくれたから話す。この港には、前に来たことがある。'],['灯台守','灯りを止める？ だめだ。沖の船が帰れなくなる！'],['あおびー','止めたいのは、暮らしを支える灯りじゃない。まず、困っている船を助けよう。'],['船大工見習い','防波堤の三つの灯りが消えてる。帰り道を示せれば、家族の船も戻れるのに。']],()=>{state.started=true;sync();enter('ch3_port');});
+ }
+ function rescue(){
+  if(state.beacons===3&&!state.lowTide&&!state.boatRescued){state.boatRescued=true;say([['語り','三つの灯りをたどり、沖の船が港へ滑り込んだ。'],['船乗り','助かったよ。古い灯台の海底入口が、異様に光っていた。これが入口の記録だ。'],['ミオ','海底観測所へ続く道が分かった！']],()=>objective(goal()));}
+ }
+ function interact(){
+  if(area==='ch3_port'){
+   if(s103Facing(10,7)){
+    if(state.stopped&&!state.reported){report();return;}
+    say(state.reported?[['灯台守','航路灯は今日も点いている。島へ向かう準備も、港のみんなで進めるよ。']]:[['灯台守','船を導く航路灯と、海の向こうへ光を送る設備は、同じ灯台にある。'],['あおびー','分けて動かせれば、船を困らせずに済むんだね。']]);return;
+   }
+   if(s103Facing(17,10)){
+    if(state.toolsFound&&!state.toolsReturned){state.toolsReturned=true;say([['船大工見習い','流された工具箱！ ありがとう。これで帰ってきた船を直せる。'],['あおびー','灯りだけじゃなく、船も元気にしてあげないとね。']]);return;}
+    say([['船大工見習い',state.toolsReturned?'工具のおかげで修理も進んでる。海の旅は、任せて。':'干潮のとき、防波堤の浅瀬に工具箱が見えるんだ。潮待ちの標識で、待つ時間は飛ばせるよ。']]);return;
+   }
+   if(s103Facing(6,10)){say([['港の案内','西：防波堤。北西：海底観測所。北東：灯台。南：ほしの村へ。'],['案内','潮待ちは防波堤の東の標識で切り替えられます。実時間で待つ必要はありません。']]);return;}
+  }
+  if(area==='ch3_shore'){
+   if(s103Facing(18,12)){state.lowTide=!state.lowTide;toast(state.lowTide?'干潮になった。浅瀬を歩ける':'満潮になった。船が港へ戻れる');objective(goal());saveGame(true);rescue();return;}
+   if(s103Facing(5,13)){say([['防波堤のメモ','沖から見える西の灯りから、中央、港口の東へ。船が入れるのは、潮が満ちてから。'],['ミオ','西から順に灯りをつないで、満潮で帰り道を示すんだね。']]);return;}
+   for(const [i,x]of [5,9,13].entries())if(s103Facing(x,11)){
+    if(state.beacons===3){toast('帰り道を示す三つの灯りは、すべて点灯している');rescue();return;}
+    if(i===state.beacons){state.beacons++;toast('航路標識が点灯 '+state.beacons+'/3');rescue();}
+    else{state.beacons=0;say([['ミオ','灯りのつながりが途切れた。西、中央、港口の東へ、もう一度確かめよう。']]);}saveGame(true);return;
+   }
+   if(s103Facing(9,6)&&state.lowTide){state.toolsFound=true;say([['あおびー','工具箱だ。港の船大工見習いに届けよう。']]);return;}
+  }
+  if(area==='ch3_observatory'){
+   for(const [i,x]of [6,17].entries())if(s103Facing(x,11)){state.pumps[i]=true;toast('排水弁を固定 '+state.pumps.filter(Boolean).length+'/2');saveGame(true);return;}
+   if(s103Facing(12,4)){
+    if(state.authRead){say([['転送記録','古い管理者認証鍵による経路変更。使用者の欄は欠落。外洋の座標が追記されている。']]);return;}
+    state.authRead=true;say([['ミオ','管理者専用の古い認証鍵が使われている。誰の鍵かは、ここには残ってない。'],['わるびー','ぼくは、この異変を一人で追っていた。止めようとして失敗したんだ。その先の記憶が、途切れてる。'],['あおびー','今、思い出せるところからでいいよ。一緒に確かめよう。'],['ミオ','灯台の配線図もある。船用の航路灯は別の電源につなげられる！']],()=>objective(goal()));return;
+   }
+   if(s103Facing(5,4)){state.photoRead=true;say([['古い写真','灯台の根元に、かつては二つの配線が別々に引かれていた。'],['ミオ','航路灯と星脈の転送は、元々別の仕組みだったんだ。']]);return;}
+  }
+  if(area==='ch3_lighthouse'){
+   if(s103Facing(6,11)){state.lampSeparated=true;say([['灯台守','航路灯を独立電源へ接続した。これなら、転送設備を止めても船の灯りは消えない。']],()=>objective(goal()));return;}
+   if(s103Facing(17,11)){
+    if(!state.lampSeparated){toast('先に西の端末で、航路灯の電源を確保しよう');return;}
+    state.transferPrepared=true;say([['ミオ','外洋へ送り出している光路だけを隔離した。北の制御室で、不正な命令を止めよう。']],()=>objective(goal()));return;
+   }
+  }
+  if(area==='ch3_beacon'){
+   if(state.stopped){toast('異常転送は停止済み。航路灯は独立電源で点灯している');return;}
+   for(const [i,x]of [6,17].entries())if(s103Facing(x,11)){
+    if(cycle!=='open'){toast('波の放出が止まってから、水門を固定しよう');return;}
+    state.valves[i]=true;toast('水門を固定 '+state.valves.filter(Boolean).length+'/2');objective(goal());saveGame(true);return;
+   }
+   if(s103Facing(12,5)){
+    if(!state.valves.every(Boolean)){toast('西と東の水門を固定してから、停止端末へ');return;}
+    if(cycle!=='open'){toast('波の放出が止まった隙に、停止を確定しよう');return;}
+    state.stopped=true;say([['潮の番人','航路灯への給電を確認。不正な転送命令を停止する。'],['語り','海へ伸びていた細い光が止まり、港の灯台だけが、暖かな輪を描き続けた。'],['ミオ','止まったのは新しく送り出す光だけ。向こうの島に、もうたまっている光は残ってる。'],['わるびー','海図にない座標がある。……次は、そこだ。']],()=>objective(goal()));return;
+   }
+  }
+  toast('標識や端末の隣から、そちらを向いて調べよう');
+ }
+ function blocked(x,y){
+  if(!Number.isInteger(x)||!Number.isInteger(y)||x<=0||x>=23||y<=0||y>=17)return true;
+  if(area==='ch3_port')return (x>=8&&x<=11&&y>=4&&y<=6)||(x>=15&&x<=19&&y>=8&&y<=10)||[[10,7],[17,10],[6,10]].some(([a,b])=>x===a&&y===b)||(x===6&&y===2&&!state.boatRescued)||(x===18&&y===2&&!state.authRead);
+  if(area==='ch3_shore')return (!state.lowTide&&x>=3&&x<=14&&y>=5&&y<=9)||[[18,12],[5,13],[5,11],[9,11],[13,11],[9,6]].some(([a,b])=>x===a&&y===b);
+  if(area==='ch3_observatory')return (y===8&&(!state.pumps.every(Boolean)||x!==13))||[[6,11],[17,11],[12,4],[5,4]].some(([a,b])=>x===a&&y===b);
+  if(area==='ch3_lighthouse')return (y===8&&(!state.transferPrepared||x!==13))||[[6,11],[17,11]].some(([a,b])=>x===a&&y===b);
+  return area==='ch3_beacon'&&[[6,11],[17,11],[12,5]].some(([a,b])=>x===a&&y===b);
+ }
+ function travel(){const {x,y}=player;
+  if(x===12&&y===15){
+   if(area==='ch3_port'){area='village';player.x=12;player.y=13;templeMove=null;objective('メニューから港へ戻れます');saveGame(true);return;}
+   if(area==='ch3_beacon'){enter('ch3_lighthouse',12,3);return;}
+   enter('ch3_port',area==='ch3_shore'?3:area==='ch3_observatory'?6:18,area==='ch3_shore'?9:3);return;
+  }
+  if(area==='ch3_port'){
+   if(x===2&&y===9){enter('ch3_shore');return;}
+   if(x===6&&y===2&&state.boatRescued){enter('ch3_observatory');return;}
+   if(x===18&&y===2&&state.authRead){enter('ch3_lighthouse');return;}
+  }
+  if(area==='ch3_lighthouse'&&x===12&&y===2&&state.transferPrepared){enter('ch3_beacon');return;}
+ }
+ function report(){say([['灯台守','航路灯を残してくれた。船が帰り、港も息を吹き返したよ。'],['船大工見習い',state.toolsReturned?'工具箱も戻って、修理の準備はできた。海図にない島へ行くなら、手伝わせて。':'家族の船を助けてくれて、ありがとう。海図にない島へ行く準備も、みんなで始めるよ。'],['ミオ','古い認証鍵と、記録から消えた島。どちらも、この座標につながっている。'],['わるびー','前は、一人で追った。でも今度は、みんなと行く。'],['あおびー','うん。向こうに残った光も、暮らしている人たちも、確かめに行こう。'],['語り','星を映さなかった海に、航路灯の輪が揺れる。その先には、どの海図にも描かれていない島があった。']],()=>{state.reported=true;objective(goal());sync();showRecord();});}
+ function showRecord(){
+  $('chapter3SaveStatus').textContent=saveGame(true)?'クリア状態を保存しました。':'保存できませんでした。探索に戻ってセーブを再試行してください。';
+  $('chapter3ClearSummary').textContent='航路灯：点灯 ／ 異常転送：停止'+(state.toolsReturned?' ／ 工具箱を返却':'');
+  chapterClearOpen=true;clearStick();$('chapter3Clear').hidden=false;syncEdgeControls();$('chapter3Explore').focus();
+ }
+ const oldWall=wall;wall=function(x,y){return here()?blocked(x,y):oldWall(x,y)};
+ const oldMove=move;move=function(dx,dy){
+  if(!here()){oldMove(dx,dy);return;}
+  if(!s101CanInteract()||playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;
+  player.dir=dx<0?'left':dx>0?'right':dy<0?'up':'down';const nx=player.x+dx,ny=player.y+dy;
+  if(!blocked(nx,ny)){const ox=player.x,oy=player.y;player.x=nx;player.y=ny;templeMove={x:ox,y:oy,tx:nx,ty:ny,area,time:performance.now()};travel();}saveGame(true);
+ };
+ const oldAction=action;action=function(){if(!here()||!s101CanInteract()){oldAction();return;}if(playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;templeAttack=null;interact();if($('dialog').style.display!=='block')saveGame(true);};
+ const oldStep=simulationStep;simulationStep=function(t){oldStep(t);
+  if(area!=='ch3_beacon'||state.stopped||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
+  clock+=1000/60;if(!due){due=clock+900;return;}if(clock<due)return;
+  if(cycle==='waiting'){cycle='warning';due=clock+1100;toast('赤い床に波が押し寄せる。反対側へ！');return;}
+  if(cycle==='warning'){
+   cycle='open';due=clock+3000;
+   if(wave===0?player.x<=11:player.x>=12){player.hp--;if(player.hp<=0){player.hp=3;state.valves=[false,false];player.x=12;player.y=14;templeMove=null;cycle='waiting';due=clock+1000;wave=0;toast('入口で回復。航路灯の電源は確保したまま再挑戦できる');}updateHud();saveGame(true);}return;
+  }wave=1-wave;cycle='waiting';due=clock+900;
+ };
+ const oldDraw=draw;draw=function(){if(!here()){oldDraw();return;}
+  const g=ctx;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=false;const cy=Math.max(0,Math.min(180,templePose().y*40-250));g.save();g.translate(0,-cy);
+  const rect=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},label=(s,x,y)=>{g.font='600 13px sans-serif';g.textAlign='center';const w=g.measureText(s).width+18;rect(x-w/2,y-15,w,24,'#122d3eea');g.fillStyle='#f1e5be';g.fillText(s,x,y+2)},post=(x,y,on=false)=>{rect(x*40+16,y*40+12,8,28,'#6e6451');rect(x*40+9,y*40+3,22,19,on?'#ffe2a0':'#91acb4');rect(x*40+12,y*40+6,16,12,on?'#fff0c5':'#48636c');};
+  for(let y=0;y<18;y++)for(let x=0;x<24;x++){rect(x*40,y*40,40,40,(x+y)%2?'#697d79':'#6e817c');rect(x*40+3,y*40+3,34,2,'#8e9b8b');if(x===0||x===23||y===0||y===17){rect(x*40,y*40,40,40,'#254d63');rect(x*40+5,y*40+18,25,2,'#75b8c0');}}
+  label(names[area],480,72);
+  if(area==='ch3_port'){
+   rect(40,80,150,560,'#285b72');for(let y=100;y<620;y+=40)rect(50,y,90,2,'#77b5bf');
+   for(const [x,y,w,h,c]of [[305,145,190,115,'#927961'],[590,315,200,115,'#738685']]){rect(x,y,w,h,c);rect(x-8,y-12,w+16,22,'#415e6c');for(let xx=x+15;xx<x+w-10;xx+=45)rect(xx,y+22,25,34,'#d8c79b');}
+   label('灯台守',420,300);label('船大工見習い',700,426);label('港の案内',260,424);post(10,7);post(17,10);post(6,10);label('防波堤 ←',110,360);label('海底観測所',260,110);label('灯台',740,110);label('村へ',500,640);
+   if(state.boatRescued){rect(75,430,100,35,'#b79460');rect(100,410,50,25,'#e3d6aa');}if(state.stopped)post(20,3,true);
+  }
+  if(area==='ch3_shore'){
+   rect(120,200,480,200,state.lowTide?'#9b9c7e':'#286b85');for(let y=218;y<390;y+=27)rect(130+(y%3)*20,y,420,2,state.lowTide?'#b8b48e':'#8ec8c6');
+   for(const [i,x]of [5,9,13].entries())post(x,11,state.beacons>i);post(18,12);post(5,13);if(state.lowTide&&!state.toolsFound){rect(368,250,24,18,'#b39362');rect(376,246,9,5,'#e2c690');}label(state.lowTide?'潮待ち：干潮':'潮待ち：満潮',740,486);label('観測メモ',220,550);label('港へ戻る',500,640);
+  }
+  if(area==='ch3_observatory'){
+   for(let x=1;x<23;x++)if(!state.pumps.every(Boolean)||x!==13)rect(x*40,320,40,27,'#285a69');for(const [i,x]of [6,17].entries()){post(x,11,state.pumps[i]);label('排水弁',x*40+20,435);}post(12,4,state.authRead);post(5,4,state.photoRead);label('転送記録',500,165);label('古い写真',220,165);label('港へ戻る',500,640);
+  }
+  if(area==='ch3_lighthouse'){
+   for(let x=1;x<23;x++)if(!state.transferPrepared||x!==13)rect(x*40,320,40,24,'#243f4d');post(6,11,state.lampSeparated);post(17,11,state.transferPrepared);label('航路灯の独立電源',260,435);label('転送経路の隔離',700,435);label('北：潮の番人へ',500,110);label('港へ戻る',500,640);
+   g.strokeStyle=state.lampSeparated?'#ffe2a0':'#7c9caa';g.lineWidth=4;g.beginPath();g.moveTo(260,450);g.lineTo(260,280);g.lineTo(700,280);g.stroke();
+  }
+  if(area==='ch3_beacon'){
+   if(!state.stopped&&cycle==='warning')for(let y=1;y<17;y++)for(let x=1;x<23;x++)if(wave===0?x<=11:x>=12)rect(x*40+2,y*40+2,36,36,'#e3867ca0');
+   rect(450,105,100,75,state.stopped?'#789e9b':'#557d91');g.strokeStyle=cycle==='open'||state.stopped?'#ffe0a1':'#8cd3d8';g.lineWidth=5;g.beginPath();g.arc(500,142,26,0,7);g.stroke();
+   for(const [i,x]of [6,17].entries()){post(x,11,state.valves[i]);label('水門'+(state.valves[i]?'・固定':''),x*40+20,435);}post(12,5,state.stopped);label('停止端末',500,235);label('航路灯は独立電源で点灯中',500,90);label('分配室へ戻る',500,640);
+  }
+  const pose=templePose(),px=pose.x*40,py=pose.y*40;g.fillStyle='#17343b80';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();
+  if(pic.complete&&pic.naturalWidth){const i={down:0,up:1,left:2,right:3}[player.dir]||0,cw=pic.naturalWidth/4,ch=pic.naturalHeight/2;g.drawImage(pic,i*cw,0,cw,ch,px-7,py-21,54,54);}g.restore();
+ };
+ const oldSnapshot=snapshot;snapshot=function(){return {...oldSnapshot(),chapter3:{...state,pumps:[...state.pumps],valves:[...state.valves]}}};
+ function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of Object.keys(n))if(typeof n[k]==='boolean')n[k]=s[k]===true;n.beacons=Number.isInteger(s.beacons)&&s.beacons>=0&&s.beacons<=3?s.beacons:0;for(const k of ['pumps','valves'])if(Array.isArray(s[k])&&s[k].length===2)n[k]=s[k].map(v=>v===true);return n;}
+ const oldRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter3);$('chapter3Clear').hidden=true;clock=0;cycle='waiting';due=0;wave=0;const r=oldRestore(d);if(r===false)return false;if(here()){state.started=true;objective(goal());templeMove=null;}else if(state.started)objective(goal());sync();return r;};
+ const oldControls=storyControls;storyControls=function(){oldControls();sync();};
+ const oldJournal=openQuestJournal;openQuestJournal=function(){oldJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第3章・星を映さぬ港】\n'+[['帰還船の救助',state.boatRescued],['管理者認証鍵の記録',state.authRead],['航路灯の電源を確保',state.lampSeparated],['異常転送を停止',state.stopped],['第3章クリア',state.reported],['任意：工具箱を返却',state.toolsReturned]].map(([s,b])=>(b?'✓ ':'・')+s).join('\n')+'\n\n'+$('questJournalList').textContent;};
+ document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter3Start" type="button" hidden>第3章へ出発</button><button id="chapter3Record" type="button" hidden>第3章の記録</button>');
+ $('chapter3Start').onclick=start;$('chapter3Record').onclick=()=>{if(s101CanInteract()&&state.reported)showRecord();};$('questJournal').onclick=openQuestJournal;sync();
+ return {start,getState:()=>({...state,pumps:[...state.pumps],valves:[...state.valves]}),getBattleState:()=>({cycle,wave})};
+})();
+
+</script><style>#chapter3Clear[hidden]{display:none}#chapter3Clear{position:fixed;inset:0;z-index:52;display:grid;place-items:center;background:#102c43eb;padding:12px}#chapter3Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#284d60;border:1px solid #d7cc9f;border-radius:14px;padding:24px;color:#f0e9cb}#chapter3Clear h2{color:#ffe0a0}#chapter3Clear p{line-height:1.7}#chapter3Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#203c49;font-weight:bold}</style><div id="chapter3Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter3ClearTitle"><section><h2 id="chapter3ClearTitle">第3章 クリア</h2><p>船を導く灯りは、消えなかった。<br>次の星図は、海図にない島へ。</p><p id="chapter3ClearSummary"></p><p id="chapter3SaveStatus"></p><button id="chapter3Explore" type="button">港と村の探索を続ける</button></section></div><script>$('chapter3Explore').onclick=()=>{$('chapter3Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter3Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter3Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter3Explore').focus();}});</script></body></html>

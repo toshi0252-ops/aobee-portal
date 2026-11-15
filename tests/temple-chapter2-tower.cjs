@@ -33,7 +33,7 @@ function complete(trust,recovery){let g=route(['water','cave','canopy'],true),{r
  walk(10,7);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().reported'),true);assert.equal(run('chapterClearOpen'),true);assert.equal(g.el('chapter2Clear').hidden,false);
  const xy=run('player.x+","+player.y');run('move(1,0)');assert.equal(run('player.x+","+player.y'),xy);
  run("$('chapter2Explore').onclick()");assert.equal(run('chapterClearOpen'),false);g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第2章クリア/);assert.equal(run('chapter1Story.reportSeen'),true);
- run("$('chapter2Record').onclick()");assert.equal(g.el('chapter2Clear').hidden,false);run("$('chapter2Explore').onclick();TempleChapter2.start()");flush();assert.equal(run('area'),'ch2_hub');
+ run("$('chapter2Record').onclick()");assert.equal(g.el('chapter2Clear').hidden,false);run("$('chapter2Explore').onclick();TempleChapter2.start()");flush();assert.equal(run('area'),'ch2_hub');return g;
 }
-complete('trust','rapid');complete('ask','gentle');
+if(require.main===module){complete('trust','rapid');complete('ask','gentle');}else module.exports={complete};
 console.log('PASS chapter 2 complete: both trust/recovery branches, legacy gate save, rescue, 4 floors, wrong/correct beams, checkpoint per floor, boss shielding/cooperation, defeat/retry, mid-boss reload, village ending, clear modal/record/free exploration');
