@@ -7,7 +7,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
   const page=await browser.newPage({viewport:{width:960,height:540}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   const url=process.env.TEMPLE_URL||'http://127.0.0.1:8787/games/aobee_star_temple_portal.html';
-  await page.goto(url);await page.waitForFunction(()=>TempleVisuals.assetsReady());
+  await page.goto(url);await page.waitForFunction(()=>TempleVisuals.assetsReady()&&TemplePresentation.assetsReady());
   await page.locator('#begin').click();await page.evaluate(()=>{while($('dialog').style.display==='block')nextLine()});
   const examples=['village','forest','annex','ch2_hub','ch2_tower4','ch3_port','ch3_shore','ch4_settlement','ch4_chart','ch5_court','ch5_core','ch5_festival'];
   const places=await page.evaluate(()=>Object.keys(templePlaces));
