@@ -20,7 +20,7 @@
 | 9 | [あおびーの星守り](games/aobee_star_guard_v1_complete.html) | バラエティ | `aobee_star_guard_v1_complete.html` | `guard` |
 | 10 | [走れ！あおびー](games/hashire_aobee_v3.2.html) | アクション | `hashire_aobee_v3.2.html` | `runner` |
 | 11 | [あおびーのピコピコフィッシング](games/aobee_pico_fishing_v68_dual_guide.html) | 釣り | `aobee_pico_fishing_v68_dual_guide.html` | `fishing` |
-| 12 | [あおびーと星の神殿](games/aobee_star_temple_portal.html?v=32) | アクション | `aobee_star_temple_portal.html`（第1章・開発中） | `temple` |
+| 12 | [あおびーと星の神殿](games/aobee_star_temple_portal.html?v=temple-readable-20261116) | アクション | `aobee_star_temple_portal.html`（全5章メインストーリー試遊版） | `temple` |
 | 13 | [押して！あおびー](games/oshite_aobee_superhard_reina_v15_hint.html?v=progress16) | パズル | `oshite_aobee_superhard_reina_v15_hint.html` | `puzzle` |
 | 14 | [あおびー群星絵巻](games/yabou/index.html?v=logistics111d) | SLG | `games/yabou/index.html` と関連素材（v1.11d） | `yabou-gunsei-v1` |
 | 15 | [あおびーゴルフ](games/aobee_golf.html?v=golf35) | スポーツ | `aobee_golf.html`（配信識別子golf35、開発中） | `golf` |

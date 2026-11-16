@@ -1749,4 +1749,32 @@ function setStoryStill(key){
 @media(prefers-reduced-motion:no-preference){#eventStill[data-scene=grandFestival] .templeFirework{animation:templeFirework 2.8s ease-out infinite;animation-delay:var(--delay)}@keyframes templeFirework{0%{transform:scale(.1);opacity:0}20%{opacity:1}85%,100%{transform:scale(2);opacity:0}}}
 </style><script>
 for(const [left,top,color,delay]of [[18,18,'#ffe6a2','0s'],[73,14,'#ffb9cf','-.9s'],[87,33,'#b4e7ff','-1.8s'],[43,12,'#d4ffc2','-1.4s']]){const spark=document.createElement('span');spark.className='templeFirework';spark.setAttribute('aria-hidden','true');spark.style.left=left+'%';spark.style.top=top+'%';spark.style.color=color;spark.style.setProperty('--delay',delay);$('eventStill').appendChild(spark);}
+</script><style>
+/* Keep long dialogue readable on short landscape screens. */
+#wrap #dialog{max-height:min(65%,calc(var(--vh,100dvh) - 64px));display:none;flex-direction:column;overflow:hidden}
+#wrap #dialog[style*="display: block"],#wrap #dialog[style*="display:block"]{display:flex!important}
+#speaker,#hint{flex-shrink:0}
+#line{min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;white-space:pre-line;overflow-wrap:anywhere;scrollbar-width:thin}
+#dialogNext{min-width:96px;min-height:44px;padding:5px 12px;border:1px solid #bca87c;border-radius:8px;background:#24434c;color:#ffe7a3;font:inherit;touch-action:manipulation}
+#dialogNext:focus-visible{outline:2px solid #fff1bd;outline-offset:2px}
+@media(max-height:430px){#wrap #dialog{padding:7px 10px}#speaker{margin-bottom:2px}#hint{margin-top:3px}#line{line-height:1.6}}
+</style><script>
+// A swipe reads the current line; only a deliberate tap advances it.
+$('hint').innerHTML='<button id="dialogNext" type="button">次へ ▾</button>';
+$('line').setAttribute('aria-live','polite');
+let dialogueTouchOrigin=null,dialogueDragged=false;
+$('dialog').addEventListener('pointerdown',e=>{dialogueTouchOrigin={x:e.clientX,y:e.clientY};dialogueDragged=false;});
+$('dialog').addEventListener('pointermove',e=>{if(dialogueTouchOrigin&&Math.hypot(e.clientX-dialogueTouchOrigin.x,e.clientY-dialogueTouchOrigin.y)>10)dialogueDragged=true;});
+$('dialog').addEventListener('pointercancel',()=>{dialogueTouchOrigin=null;dialogueDragged=true;});
+$('dialog').addEventListener('pointerup',()=>{dialogueTouchOrigin=null;});
+$('dialog').onclick=()=>{if(!dialogueDragged)nextLine();dialogueDragged=false;};
+$('dialogNext').onclick=e=>{e.stopPropagation();if(!dialogueDragged)nextLine();dialogueDragged=false;};
+const readableNextLine=nextLine;
+nextLine=function(){
+ readableNextLine();$('line').scrollTop=0;
+ const speaking=$('dialog').style.display==='block';
+ $('act').innerHTML=speaking?'次へ ▾':'調べる<br>攻撃';
+ $('act').setAttribute('aria-label',speaking?'会話を次へ進める':'調べる・攻撃');
+ $('dialogNext').textContent=dialog.length||pendingDialogues.length?'次へ ▾':'読み終える ✓';
+};
 </script></body></html>
