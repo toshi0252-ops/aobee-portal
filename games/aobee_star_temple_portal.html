@@ -126,7 +126,7 @@ function annexMove(){
   runeOrder=0;objective(annexObjective());toast('光が種へ戻った。体力やアイテムは失わない');say([['あおびー','花を咲かせるには、その前に何が必要かな。'],['あおびー','壁画をもう一度見てみよう。光った石板は踏み直しても大丈夫だよ。']]);
  }
 }
-function readAnnexMural(){say([['古い壁画','土に眠る小さな命。雨を受けて伸びる二枚の葉。やがて、光へひらく花。'],['あおびー','床にも同じ印がある。育っていく順に、光を渡すのかな。']],()=>objective(annexObjective()))}
+function readAnnexMural(){say([['古い壁画','土に眠る小さな命。雨を受けて伸びる二枚の葉。やがて、光へひらく花。'],['あおびー','床にも同じ印がある。育っていく順に、光を渡すのかな。']],()=>objective(annexObjective()),'mural')}
 let ruinSwitches=new Set(),ruinKey=false,ruinBossHP=5,ruinBossX=12,ruinBossY=3,ruinBossClock=0,ruinComplete=false,ruinIntro=false,bossIntro=false,bossAttackAt=0,bossWarnAt=0,bossLastHit=0;
 function ruinMove(){
  if(player.x===3&&player.y===12){change('annex');objective(annexObjective());return}
@@ -140,14 +140,14 @@ function ruinMove(){
 const villageNpcs=[{id:'elder',x:10,y:6},{id:'herbalist',x:5,y:5},{id:'toto',x:14,y:5}];
 function facingNpc(id){const d={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.dir];return area==='village'&&villageNpcs.some(n=>n.id===id&&n.x===player.x+d[0]&&n.y===player.y+d[1]);}
 const pendingDialogues=[];
-function say(lines,fn){
+function say(lines,fn,still=null){
  templeAttack=null;clearStick();
- if($('dialog').style.display==='block'){pendingDialogues.push({lines:lines.slice(),fn});return;}
- dialog=lines.slice();dialogFn=fn||null;nextLine();
+ if($('dialog').style.display==='block'){pendingDialogues.push({lines:lines.slice(),fn,still});return;}
+ setStoryStill(still);dialog=lines.slice();dialogFn=fn||null;nextLine();
 }function nextLine(){
  if(dialog.length){const [who,line]=dialog.shift();$('dialog').style.display='block';$('speaker').textContent=who;$('line').textContent=line;return;}
- $('dialog').style.display='none';const callback=dialogFn;dialogFn=null;if(callback)callback();
- if($('dialog').style.display!=='block'&&pendingDialogues.length){const next=pendingDialogues.shift();say(next.lines,next.fn);}
+ $('dialog').style.display='none';setStoryStill(null);const callback=dialogFn;dialogFn=null;if(callback)callback();
+ if($('dialog').style.display!=='block'&&pendingDialogues.length){const next=pendingDialogues.shift();say(next.lines,next.fn,next.still);}
  if($('start').style.display==='none'&&$('dialog').style.display!=='block')saveGame(true);
 }
 function objective(s){$('objective').textContent=s}function updateHud(){$('hp').textContent='♥'.repeat(player.hp)+'♡'.repeat(3-player.hp);$('stars').textContent=stars}function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',1700)}function change(a,spawn=null){area=a;if(a==='annex'){annexLastTile=null;player.x=12;player.y=14;objective(annexObjective())}else if(a==='ruins'){player.x=12;player.y=14;objective(ruinObjective());if(!ruinIntro){ruinIntro=true;say([['あおびー','ここが森の地下遺跡……。古い歯車がまだ動いてる！'],['記録','かけらの光を補助装置へ。暴走を抑え、光の流れを保つ。'],['あおびー','この光は、ここを守るためにも使われていたんだ。']])}}else if(a==='forest'){player.x=12;player.y=14;if(!forestEnemiesInitialized){forestEnemiesInitialized=true;enemy=[{x:5,y:5,hp:2},{x:18,y:10,hp:2}]}}else{player.x=12;player.y=13;
@@ -737,7 +737,7 @@ function reportChapter1(){say([
  ['ミオ','わるびーも、いつか一緒に来てくれるかな。'],['あおびー','うん。今度はちゃんと、お礼を言いたいな。'],
  ['語り','森の入口で、黒い耳が一度だけ揺れた。わるびーは振り返らず、さらに奥へ続く道を見つめていた。'],
  ['わるびー','……まだ、ひとつ止めただけだ。'],['語り','ほしの村の夜を守った、小さな冒険。新しい謎を胸に、あおびーたちは最初の一歩を踏み出した。']
- ],()=>{chapter1Story.mode='reported';chapter1Story.reportSeen=true;chapterFinished=true;phase=5;end=false;storyControls();objective('第1章クリア！ 村や森の依頼を続けられるよ');showChapterClear();});}
+ ],()=>{chapter1Story.mode='reported';chapter1Story.reportSeen=true;chapterFinished=true;phase=5;end=false;storyControls();objective('第1章クリア！ 村や森の依頼を続けられるよ');showChapterClear();},'homecoming');}
 const storySnapshot=snapshot;
 snapshot=function(){return {...storySnapshot(),chapter1Story:{...chapter1Story}};};
 const storyRestore=restoreGame;
@@ -1714,4 +1714,24 @@ openQuestJournal=function(){
 };
 $('questJournal').onclick=openQuestJournal;
 
+</script><style>
+#eventStill[hidden]{display:none}
+#eventStill{position:absolute;inset:0;z-index:8;background:#07121c;pointer-events:none;display:grid;place-items:center}
+#eventStillImage{width:100%;height:100%;object-fit:contain}
+#wrap #dialog{z-index:9}
+@media(prefers-reduced-motion:no-preference){#eventStill{animation:templeStillFade .3s ease-out}@keyframes templeStillFade{from{opacity:0}to{opacity:1}}}
+</style><script>
+// Event art uses the existing dialogue pause and decision controls, with no new save flags.
+const templeEventArt={
+ mural:{src:'../assets/temple-events/ch1-mural.webp',alt:'地下遺跡で、種・芽・花が刻まれた壁画を見つめるあおびー'},
+ homecoming:{src:'../assets/temple-events/ch1-homecoming.webp',alt:'灯りの戻った村の広場で、小さな帰還祝いを迎えるあおびー'}
+};
+$('dialog').insertAdjacentHTML('beforebegin','<div id="eventStill" hidden><img id="eventStillImage" alt="" decoding="async"></div>');
+function setStoryStill(key){
+ const art=templeEventArt[key],panel=$('eventStill'),picture=$('eventStillImage');
+ panel.hidden=!art;if(!art){picture.dataset.scene='';return;}
+ picture.alt=art.alt;picture.onload=()=>{if(picture.dataset.scene===key&&$('dialog').style.display==='block')panel.hidden=false;};
+ picture.onerror=()=>{if(picture.dataset.scene===key)panel.hidden=true;};
+ picture.dataset.scene=key;picture.src=art.src;
+}
 </script></body></html>
