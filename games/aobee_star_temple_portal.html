@@ -1113,7 +1113,7 @@ const TempleChapter2=(()=>{
    if(s103Facing(17,9)){
     if(!state.trust){toast('まず西か東の石碑で、わるびーへの返事を選ぼう');return;}
     if(state.rescued){toast('足場の安全装置は固定されている');return;}
-    state.rescued=true;say([['語り','安全装置を押さえると、向こうからわるびーが留め金を戻した。崩れた足場がつながる。'],['あおびー','ひとりで抱えないで。一緒なら、ここまでできるよ。'],['わるびー','……わかってる。ありがとう。']],()=>objective(towerGoal()));return;
+    state.rescued=true;say([['語り','安全装置を押さえると、向こうからわるびーが留め金を戻した。崩れた足場がつながる。'],['あおびー','ひとりで抱えないで。一緒なら、ここまでできるよ。'],['わるびー','……わかってる。ありがとう。']],()=>objective(towerGoal()),'towerSafety');return;
    }
    if(s103Facing(12,5)){if(!state.rescued){toast('先に足場の安全装置を固定しよう');return;}enter('ch2_tower1');return;}
    return false;
@@ -1133,7 +1133,7 @@ const TempleChapter2=(()=>{
    if(state.stopped){for(const [x,choice]of [[8,'rapid'],[16,'gentle']])if(s103Facing(x,10)){
     if(state.recovery){toast('復旧方式は記録済み。村の長老へ報告しよう');return;}
     state.recovery=choice;
-    say([['ミオ',choice==='gentle'?'森へ必要な光を残しながら、少しずつ流れを戻すね。':'詰まった光路を先に開けて、森へ光を戻すね。根の手入れは続けよう。'],['森の守り手',state.leafHelped?'苗木も守ってくれたんだね。ぼくも、森の側の弁を押さえる。':'森の側は、ぼくが見ている。合図して。'],['語り','三つの光がそろい、森の根に暖かな灯りが戻った。'],['ミオ','でも、流れ出た光の行き先はまだ港のまま。村に戻って、次の星図を確かめよう。']],()=>{area='village';player.x=12;player.y=13;templeMove=null;clearStick();objective(towerGoal());saveGame(true);});return;
+    say([['ミオ',choice==='gentle'?'森へ必要な光を残しながら、少しずつ流れを戻すね。':'詰まった光路を先に開けて、森へ光を戻すね。根の手入れは続けよう。'],['森の守り手',state.leafHelped?'苗木も守ってくれたんだね。ぼくも、森の側の弁を押さえる。':'森の側は、ぼくが見ている。合図して。'],['語り','三つの光がそろい、森の根に暖かな灯りが戻った。'],['ミオ','でも、流れ出た光の行き先はまだ港のまま。村に戻って、次の星図を確かめよう。']],()=>{area='village';player.x=12;player.y=13;templeMove=null;clearStick();objective(towerGoal());saveGame(true);},'forestRestored');return;
    }return false;}
    if(state.bossStage===2&&s103Facing(6,11)){state.redirected=true;toast('西の光路を切り替え、防御が外れた！');objective(towerGoal());saveGame(true);return;}
    if(state.bossStage===3&&player.x===7&&player.y===11){state.held=true;say([['あおびー','わるびー、別の端末をお願い！'],['わるびー','こっちは押さえた。そっちの停止を頼む！']],()=>objective(towerGoal()));return;}
@@ -1724,7 +1724,9 @@ $('questJournal').onclick=openQuestJournal;
 // Event art uses the existing dialogue pause and decision controls, with no new save flags.
 const templeEventArt={
  mural:{src:'../assets/temple-events/ch1-mural.webp',alt:'地下遺跡で、種・芽・花が刻まれた壁画を見つめるあおびー'},
- homecoming:{src:'../assets/temple-events/ch1-homecoming.webp',alt:'灯りの戻った村の広場で、小さな帰還祝いを迎えるあおびー'}
+ homecoming:{src:'../assets/temple-events/ch1-homecoming.webp',alt:'灯りの戻った村の広場で、小さな帰還祝いを迎えるあおびー'},
+ towerSafety:{src:'../assets/temple-events/ch2-tower-safety.webp',alt:'根の中継塔で、あおびーとわるびーが協力して崩れかけた足場を支える'},
+ forestRestored:{src:'../assets/temple-events/ch2-forest-restored.webp',alt:'森の根に暖かな光が戻り、あおびーが見守る'}
 };
 $('dialog').insertAdjacentHTML('beforebegin','<div id="eventStill" hidden><img id="eventStillImage" alt="" decoding="async"></div>');
 function setStoryStill(key){

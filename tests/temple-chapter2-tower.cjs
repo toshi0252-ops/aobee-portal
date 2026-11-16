@@ -5,7 +5,7 @@ function complete(trust,recovery,help=true){let g=route(['water','cave','canopy'
  // A legacy opening save at the old door must not be stranded north of the new gap.
  const d=run('snapshot()');d.player={...d.player,x:12,y:6};const legacy=boot({key:run('SAVE_KEY'),value:JSON.stringify(d)});legacy.run('restoreGame(readSave())');assert.equal(legacy.run('player.y'),14);
  walk(trust==='trust'?8:16,11);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().trust'),trust);
- walk(17,10);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().rescued'),true);
+ walk(17,10);run("player.dir='up'");run('action()');assert.equal(g.el('eventStillImage').dataset.scene,'towerSafety');assert.equal(g.el('eventStill').hidden,false);flush();assert.equal(g.el('eventStill').hidden,true);assert.equal(run('TempleChapter2.getState().rescued'),true);
  walk(12,6);run("player.dir='up'");act();assert.equal(run('area'),'ch2_tower1');
  for(let f=1;f<=3;f++){
   walk(12,10);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().floors.length'),f-1);
@@ -29,7 +29,7 @@ function complete(trust,recovery,help=true){let g=route(['water','cave','canopy'
  walk(7,11);act();assert.equal(run('TempleChapter2.getState().held'),true);
  walk(3,14);while(run('TempleChapter2.getBattleState().cycle')==='open')run('simulationStep(1000)');ticksUntil('open');walk(12,6);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().stopped'),true);
  run('draw()');fs.writeFileSync('/tmp/temple-ch2-tower-stopped.png',g.canvas.toBuffer('image/png'));
- walk(recovery==='rapid'?8:16,11);run("player.dir='up'");act();assert.equal(run('area'),'village');assert.equal(run('TempleChapter2.getState().recovery'),recovery);
+ walk(recovery==='rapid'?8:16,11);run("player.dir='up'");run('action()');assert.equal(g.el('eventStillImage').dataset.scene,'forestRestored');assert.equal(g.el('eventStill').hidden,false);assert.equal(run('area'),'ch2_tower4');flush();assert.equal(g.el('eventStill').hidden,true);assert.equal(run('area'),'village');assert.equal(run('TempleChapter2.getState().recovery'),recovery);
  walk(10,7);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().reported'),true);assert.equal(run('chapterClearOpen'),true);assert.equal(g.el('chapter2Clear').hidden,false);
  const xy=run('player.x+","+player.y');run('move(1,0)');assert.equal(run('player.x+","+player.y'),xy);
  run("$('chapter2Explore').onclick()");assert.equal(run('chapterClearOpen'),false);g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第2章クリア/);assert.equal(run('chapter1Story.reportSeen'),true);
