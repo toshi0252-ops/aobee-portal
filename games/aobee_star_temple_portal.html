@@ -307,7 +307,7 @@ $('equipmentClose').onclick=closeEquipment;
 document.addEventListener('keydown',e=>{if(templeGearOpen){if(e.key==='Escape'){e.preventDefault();closeEquipment();}else if(e.key==='Tab'){e.preventDefault();const buttons=[$('equip-sword'),$('equip-spear'),$('equip-hammer'),$('equipmentClose')],i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?3:1))%4].focus();}}});
 window.addEventListener('blur',()=>{templeMove=null;templeAttack=null;});
 updateEquipment();
-</script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
+</script><script src="../assets/temple-visuals.js?v=art-20261116"></script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
 (()=>{
 const g=ctx,tile=40;let cameraY=0;
 function rect(x,y,w,h,c){g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
@@ -317,8 +317,8 @@ function star(x,y,r,c){g.fillStyle=c;g.beginPath();for(let n=0;n<10;n++){const a
 function label(text,x,y){g.font='600 11px sans-serif';g.textAlign='center';const width=g.measureText(text).width+20;rect(x-width/2,y-13,width,21,'#112e37d9');rect(x-width/2,y-13,2,21,'#dfc588');g.fillStyle='#f0dfb7';g.fillText(text,x,y+2);}
 function grass(x,y,seed,forestArea){rect(x,y,40,40,forestArea?'#345d4e':(seed%3?'#7d9c65':'#819f68'));for(let n=0;n<4;n++){const a=(seed*7+n*11)%35,b=(seed*13+n*9)%34;rect(x+a,y+b,2,3,forestArea?'#4d7a60':'#a6ba7c');rect(x+a+2,y+b+2,2,1,forestArea?'#3d6855':'#627f53');}if(seed%13===0){for(const [dx,dy]of [[0,0],[3,0],[0,3],[3,3]])rect(x+15+dx,y+19+dy,2,2,'#edd99c');rect(x+17,y+21,1,1,'#c2a55e');}}
 function stone(x,y,seed){rect(x,y,40,40,'#817f68');rect(x+2,y+3,36,15,seed%2?'#c5bf9b':'#bdb995');rect(x+1,y+21,20,15,'#b5b18e');rect(x+24,y+21,14,16,'#c3bd98');rect(x+4,y+5,30,2,'#d7d0aa');rect(x+3,y+37,34,2,'#737a60');}
-function tree(x,y,small=false){ellipse(x+22,y+38,23,8,'#173c3a66');rect(x+16,y+17,10,24,'#654d39');rect(x+18,y+18,3,22,'#98704b');for(const [dx,dy,r,c]of [[23,7,25,'#284f40'],[12,0,22,'#376c4d'],[32,-1,20,'#316144'],[22,-13,21,'#4b8055'],[15,-19,12,'#62915e']]){ellipse(x+dx,y+dy,r,r*.8,c);}rect(x+9,y-17,5,3,'#8aa366');rect(x+30,y-5,4,3,'#719459');}
-function house(x,y,roof){ellipse(x+82,y+126,93,17,'#193e3866');rect(x+1,y+37,158,85,'#5e5143');rect(x+5,y+38,150,76,'#d6c49b');rect(x+8,y+94,144,14,'#b8a67d');for(let k=0;k<5;k++)rect(x+8+k*30,y+38,5,72,'#91744d');rect(x+62,y+67,37,49,'#644b38');rect(x+66,y+71,29,43,'#8b6743');rect(x+70,y+75,3,37,'#a37f50');rect(x+89,y+91,3,3,'#f0cf78');rect(x+56,y+115,49,8,'#c1baa0');for(const wx of [21,112]){rect(x+wx,y+64,27,25,'#665942');rect(x+wx+3,y+67,21,18,'#79a6a1');rect(x+wx+12,y+67,2,19,'#ead6ac');rect(x+wx,y+89,28,5,'#6f5b40');rect(x+wx-2,y+96,32,7,'#8c6544');rect(x+wx,y+92,28,5,'#648357');rect(x+wx+6,y+90,4,4,'#edd2a2');rect(x+wx+20,y+91,4,4,'#df9b85');}
+function tree(x,y,small=false){if(TempleVisuals.sprite(g,0,x+20,y+44,76,88))return;ellipse(x+22,y+38,23,8,'#173c3a66');rect(x+16,y+17,10,24,'#654d39');rect(x+18,y+18,3,22,'#98704b');for(const [dx,dy,r,c]of [[23,7,25,'#284f40'],[12,0,22,'#376c4d'],[32,-1,20,'#316144'],[22,-13,21,'#4b8055'],[15,-19,12,'#62915e']]){ellipse(x+dx,y+dy,r,r*.8,c);}rect(x+9,y-17,5,3,'#8aa366');rect(x+30,y-5,4,3,'#719459');}
+function house(x,y,roof){if(TempleVisuals.sprite(g,1,x+80,y+130,180,170))return;ellipse(x+82,y+126,93,17,'#193e3866');rect(x+1,y+37,158,85,'#5e5143');rect(x+5,y+38,150,76,'#d6c49b');rect(x+8,y+94,144,14,'#b8a67d');for(let k=0;k<5;k++)rect(x+8+k*30,y+38,5,72,'#91744d');rect(x+62,y+67,37,49,'#644b38');rect(x+66,y+71,29,43,'#8b6743');rect(x+70,y+75,3,37,'#a37f50');rect(x+89,y+91,3,3,'#f0cf78');rect(x+56,y+115,49,8,'#c1baa0');for(const wx of [21,112]){rect(x+wx,y+64,27,25,'#665942');rect(x+wx+3,y+67,21,18,'#79a6a1');rect(x+wx+12,y+67,2,19,'#ead6ac');rect(x+wx,y+89,28,5,'#6f5b40');rect(x+wx-2,y+96,32,7,'#8c6544');rect(x+wx,y+92,28,5,'#648357');rect(x+wx+6,y+90,4,4,'#edd2a2');rect(x+wx+20,y+91,4,4,'#df9b85');}
 g.fillStyle='#493f35';g.beginPath();g.moveTo(x-15,y+47);g.lineTo(x+80,y-11);g.lineTo(x+176,y+47);g.closePath();g.fill();g.fillStyle=roof;g.beginPath();g.moveTo(x-11,y+40);g.lineTo(x+80,y-15);g.lineTo(x+172,y+40);g.closePath();g.fill();for(let row=0;row<5;row++){let yy=y-8+row*11,half=12+row*17;line(x+80-half,yy,x+80+half,yy,'#5b494044',2);}line(x-10,y+42,x+171,y+42,'#d3b079',4);rect(x+125,y-1,15,24,'#87765a');rect(x+122,y-4,21,6,'#b4a082');}
 function lantern(x,y){ellipse(x,y+8,17,6,'#24483b44');rect(x-3,y-29,6,36,'#69543b');rect(x-8,y-47,16,21,'#62523e');rect(x-5,y-44,10,14,'#e9c474');rect(x-4,y-43,3,12,'#fff0b0');rect(x-10,y-49,20,4,'#a28b59');}
 function npc(x,y,color,name){ellipse(x,y+15,14,5,'#193c3d55');rect(x-10,y-3,20,16,color);rect(x-8,y+12,6,5,'#514c44');rect(x+3,y+12,6,5,'#514c44');ellipse(x,y-12,10,11,'#ead2ad');rect(x-9,y-23,18,7,'#776b5a');rect(x-10,y-17,4,11,'#776b5a');rect(x-4,y-13,2,2,'#354348');rect(x+4,y-13,2,2,'#354348');label(name,x,y-34);}
@@ -353,6 +353,7 @@ draw=function(){
  if(plaza||path||ch==='=')stone(px,py,seed);if(forestPath){rect(px+2,py,36,40,'#8a8761');for(let k=0;k<3;k++)rect(px+7+k*10,py+8+(seed+k)%20,5,3,'#b3ae7d');}
  if(ch==='#'){rect(px,py,40,40,'#294d40');rect(px+2,py+3,36,7,'#4a7052');rect(px+2,py+13,17,14,'#3b5b48');rect(px+22,py+13,16,14,'#426750');rect(px+4,py+32,32,6,'#25493c');}
  }
+ TempleVisuals.ground(g,area,rows);
  if(area==='village'){
  house(120,80,'#9c6c50');house(440,80,'#6c8687');
  for(const [x,y]of [[305,254],[654,254],[320,421],[640,421]])lantern(x,y);
@@ -394,6 +395,7 @@ draw=function(){
  for(const [i,[x,y]]of runeSpots.entries()){const lit=annexSolved||i<runeOrder;ellipse(x*40+20,y*40+20,19,17,lit?'#e4c786':'#829697');g.font='600 17px sans-serif';g.textAlign='center';g.fillStyle='#233c47';plantMark(i,x*40+20,y*40+19,'#233c47');label(runeNames[i]+(lit?'・点灯':''),x*40+20,y*40+56);}
  rect(414,294,172,64,'#263e47');rect(418,298,164,56,'#b2ab8a');g.font='600 18px sans-serif';g.textAlign='center';g.fillStyle='#263e47';[0,1,2].forEach(i=>plantMark(i,450+i*50,326,'#263e47'));label('古い壁画・近づいて調べる',500,383);label('本堂へ',500,630);
  }
+ TempleVisuals.details(g,area);
  drawS101(g);drawS103(g);drawS104(g);drawS102(g);drawS105(g);drawChapter1Story(g);aobee(templePose().x*40,templePose().y*40);g.restore();
  const shade=g.createLinearGradient(0,0,0,H);shade.addColorStop(0,'#14343b28');shade.addColorStop(.45,'#ffffff00');shade.addColorStop(1,'#10283440');g.fillStyle=shade;g.fillRect(0,0,W,H);
 };
@@ -1012,9 +1014,10 @@ const TempleChapter2=(()=>{
    if(edge){rect(px,py,40,40,'#15382f');rect(px+4,py+5,32,22,'#366850');}
    else{rect(px+(x*7+y*3)%30+3,py+(y*11)%32,3,2,'#659168');}
   }
+  TempleVisuals.ground(g,area);
   // Edge canopies and floor details stay on blocked boundary tiles.
   if(area!=='ch2_cave')for(let y=0;y<18;y++)for(const x of [0,23]){
-   const px=x*40+20,py=y*40+16;rect(px-4,py+12,8,24,'#624f38');
+   const px=x*40+20,py=y*40+16;if(TempleVisuals.sprite(g,0,px,py+35,72,92))continue;rect(px-4,py+12,8,24,'#624f38');
    for(const [dx,dy,r,c]of [[0,0,22,'#173d32'],[-10,-5,14,'#326650'],[9,-9,13,'#3d7357']]){g.fillStyle=c;g.beginPath();g.arc(px+dx,py+dy,r,0,7);g.fill();}
   }
   const plaque=(x,y,c='#b4b99a')=>{rect(x*40+7,y*40+10,26,25,'#254049');rect(x*40+10,y*40+7,20,24,c);rect(x*40+13,y*40+13,14,2,'#4f665d');rect(x*40+13,y*40+19,10,2,'#4f665d');};
@@ -1026,7 +1029,7 @@ const TempleChapter2=(()=>{
    plaque(12,8);plaque(17,9,'#ccb580');label('北の結界・調べる',500,195);label('星図と観測メモ',500,320);label('道標：'+['北','東','南','西'][state.wind],700,355);label('村へ',500,640);
    for(let i=0;i<6;i++){rect(590+i*32,270+(i%2)*14,12,5,'#d5d790');}label('葉は東へ →',730,250);
   }
-  if(area==='ch2_hub'){label('水辺 ←',110,360);label('樹冠 →',850,360);label('洞窟',260,88);label('中継塔 '+state.records.length+'/3',500,110);label('森の守り手',620,375);rect(610,355,20,20,'#99b99a');label('結界へ',500,640);}
+  if(area==='ch2_hub'){label('水辺 ←',110,360);label('樹冠 →',850,360);label('洞窟',260,88);label('中継塔 '+state.records.length+'/3',500,110);TempleVisuals.person(g,620,380,'森の守り手','#8cad98');label('結界へ',500,640);}
   if(area==='ch2_water'){
    rect(40,355,880,45,'#437e92');for(let i=0;i<12;i++)rect(60+i*70,366+(i%3)*8,34,2,'#a1d1c2');
    rect(326,state.bridge?350:444,28,state.bridge?58:28,'#b29464');label(state.bridge?'流木の橋':'流木・南から押す',340,state.bridge?340:438);plaque(17,6);rect(731,496,18,8,'#795d3c');rect(739,478,3,19,state.leafHelped?'#a3cf80':'#8e9564');for(const dx of [-6,6]){g.fillStyle=state.leafHelped?'#a3cf80':'#8e9564';g.beginPath();g.ellipse(740+dx,482,8,4,dx<0?.5:-.5,0,7);g.fill();}label('観測記録',700,245);label(state.leafHelped?'芽吹いた苗木':'乾いた苗木',740,495);
@@ -1046,6 +1049,7 @@ const TempleChapter2=(()=>{
   if(area.startsWith('ch2_tower')&&area!=='ch2_tower_gate'){
    // Tower stonework and roots use the same world coordinates as collisions.
    for(let y=1;y<17;y++)for(let x=1;x<23;x++){rect(x*40,y*40,40,40,(x+y)%2?'#486465':'#4b6868');rect(x*40+3,y*40+3,34,2,'#69807a');}
+   TempleVisuals.ground(g,area);
    label(titles[area],480,72);const f=floor();
    if(f<4){
     for(let x=1;x<23;x++)if(!state.floors.includes(f)||x!==13)rect(x*40,320,40,28,'#1c393e');
@@ -1063,6 +1067,7 @@ const TempleChapter2=(()=>{
    label('南：前の層へ戻る',500,640);
   }
   if(['ch2_water','ch2_canopy','ch2_cave'].includes(area))label('三叉路へ戻る',500,640);
+  TempleVisuals.details(g,area);
   const pose=templePose(),px=pose.x*40,py=pose.y*40;
   g.fillStyle='#09282c88';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();
   // Reuse the approved atlas; no new character design or generated artwork.
@@ -1289,13 +1294,14 @@ const TempleChapter3=(()=>{
  };
  const oldDraw=draw;draw=function(){if(!here()){oldDraw();return;}
   const g=ctx;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=false;const cy=Math.max(0,Math.min(180,templePose().y*40-250));g.save();g.translate(0,-cy);
-  const rect=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},label=(s,x,y)=>{g.font='600 13px sans-serif';g.textAlign='center';const w=g.measureText(s).width+18;rect(x-w/2,y-15,w,24,'#122d3eea');g.fillStyle='#f1e5be';g.fillText(s,x,y+2)},post=(x,y,on=false)=>{rect(x*40+16,y*40+12,8,28,'#6e6451');rect(x*40+9,y*40+3,22,19,on?'#ffe2a0':'#91acb4');rect(x*40+12,y*40+6,16,12,on?'#fff0c5':'#48636c');};
+  const rect=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},label=(s,x,y)=>{g.font='600 13px sans-serif';g.textAlign='center';const w=g.measureText(s).width+18;rect(x-w/2,y-15,w,24,'#122d3eea');g.fillStyle='#f1e5be';g.fillText(s,x,y+2)},post=(x,y,on=false)=>{rect(x*40+16,y*40+12,8,28,'#6e6451');rect(x*40+9,y*40+3,22,19,on?'#ffe2a0':'#91acb4');rect(x*40+12,y*40+6,16,12,on?'#fff0c5':'#48636c');TempleVisuals.terminal(g,x*40+20,y*40+20,on);};
   for(let y=0;y<18;y++)for(let x=0;x<24;x++){rect(x*40,y*40,40,40,(x+y)%2?'#697d79':'#6e817c');rect(x*40+3,y*40+3,34,2,'#8e9b8b');if(x===0||x===23||y===0||y===17){rect(x*40,y*40,40,40,'#254d63');rect(x*40+5,y*40+18,25,2,'#75b8c0');}}
+  TempleVisuals.ground(g,area);
   label(names[area],480,72);
   if(area==='ch3_port'){
    rect(40,80,150,560,'#285b72');for(let y=100;y<620;y+=40)rect(50,y,90,2,'#77b5bf');
-   for(const [x,y,w,h,c]of [[305,145,190,115,'#927961'],[590,315,200,115,'#738685']]){rect(x,y,w,h,c);rect(x-8,y-12,w+16,22,'#415e6c');for(let xx=x+15;xx<x+w-10;xx+=45)rect(xx,y+22,25,34,'#d8c79b');}
-   label('灯台守',420,300);label('船大工見習い',700,426);label('港の案内',260,424);post(10,7);post(17,10);post(6,10);label('防波堤 ←',110,360);label('海底観測所',260,110);label('灯台',740,110);label('村へ',500,640);
+   for(const [x,y,w,h,c]of [[305,145,190,115,'#927961'],[590,315,200,115,'#738685']]){TempleVisuals.house(g,x,y,w,h,'#3f7186');}
+   TempleVisuals.person(g,420,300,'灯台守','#849ab5');TempleVisuals.person(g,700,420,'船大工見習い','#b09a76');TempleVisuals.person(g,260,420,'港の案内','#87a6a0');label('防波堤 ←',110,360);label('海底観測所',260,110);label('灯台',740,110);label('村へ',500,640);
    if(state.boatRescued){rect(75,430,100,35,'#b79460');rect(100,410,50,25,'#e3d6aa');}if(state.stopped)post(20,3,true);
   }
   if(area==='ch3_shore'){
@@ -1314,6 +1320,7 @@ const TempleChapter3=(()=>{
    rect(450,105,100,75,state.stopped?'#789e9b':'#557d91');g.strokeStyle=cycle==='open'||state.stopped?'#ffe0a1':'#8cd3d8';g.lineWidth=5;g.beginPath();g.arc(500,142,26,0,7);g.stroke();
    for(const [i,x]of [6,17].entries()){post(x,11,state.valves[i]);label('水門'+(state.valves[i]?'・固定':''),x*40+20,435);}post(12,5,state.stopped);label('停止端末',500,235);label('航路灯は独立電源で点灯中',500,90);label('分配室へ戻る',500,640);
   }
+  TempleVisuals.details(g,area);
   const pose=templePose(),px=pose.x*40,py=pose.y*40;g.fillStyle='#17343b80';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();
   if(pic.complete&&pic.naturalWidth){const i={down:0,up:1,left:2,right:3}[player.dir]||0,cw=pic.naturalWidth/4,ch=pic.naturalHeight/2;g.drawImage(pic,i*cw,0,cw,ch,px-7,py-21,54,54);}g.restore();
  };
@@ -1452,12 +1459,13 @@ const TempleChapter4=(()=>{
  };
  const oldDraw=draw;draw=function(){if(!here()){oldDraw();return;}
   const g=ctx;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=false;const cy=Math.max(0,Math.min(180,templePose().y*40-250));g.save();g.translate(0,-cy);
-  const rect=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},label=(s,x,y)=>{g.font='600 13px sans-serif';g.textAlign='center';const w=g.measureText(s).width+18;rect(x-w/2,y-15,w,24,'#272c42ed');g.fillStyle='#f0e4c6';g.fillText(s,x,y+2)},post=(x,y,on=false)=>{rect(x*40+7,y*40+6,26,29,on?'#c3d2b1':'#9da4ad');rect(x*40+11,y*40+12,18,3,'#4e6470');rect(x*40+11,y*40+19,13,3,'#4e6470');};
+  const rect=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},label=(s,x,y)=>{g.font='600 13px sans-serif';g.textAlign='center';const w=g.measureText(s).width+18;rect(x-w/2,y-15,w,24,'#272c42ed');g.fillStyle='#f0e4c6';g.fillText(s,x,y+2)},post=(x,y,on=false)=>{rect(x*40+7,y*40+6,26,29,on?'#c3d2b1':'#9da4ad');rect(x*40+11,y*40+12,18,3,'#4e6470');rect(x*40+11,y*40+19,13,3,'#4e6470');TempleVisuals.terminal(g,x*40+20,y*40+20,on);};
   for(let y=0;y<18;y++)for(let x=0;x<24;x++){rect(x*40,y*40,40,40,(x+y)%2?'#666e80':'#6b7383');rect(x*40+3,y*40+3,34,2,'#88929c');if(x===0||x===23||y===0||y===17){rect(x*40,y*40,40,40,'#2c3e58');rect(x*40+8,y*40+17,25,2,'#7a9dad');}}
+  TempleVisuals.ground(g,area);
   label(names[area],480,72);
   if(area==='ch4_landing'){rect(40,80,150,560,'#365a77');for(let y=100;y<620;y+=30)rect(55,y,100,2,'#8ca9b3');post(6,9,state.survey);post(17,6,state.cogFound);label('古い碑文',260,365);label('歯車の落とし物',700,245);label('集落へ',500,110);label('港へ戻る',500,640);}
   if(area==='ch4_settlement'){
-   rect(335,160,160,95,'#8d8190');rect(327,150,176,20,'#535b73');rect(605,305,155,95,'#788590');rect(598,295,169,20,'#525f75');post(10,7);post(17,10,state.nameConfirmed);post(6,10,state.clockFixed);label('記録守',420,300);label(state.nameConfirmed?'名札を取り戻した子':'名を忘れた子',700,428);label('集落の時計',260,425);label('図書塔',260,110);label('貯蔵庫',740,110);
+   TempleVisuals.house(g,335,160,160,95,'#656486');TempleVisuals.house(g,605,305,155,95,'#586b85');TempleVisuals.person(g,420,300,'記録守','#9d91b4');TempleVisuals.person(g,700,420,state.nameConfirmed?'名札を取り戻した子':'名を忘れた子','#b4a27e');post(6,10,state.clockFixed);label('集落の時計',260,425);label('図書塔',260,110);label('貯蔵庫',740,110);
    post(8,11,!!state.disclosure);post(16,11,!!state.disclosure);label('事故の記録をみんなへ',340,485);label('持ち主への返却から',660,485);label('入り江へ',500,640);
   }
   if(area==='ch4_archive'){
@@ -1475,6 +1483,7 @@ const TempleChapter4=(()=>{
   if(area==='ch4_chart'){
    const points=[[250,180],[740,180],[250,350],[740,350]];g.strokeStyle='#d5d2ab';g.lineWidth=3;for(const [x,y]of points){g.beginPath();g.moveTo(x,y);g.lineTo(500,240);g.stroke();}for(const [i,[x,y]]of points.entries())label(['村','森','港','島'][i],x,y);post(12,5,state.reported);label('神殿への星図を照合',500,110);label('集落へ',500,640);
   }
+  TempleVisuals.details(g,area);
   const pose=templePose(),px=pose.x*40,py=pose.y*40;g.fillStyle='#252f4588';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();if(pic.complete&&pic.naturalWidth){const i={down:0,up:1,left:2,right:3}[player.dir]||0,cw=pic.naturalWidth/4,ch=pic.naturalHeight/2;g.drawImage(pic,i*cw,0,cw,ch,px-7,py-21,54,54);}g.restore();
  };
  const oldSnapshot=snapshot;snapshot=function(){return {...oldSnapshot(),chapter4:{...state,read:[...state.read]}}};
@@ -1624,8 +1633,9 @@ const TempleChapter5=(()=>{
  };
  const oldDraw=draw;draw=function(){if(!here()){oldDraw();return;}
   const g=ctx;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);g.imageSmoothingEnabled=false;const cy=Math.max(0,Math.min(180,templePose().y*40-250));g.save();g.translate(0,-cy);
-  const rect=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},label=(s,x,y)=>{g.font='600 13px sans-serif';g.textAlign='center';const w=g.measureText(s).width+18;rect(x-w/2,y-15,w,24,'#253447ed');g.fillStyle='#f8e8bf';g.fillText(s,x,y+2)},post=(x,y,on=false)=>{rect(x*40+6,y*40+8,28,27,on?'#ead39d':'#9aaab2');rect(x*40+11,y*40+13,18,4,'#405d68');};
+  const rect=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)},label=(s,x,y)=>{g.font='600 13px sans-serif';g.textAlign='center';const w=g.measureText(s).width+18;rect(x-w/2,y-15,w,24,'#253447ed');g.fillStyle='#f8e8bf';g.fillText(s,x,y+2)},post=(x,y,on=false)=>{rect(x*40+6,y*40+8,28,27,on?'#ead39d':'#9aaab2');rect(x*40+11,y*40+13,18,4,'#405d68');TempleVisuals.terminal(g,x*40+20,y*40+20,on);};
   for(let y=0;y<18;y++)for(let x=0;x<24;x++){const c=area==='ch5_festival'?((x+y)%2?'#82946a':'#87996f'):((x+y)%2?'#71858b':'#758990');rect(x*40,y*40,40,40,c);rect(x*40+3,y*40+3,34,2,area==='ch5_festival'?'#a3ad83':'#a2afb0');if(x===0||x===23||y===0||y===17)rect(x*40,y*40,40,40,'#314d61');}
+  TempleVisuals.ground(g,area);
   label(names[area],480,72);
   if(area==='ch5_court'){
    rect(450,135,100,90,'#465b70');post(12,5,state.truth);label('最後の星守',500,235);post(6,11);label('旧式の星脈記録',260,435);
@@ -1642,10 +1652,11 @@ const TempleChapter5=(()=>{
    for(const [i,[x,y]]of [[6,6],[17,6],[6,11],[17,11]].entries()){post(x,y,state.relays[i]);label(['村','森','港','島'][i]+'の端末',x*40+20,y*40+50);}if(state.stage===3){rect(286,450,28,24,'#e2c98d');label('協力台・立って合図',300,492);label('ミオの観測を確認',700,435);}label('庭園へ戻る',500,640);
   }
   if(area==='ch5_festival'){
-   rect(160,130,170,110,'#b49271');rect(152,115,186,25,'#7a6870');rect(620,130,170,110,'#8d9e94');rect(612,115,186,25,'#607d83');
+   TempleVisuals.house(g,160,130,170,110,'#675574');TempleVisuals.house(g,620,130,170,110,'#4e7586');
    for(let i=0;i<12;i++){const x=210+i*48,y=270+Math.sin(i*.6)*12;rect(x,y,2,32,'#74664b');rect(x-8,y+22,18,20,['#f7d99a','#e9b6ad','#b9d8b3'][i%3]);rect(x-5,y+26,12,10,'#fff1c2');}
-   post(10,7,true);post(17,10,true);post(6,10,true);label('長老・祭りを始める',420,300);label('最後の星守',700,425);label('ミオとわるびー',260,425);label('広場へ戻り、残った依頼を続ける',500,640);
+   TempleVisuals.person(g,420,300,'長老・祭りを始める','#c4ae7e');TempleVisuals.person(g,700,420,'最後の星守','#adbcb0');label('ミオとわるびー',260,425);post(6,10,true);label('広場へ戻り、残った依頼を続ける',500,640);
   }
+  TempleVisuals.details(g,area);
   const pose=templePose(),px=pose.x*40,py=pose.y*40;g.fillStyle='#273b4980';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();if(pic.complete&&pic.naturalWidth){const i={down:0,up:1,left:2,right:3}[player.dir]||0,cw=pic.naturalWidth/4,ch=pic.naturalHeight/2;g.drawImage(pic,i*cw,0,cw,ch,px-7,py-21,54,54);}g.restore();
  };
  const oldSnapshot=snapshot;snapshot=function(){return {...oldSnapshot(),chapter5:{...state,gates:[...state.gates],villageLoad:[...state.villageLoad],relays:[...state.relays]}}};
@@ -1723,10 +1734,10 @@ $('questJournal').onclick=openQuestJournal;
 </style><script>
 // Event art uses the existing dialogue pause and decision controls, with no new save flags.
 const templeEventArt={
- grandFestival:{src:'../assets/temple-events/ch1-homecoming.webp',alt:'星灯りの祭り。帰還した村の広場を花火が彩る'},
- harborRescue:{native:true,alt:'三つの航路灯に導かれ、船が港へ帰還する'},
- templeChart:{native:true,alt:'村・森・港・島から神殿へつながる四つの星図'},
- lightRestored:{native:true,alt:'四地域へ、星の光が少しずつ戻っていく'},
+ grandFestival:{src:'../assets/temple-events/ch5-grand-festival.webp',alt:'星灯りの祭り。帰還した村の広場を花火が彩る'},
+ harborRescue:{src:'../assets/temple-events/ch3-harbor-rescue.webp',alt:'三つの航路灯に導かれ、船が港へ帰還する'},
+ templeChart:{src:'../assets/temple-events/ch4-temple-chart.webp',alt:'村・森・港・島から神殿へつながる四つの星図'},
+ lightRestored:{src:'../assets/temple-events/ch5-light-restored.webp',alt:'四地域へ、星の光が少しずつ戻っていく'},
  mural:{src:'../assets/temple-events/ch1-mural.webp',alt:'地下遺跡で、種・芽・花が刻まれた壁画を見つめるあおびー'},
  homecoming:{src:'../assets/temple-events/ch1-homecoming.webp',alt:'灯りの戻った村の広場で、小さな帰還祝いを迎えるあおびー'},
  towerSafety:{src:'../assets/temple-events/ch2-tower-safety.webp',alt:'根の中継塔で、あおびーとわるびーが協力して崩れかけた足場を支える'},
@@ -1736,7 +1747,6 @@ $('dialog').insertAdjacentHTML('beforebegin','<div id="eventStill" hidden><img i
 function setStoryStill(key){
  const art=templeEventArt[key],panel=$('eventStill'),picture=$('eventStillImage');
  panel.hidden=!art;panel.dataset.scene=key||'';if(!art){picture.dataset.scene='';return;}
- if(art.native){picture.onload=null;picture.onerror=null;picture.dataset.scene=key;picture.alt=art.alt;draw();try{picture.src=ctx.canvas.toDataURL('image/png');}catch{panel.hidden=true;}return;}
  picture.alt=art.alt;picture.onload=()=>{if(picture.dataset.scene===key&&$('dialog').style.display==='block')panel.hidden=false;};
  picture.onerror=()=>{if(picture.dataset.scene===key)panel.hidden=true;};
  picture.dataset.scene=key;picture.src=art.src;
@@ -1777,4 +1787,12 @@ nextLine=function(){
  $('act').setAttribute('aria-label',speaking?'会話を次へ進める':'調べる・攻撃');
  $('dialogNext').textContent=dialog.length||pendingDialogues.length?'次へ ▾':'読み終える ✓';
 };
+</script><style>
+#start{isolation:isolate;background:linear-gradient(90deg,#071a2dec,#0b2235bf 60%,#0c253b99),url('../assets/temple-events/ch1-homecoming.webp') center/cover}
+#start h1{letter-spacing:.09em;text-shadow:0 3px 0 #16333d,0 0 26px #ffe4a54d}
+#start button{box-shadow:0 4px 0 #806145,0 8px 26px #06172577;border:1px solid #f9e5ab}
+#wrap #dialog{background:linear-gradient(135deg,#102e3af5,#142b3af5);box-shadow:0 5px 26px #07152588,inset 0 1px #fff1b418}
+</style><script>
+const sceneryDraw=draw;draw=function(){sceneryDraw();TempleVisuals.atmosphere(ctx,area)};
+document.documentElement.dataset.templeVisuals='illustrated-v1';
 </script></body></html>

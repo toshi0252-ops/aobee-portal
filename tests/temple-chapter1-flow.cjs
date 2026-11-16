@@ -11,7 +11,7 @@ function boot(saved){
  const window={addEventListener(){},visualViewport:null};
  const ctx=vm.createContext({document:doc,window,Image,console,innerWidth:960,innerHeight:540,performance:{now:()=>now},requestAnimationFrame(){},setTimeout(){},clearTimeout(){},MutationObserver:class{observe(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},confirm:()=>true,location:{reload(){}},getComputedStyle:()=>({position:'fixed'}),Date:{now:()=>now}});
  ctx.globalThis=ctx;
- for(const [,s]of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))vm.runInContext(s,ctx);
+ for(const [,attrs,s]of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)){const src=attrs.match(/src="([^"]+)"/);const script=src?.[1].startsWith('../assets/temple-visuals.js')?fs.readFileSync('assets/temple-visuals.js','utf8'):s;vm.runInContext(script,ctx)}
  const run=s=>vm.runInContext(s,ctx);
  function flush(){let n=0;while(run("$('dialog').style.display==='block'")){if(++n>100)throw Error('dialogue loop');run('nextLine()')}now+=1000;}
  function act(){now+=1000;run('action()');flush()}
