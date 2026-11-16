@@ -1190,7 +1190,7 @@ const TempleChapter3=(()=>{
   say([['語り','第3章　星を映さぬ港'],['ミオ','森の星図の線が、あの灯台まで続いてる。'],['わるびー',prev.trust==='trust'?'今度は先に話す。この港には、前に来たことがある。':'聞いてくれたから話す。この港には、前に来たことがある。'],['灯台守','灯りを止める？ だめだ。沖の船が帰れなくなる！'],['あおびー','止めたいのは、暮らしを支える灯りじゃない。まず、困っている船を助けよう。'],['船大工見習い','防波堤の三つの灯りが消えてる。帰り道を示せれば、家族の船も戻れるのに。']],()=>{state.started=true;sync();enter('ch3_port');});
  }
  function rescue(){
-  if(state.beacons===3&&!state.lowTide&&!state.boatRescued){state.boatRescued=true;say([['語り','三つの灯りをたどり、沖の船が港へ滑り込んだ。'],['船乗り','助かったよ。古い灯台の海底入口が、異様に光っていた。これが入口の記録だ。'],['ミオ','海底観測所へ続く道が分かった！']],()=>objective(goal()));}
+  if(state.beacons===3&&!state.lowTide&&!state.boatRescued){state.boatRescued=true;say([['語り','三つの灯りをたどり、沖の船が港へ滑り込んだ。'],['船乗り','助かったよ。古い灯台の海底入口が、異様に光っていた。これが入口の記録だ。'],['ミオ','海底観測所へ続く道が分かった！']],()=>objective(goal()),'harborRescue');}
  }
  function interact(){
   if(area==='ch3_port'){
@@ -1407,7 +1407,7 @@ const TempleChapter4=(()=>{
   }
   if(area==='ch4_chart'&&s103Facing(12,5)){
    if(state.reported){showRecord();return;}
-   say([['ミオ','村、森、港、島。四つの観測線が、ひとつの神殿へ集まってる。'],['わるびー','ここで光を保持したまま、各地が受け取れる道を作れば……。'],['あおびー','一度に返さず、みんなで受け止めるんだね。神殿で、その方法を探そう。'],['記録守','この島の記録を、今度は隠さずに持っていってほしい。'],['名札を取り戻した子','思い出せた名前も、まだ思い出せないことも、ここに残していくよ。'],['語り','消された島の夜に、静かな灯りがともる。神殿を指す星図の線は、もう一人だけのものではなかった。']],()=>{state.reported=true;objective(goal());sync();showRecord();});return;
+   say([['ミオ','村、森、港、島。四つの観測線が、ひとつの神殿へ集まってる。'],['わるびー','ここで光を保持したまま、各地が受け取れる道を作れば……。'],['あおびー','一度に返さず、みんなで受け止めるんだね。神殿で、その方法を探そう。'],['記録守','この島の記録を、今度は隠さずに持っていってほしい。'],['名札を取り戻した子','思い出せた名前も、まだ思い出せないことも、ここに残していくよ。'],['語り','消された島の夜に、静かな灯りがともる。神殿を指す星図の線は、もう一人だけのものではなかった。']],()=>{state.reported=true;objective(goal());sync();showRecord();},'templeChart');return;
   }
   toast('記録や端末の隣から、そちらを向いて調べよう');
  }
@@ -1575,7 +1575,7 @@ const TempleChapter5=(()=>{
      if(!state.warubeeHeld||!state.mioReady){toast('西の協力台で合図し、東の観測端末も確認しよう');return;}
      if(cycle!=='open'){toast('最後の放出が止まってから、分散復旧を確定しよう');return;}
      state.networkBalanced=true;templeAttack=null;
-     say([['星の番人','防衛回路を停止。四地域への分散復旧を開始する。'],['語り','村へ、森へ、港へ、島へ。ため込まれた光は、受け止められる速さで、少しずつ流れ始めた。'],['最後の星守','生きて、説明と修復を続ける。私の判断で奪った灯りのことを、各地へ伝えなければ。'],['あおびー','うん。直して終わりじゃなくて、これからも一緒に守ろう。'],['ミオ','村から連絡が来たよ。延期していた星灯りの祭りを、今夜開くって！']],()=>objective(goal()));return;
+     say([['星の番人','防衛回路を停止。四地域への分散復旧を開始する。'],['語り','村へ、森へ、港へ、島へ。ため込まれた光は、受け止められる速さで、少しずつ流れ始めた。'],['最後の星守','生きて、説明と修復を続ける。私の判断で奪った灯りのことを、各地へ伝えなければ。'],['あおびー','うん。直して終わりじゃなくて、これからも一緒に守ろう。'],['ミオ','村から連絡が来たよ。延期していた星灯りの祭りを、今夜開くって！']],()=>objective(goal()),'lightRestored');return;
     }
    }
   }
@@ -1587,7 +1587,7 @@ const TempleChapter5=(()=>{
   toast('端末や仲間の隣から、そちらを向いて調べよう');
  }
  function coreHit(){const [dx,dy]={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[player.dir],w=currentWeapon(),forward=(12-player.x)*dx+(5-player.y)*dy,side=(12-player.x)*-dy+(5-player.y)*dx;if(forward<1||forward>w.reach||Math.abs(side)>w.width)return false;for(let n=1;n<forward;n++)if(blocked(player.x+dx*n,player.y+dy*n))return false;return true;}
- function ending(){say([['語り','ほしの村の広場に、色とりどりの灯りがともった。ずっと延期されていた、星灯りの祭りの夜。'],['トト','おかえり！ 飾りも、みんなで仕上げたよ！'],['タネ婆','難しい話は、食べてからでもできるさ。まずは無事に帰ったお祝いだよ。'],['長老','知らなかったことも、隠したことも、記録に残して伝えていこう。誰かが一人で抱え込まぬようにな。'],['ミオ','星の光は、なくなったんじゃなかった。行き先を、見失っていたんだね。'],['わるびー','……一人で何とかしようとしたのは、ぼくも同じだった。'],['あおびー','次に困ったときは、最初から一緒に考えよう。'],['最後の星守','村にも森にも港にも島にも、私から説明に行く。守り直す仕事は、ここからだ。'],['語り','失われた記憶のすべてが戻ったわけではない。消された過去が、なかったことになったわけでもない。それでも、確かめた記録と新しい約束が、明日へつながっていた。'],['ミオ','次は、どんな星図を描こうか。'],['あおびー','あおびーに任せてよ！ ……でも、みんなも一緒にね！'],['語り','あおびーと星の神殿　おわり。旅でつながった場所と人々は、これからもここにいる。']],()=>{state.completed=true;objective(goal());sync();showRecord();});}
+ function ending(){say([['語り','ほしの村の広場に、色とりどりの灯りがともった。ずっと延期されていた、星灯りの祭りの夜。'],['トト','おかえり！ 飾りも、みんなで仕上げたよ！'],['タネ婆','難しい話は、食べてからでもできるさ。まずは無事に帰ったお祝いだよ。'],['長老','知らなかったことも、隠したことも、記録に残して伝えていこう。誰かが一人で抱え込まぬようにな。'],['ミオ','星の光は、なくなったんじゃなかった。行き先を、見失っていたんだね。'],['わるびー','……一人で何とかしようとしたのは、ぼくも同じだった。'],['あおびー','次に困ったときは、最初から一緒に考えよう。'],['最後の星守','村にも森にも港にも島にも、私から説明に行く。守り直す仕事は、ここからだ。'],['語り','失われた記憶のすべてが戻ったわけではない。消された過去が、なかったことになったわけでもない。それでも、確かめた記録と新しい約束が、明日へつながっていた。'],['ミオ','次は、どんな星図を描こうか。'],['あおびー','あおびーに任せてよ！ ……でも、みんなも一緒にね！'],['語り','あおびーと星の神殿　おわり。旅でつながった場所と人々は、これからもここにいる。']],()=>{state.completed=true;objective(goal());sync();showRecord();},'grandFestival');}
  function showRecord(){
   $('journeySaveStatus').textContent=saveGame(true)?'旅のクリア記録を保存しました。':'保存できませんでした。探索に戻ってセーブを再試行してください。';
   const extras=[TempleChapter2.getState().leafHelped,TempleChapter3.getState().toolsReturned,TempleChapter4.getState().clockFixed].filter(Boolean).length;
@@ -1723,6 +1723,10 @@ $('questJournal').onclick=openQuestJournal;
 </style><script>
 // Event art uses the existing dialogue pause and decision controls, with no new save flags.
 const templeEventArt={
+ grandFestival:{src:'../assets/temple-events/ch1-homecoming.webp',alt:'星灯りの祭り。帰還した村の広場を花火が彩る'},
+ harborRescue:{native:true,alt:'三つの航路灯に導かれ、船が港へ帰還する'},
+ templeChart:{native:true,alt:'村・森・港・島から神殿へつながる四つの星図'},
+ lightRestored:{native:true,alt:'四地域へ、星の光が少しずつ戻っていく'},
  mural:{src:'../assets/temple-events/ch1-mural.webp',alt:'地下遺跡で、種・芽・花が刻まれた壁画を見つめるあおびー'},
  homecoming:{src:'../assets/temple-events/ch1-homecoming.webp',alt:'灯りの戻った村の広場で、小さな帰還祝いを迎えるあおびー'},
  towerSafety:{src:'../assets/temple-events/ch2-tower-safety.webp',alt:'根の中継塔で、あおびーとわるびーが協力して崩れかけた足場を支える'},
@@ -1731,9 +1735,18 @@ const templeEventArt={
 $('dialog').insertAdjacentHTML('beforebegin','<div id="eventStill" hidden><img id="eventStillImage" alt="" decoding="async"></div>');
 function setStoryStill(key){
  const art=templeEventArt[key],panel=$('eventStill'),picture=$('eventStillImage');
- panel.hidden=!art;if(!art){picture.dataset.scene='';return;}
+ panel.hidden=!art;panel.dataset.scene=key||'';if(!art){picture.dataset.scene='';return;}
+ if(art.native){picture.onload=null;picture.onerror=null;picture.dataset.scene=key;picture.alt=art.alt;draw();try{picture.src=ctx.canvas.toDataURL('image/png');}catch{panel.hidden=true;}return;}
  picture.alt=art.alt;picture.onload=()=>{if(picture.dataset.scene===key&&$('dialog').style.display==='block')panel.hidden=false;};
  picture.onerror=()=>{if(picture.dataset.scene===key)panel.hidden=true;};
  picture.dataset.scene=key;picture.src=art.src;
 }
+</script><style>
+#eventStill[data-scene=harborRescue]::after,#eventStill[data-scene=templeChart]::after,#eventStill[data-scene=lightRestored]::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 28%,#ffe6a54d,transparent 60%);box-shadow:inset 0 0 80px #061629aa}
+#eventStill[data-scene=grandFestival]::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,#ffe8a8 0 2px,transparent 3px),radial-gradient(circle at 75% 13%,#ffb9cf 0 3px,transparent 4px),radial-gradient(circle at 87% 32%,#b4e7ff 0 2px,transparent 3px);background-size:113px 97px,173px 137px,149px 113px;opacity:.8}
+.templeFirework{position:absolute;width:4px;height:4px;border-radius:50%;color:#ffe6a2;background:currentColor;box-shadow:0 -35px,25px -25px,35px 0,25px 25px,0 35px,-25px 25px,-35px 0,-25px -25px;display:none}
+#eventStill[data-scene=grandFestival] .templeFirework{display:block}
+@media(prefers-reduced-motion:no-preference){#eventStill[data-scene=grandFestival] .templeFirework{animation:templeFirework 2.8s ease-out infinite;animation-delay:var(--delay)}@keyframes templeFirework{0%{transform:scale(.1);opacity:0}20%{opacity:1}85%,100%{transform:scale(2);opacity:0}}}
+</style><script>
+for(const [left,top,color,delay]of [[18,18,'#ffe6a2','0s'],[73,14,'#ffb9cf','-.9s'],[87,33,'#b4e7ff','-1.8s'],[43,12,'#d4ffc2','-1.4s']]){const spark=document.createElement('span');spark.className='templeFirework';spark.setAttribute('aria-hidden','true');spark.style.left=left+'%';spark.style.top=top+'%';spark.style.color=color;spark.style.setProperty('--delay',delay);$('eventStill').appendChild(spark);}
 </script></body></html>
