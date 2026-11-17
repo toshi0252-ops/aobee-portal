@@ -5,7 +5,11 @@ function resume(g){g.run('saveGame(true)');const key=g.run('SAVE_KEY');const h=b
 const locked=boot();locked.run('TempleChapter2.start()');assert.equal(locked.run('area'),'village');
 function route(order,stopAtTower=false,help=true){let g=seed();let {run,walk,act,flush}=g;
  // Start from the actual menu state; chapter button must work before bubbling closes it.
- run("playMenuOpen=true;$('chapter2Start').onclick()");flush();run('playMenuOpen=false');assert.equal(run('area'),'ch2_gate');
+ if(order[0]==='water'){
+  run('showChapterClear()');assert.equal(g.el('chapterNext').hidden,false);
+  run("$('chapterNext').onclick()");assert.equal(run('chapterClearOpen'),false);flush();
+ }else{run("playMenuOpen=true;$('chapter2Start').onclick()");flush();run('playMenuOpen=false');}
+ assert.equal(run('area'),'ch2_gate');
  // Leaving before opening the barrier must not skip the puzzle on return.
  walk(12,15);assert.equal(run('area'),'village');run('TempleChapter2.start()');flush();assert.equal(run('area'),'ch2_gate');
  walk(12,9);run("player.dir='up'");act();
