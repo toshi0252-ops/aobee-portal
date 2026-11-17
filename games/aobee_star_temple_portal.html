@@ -27,7 +27,7 @@ footer{left:14px;transform:none;bottom:max(7px,env(safe-area-inset-bottom));disp
 @media(max-height:430px){header{font-size:9px;padding:3px 9px;top:3px}header small{font-size:8px}#hud{top:30px;left:10px;padding:5px 9px;font-size:10px;line-height:1.4}#objective{font-size:9px}#dialog{padding:8px 12px;bottom:6%}#hint{font-size:8px}#start h1{font-size:26px;margin-bottom:8px}#start p{margin:3px 0;font-size:10px}#start::before{margin-bottom:7px}#start button{margin:7px 0;min-height:42px}footer{bottom:4px}#save,#reset{min-height:30px!important;padding:4px 9px!important}#act{bottom:18px}}
 @media(orientation:landscape) and (max-height:540px){#controls{display:block!important}#floatZone{display:block!important;position:fixed;left:0;top:0;width:50vw;height:100dvh;z-index:4}#stick{position:fixed;z-index:6}#dialog{z-index:9;bottom:60px}#start{z-index:10}#save,#reset{min-height:44px!important}}
 </style><style>#equipment{pointer-events:auto;min-height:44px;border:1px solid #bca87c;background:#17333c;color:#f5dfa3;border-radius:8px;padding:6px 12px}#equipmentPanel[hidden]{display:none}#equipmentPanel{position:fixed;inset:0;z-index:30;background:#071c27d9;display:grid;place-items:center;padding:16px}#equipmentPanel section{background:#17343d;border:1px solid #dcc48c;border-radius:16px;padding:20px;max-width:480px;max-height:85dvh;overflow:auto}#equipmentPanel h2{font-size:20px;margin:0 0 8px}#equipmentPanel p{font-size:12px;color:#c9d8ca}#equipmentPanel button{display:block;width:100%;min-height:44px;margin:8px 0;border:1px solid #97ada3;border-radius:8px;background:#264750;color:#f0e8cf}#equipmentPanel button[aria-pressed=true]{background:#e0c890;color:#203841}footer{font-size:0}footer button{font-size:11px}</style><style>#questJournal{min-height:44px;border:1px solid #bca87c;background:#17333c;color:#f5dfa3;border-radius:8px;padding:6px 12px}#questJournalPanel[hidden]{display:none}#questJournalPanel{position:fixed;inset:0;z-index:35;background:#071c27d9;display:grid;place-items:center;padding:16px}#questJournalPanel section{background:#17343d;color:#f0e8cf;border:1px solid #dcc48c;border-radius:16px;padding:20px;width:min(440px,85vw);max-height:80dvh;overflow:auto}#questJournalList{white-space:pre-line;line-height:1.8}#questJournalClose{min-height:44px;width:100%;margin-top:16px}</style><style>#useHerbPotion{min-height:44px;width:100%;margin-top:8px;border-radius:8px;border:1px solid #a6c4a1;background:#244b42;color:#f0e8cf}#useHerbPotion:disabled{opacity:.5}</style><style>
-footer button{pointer-events:auto}
+footer button{pointer-events:auto;flex-shrink:0;touch-action:pan-y}
 #questJournalPanel{padding:12px;box-sizing:border-box}
 #questJournalPanel section{box-sizing:border-box;display:flex;flex-direction:column;gap:8px;max-height:calc(100dvh - 24px);padding:16px;overflow:hidden}
 #questJournalTitle{font-size:20px;margin:0;flex-shrink:0}
@@ -50,7 +50,7 @@ body{padding:0!important;width:var(--vw,100vw);height:var(--vh,100dvh)}
 header{display:none}#wrap{width:min(var(--vw,100vw),calc(var(--vh,100dvh)*16/9));height:min(var(--vh,100dvh),calc(var(--vw,100vw)*9/16));aspect-ratio:16/9}
 #hud{top:max(6px,env(safe-area-inset-top));left:max(8px,env(safe-area-inset-left));right:76px;min-height:28px;grid-template-columns:100px minmax(0,1fr);max-width:620px;font-size:11px;background:#091c2bb8}
 #toast{top:42px;left:25%;right:20%;max-height:52px;font-size:12px}
-footer{display:none!important}body.playing footer.open{display:flex!important;left:auto;right:max(8px,env(safe-area-inset-right));top:54px;bottom:auto;flex-direction:column;background:#102a37;padding:10px;border-radius:12px;pointer-events:auto}
+footer{display:none!important}body.playing footer.open{max-height:calc(var(--vh,100dvh) - 66px - env(safe-area-inset-bottom,0px));overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;flex-wrap:nowrap;display:flex!important;left:auto;right:max(8px,env(safe-area-inset-right));top:54px;bottom:auto;flex-direction:column;background:#102a37;padding:10px;border-radius:12px;pointer-events:auto}
 #playMenu{position:fixed;right:max(8px,env(safe-area-inset-right));top:max(4px,env(safe-area-inset-top));min-width:60px;min-height:44px;z-index:25;background:#17333c;color:#ffe7a3;border:1px solid #bca87c;border-radius:8px}
 body:not(.playing) #hud,body:not(.playing) #controls,body:not(.playing) #playMenu{display:none!important}
 #act{bottom:max(14px,env(safe-area-inset-bottom));right:max(18px,env(safe-area-inset-right))}#dialog{bottom:12px;width:calc(100% - 130px);left:12px}#floatZone{width:50%!important;height:100%!important;position:absolute!important}
@@ -828,15 +828,17 @@ window.addEventListener('resize',fitEdgeControls);window.visualViewport?.addEven
 })();
 </script><style>
 #chapterClear[hidden]{display:none}#chapterClear{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:#081b2ce8;color:#f5ebcf}#chapterClear section{width:min(460px,94vw);max-height:90dvh;overflow:auto;padding:24px;border:1px solid #dfc588;border-radius:16px;background:linear-gradient(145deg,#244651,#102b36);text-align:center;box-shadow:0 16px 50px #0008}#chapterClear h2{margin:8px 0 16px;color:#ffe0a0;font-size:26px}#chapterClear p{font-size:14px;line-height:1.8}#chapterClear button{display:block;width:100%;min-height:44px;margin-top:12px;padding:10px;border:1px solid #dfc588;border-radius:8px;background:#e8d29a;color:#203a43;font-weight:bold}#chapterClear .sub{background:#183743;color:#e8dcc0}@media(max-height:430px){#chapterClear section{padding:12px 20px}#chapterClear h2{font-size:21px;margin:3px 0 8px}#chapterClear p{font-size:12px;margin:5px 0}}
-</style><div id="chapterClear" hidden role="dialog" aria-modal="true" aria-labelledby="chapterClearTitle"><section><small>あおびーと星の神殿</small><h2 id="chapterClearTitle">第1章 クリア</h2><p>ほしの村に、小さな灯りが戻った。<br>あおびーの冒険は、ここから続いていく。</p><p id="chapterClearSummary"></p><p id="chapterClearSaveStatus"></p><p>村と森へ戻り、残った依頼を続けられます。</p><button id="chapterExplore" type="button">村と森の探索を続ける</button><button id="chapterTitle" class="sub" type="button">タイトルへ戻る</button></section></div><script>
+</style><div id="chapterClear" hidden role="dialog" aria-modal="true" aria-labelledby="chapterClearTitle"><section><small>あおびーと星の神殿</small><h2 id="chapterClearTitle">第1章 クリア</h2><p>ほしの村に、小さな灯りが戻った。<br>あおびーの冒険は、ここから続いていく。</p><p id="chapterClearSummary"></p><p id="chapterClearSaveStatus"></p><p>村と森へ戻り、残った依頼を続けられます。</p><button id="chapterNext" type="button" hidden>第2章へ出発</button><button id="chapterExplore" type="button">村と森の探索を続ける</button><button id="chapterTitle" class="sub" type="button">タイトルへ戻る</button></section></div><script>
 function showChapterClear(){
+ $('chapterNext').hidden=!chapter1Story.reportSeen;
  $('chapterClearSaveStatus').textContent=saveGame(true)?'クリア状態を保存しました。':'保存できませんでした。この画面を閉じて、メニューのセーブから再試行してください。';
  chapterClearOpen=true;clearStick();templeAttack=null;
  const qs=questDefinitions.filter(d=>questBook.view(d.id).state==='claimed');
  $('chapterClearSummary').textContent='解決した依頼：'+qs.length+' / '+questDefinitions.length;
- $('chapterClear').hidden=false;syncEdgeControls();$('chapterExplore').focus();
+ $('chapterClear').hidden=false;syncEdgeControls();($('chapterNext').hidden?$('chapterExplore'):$('chapterNext')).focus();
 }
 function closeChapterClear(){chapterClearOpen=false;$('chapterClear').hidden=true;clearStick();syncEdgeControls();}
+$('chapterNext').onclick=()=>{if(!chapter1Story.reportSeen)return;closeChapterClear();TempleChapter2.start();};
 $('chapterExplore').onclick=()=>{closeChapterClear();saveGame(true);};
 $('chapterTitle').onclick=()=>{if(!saveGame(true)){$('chapterClearSaveStatus').textContent='保存できませんでした。探索に戻ってセーブを再試行してください。';return;}closeChapterClear();location.reload();};
 const finishMove=move;move=function(...args){if(!chapterClearOpen)finishMove(...args)};
@@ -855,7 +857,7 @@ const finishStoryAction=action;action=function(){
 document.addEventListener('keydown',e=>{
  if(!chapterClearOpen)return;
  if(e.key==='Escape'){e.preventDefault();$('chapterExplore').click();}
- if(e.key==='Tab'){e.preventDefault();($('chapterExplore')===document.activeElement?$('chapterTitle'):$('chapterExplore')).focus();}
+ if(e.key==='Tab'){e.preventDefault();const buttons=[$('chapterNext'),$('chapterExplore'),$('chapterTitle')].filter(b=>!b.hidden),i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length].focus();}
 });
 </script><script>
 function chapter1Milestones(){return [
