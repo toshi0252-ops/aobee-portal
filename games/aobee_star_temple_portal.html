@@ -263,7 +263,7 @@ $('begin').onclick=()=>{oldBegin()};
 $('continue').onclick=()=>{const d=readSave();if(d)restoreGame(d)};
 if(readSave())$('continue').style.display='block';
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&$('start').style.display==='none'&&$('dialog').style.display!=='block')saveGame(true)});
-$('reset').onclick=()=>{if(confirm('最初からやり直しますか？ セーブデータも消えます')){try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem('aobee_star_temple_ch1_v027');localStorage.removeItem('aobee_star_temple_ch1_v026');localStorage.removeItem('aobee_star_temple_ch1_v025');localStorage.removeItem('aobee_star_temple_ch1_v024');localStorage.removeItem('aobee_star_temple_ch1_v023');localStorage.removeItem('aobee_star_temple_ch1_v022');localStorage.removeItem('aobee_star_temple_ch1_v018');localStorage.removeItem('aobee_star_temple_ch1_v012');localStorage.removeItem('aobee_star_temple_ch1_v011')}catch{}location.reload()}};updateHud();requestAnimationFrame(loop);
+$('reset').onclick=()=>{if(confirm('自動セーブを消して最初からやり直しますか？ 手動3スロットとデバッグ前の退避は残ります')){try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem('aobee_star_temple_ch1_v027');localStorage.removeItem('aobee_star_temple_ch1_v026');localStorage.removeItem('aobee_star_temple_ch1_v025');localStorage.removeItem('aobee_star_temple_ch1_v024');localStorage.removeItem('aobee_star_temple_ch1_v023');localStorage.removeItem('aobee_star_temple_ch1_v022');localStorage.removeItem('aobee_star_temple_ch1_v018');localStorage.removeItem('aobee_star_temple_ch1_v012');localStorage.removeItem('aobee_star_temple_ch1_v011')}catch{}location.reload()}};updateHud();requestAnimationFrame(loop);
 </script><script>// Equipment is a prototype choice; it does not award or replace story items.
 const templeWeapons={sword:{name:'剣',duration:340,reach:1,width:1},spear:{name:'槍',duration:440,reach:2,width:0},hammer:{name:'ハンマー',duration:620,reach:1,width:1}};
 let templeWeapon='sword',templeGearOpen=false,templeAttack=null,templeMove=null;
@@ -1793,7 +1793,7 @@ nextLine=function(){
 #wrap #dialog{background:linear-gradient(135deg,#102e3af5,#142b3af5);box-shadow:0 5px 26px #07152588,inset 0 1px #fff1b418}
 </style><script>
 const sceneryDraw=draw;draw=function(){TemplePresentation.begin();sceneryDraw();TempleVisuals.atmosphere(ctx,area);TemplePresentation.finish()};
-document.documentElement.dataset.templeVisuals='tower-v6';
+document.documentElement.dataset.templeVisuals='recovery-v7';
 </script><style>
 #hud{font-size:14px;min-height:42px;grid-template-columns:102px minmax(0,1fr);max-width:760px;background:#082337ed;padding:6px 9px}
 #objective{font-size:14px;line-height:1.4;color:#fff0cf}
@@ -1813,4 +1813,4 @@ document.documentElement.dataset.templeVisuals='tower-v6';
 #journeyMapClose{background:#dac38b!important;color:#183546!important;text-align:center!important;min-height:44px!important}
 #chapter2Start,#chapter3Start,#chapter4Start,#chapter5Start{display:none!important}
 @media(max-height:430px){#journeyMap section{padding:12px 16px}}
-</style><script src="../assets/temple-journey.js?v=quests-20261117"></script></body></html>
+</style><script src="../assets/temple-journey.js?v=quests-20261117"></script><script src="../assets/temple-recovery.js?v=recovery-20261117"></script></body></html>

@@ -50,7 +50,7 @@ console.log=originalLog;fs.writeFileSync=originalWrite;
   await page.locator('#journeyRegion5').scrollIntoViewIfNeeded?.();
   await page.locator('#journeyMapClose').click();assert.equal(await page.locator('#journeyMap').isVisible(),false);assert.equal(await page.evaluate(()=>document.activeElement.id),'act');
   // Continuing a legacy cleared save needs no hidden menu button either.
-  await page.goto(url);await page.evaluate(({saveKey,legacy})=>localStorage.setItem(saveKey,JSON.stringify(legacy)),{saveKey,legacy});await page.reload();await page.locator('#continue').click();await readUntil('ch2_gate');
+  await page.goto(url);await page.evaluate(({saveKey,legacy})=>localStorage.setItem(saveKey,JSON.stringify(legacy)),{saveKey,legacy});await page.reload();await page.locator('#continue').click();await page.locator('#recoverySlots button').filter({hasText:'自動セーブから再開'}).click();await readUntil('ch2_gate');
   // A failed save does not silently send the player away from the clear record.
   await restore(fixtures[0]);await page.evaluate(()=>{localStorage.setItem=()=>{throw Error('storage full')}});await page.locator('#act').click();await page.evaluate(()=>{while($('dialog').style.display==='block')nextLine()});await page.waitForTimeout(100);
   assert.equal(await page.evaluate(()=>area),'village');assert(await page.locator('#chapterClear').isVisible());assert.match(await page.locator('#chapterClearSaveStatus').textContent(),/保存できません/);

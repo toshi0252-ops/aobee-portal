@@ -1,0 +1,18 @@
+// Checkpoints are captured from real successful playthroughs, not hand-written progress flags.
+const fs=require('node:fs'),path=require('node:path'),base=require('../tests/temple-chapter1-flow.cjs');
+const specs=[
+ ['ch1-village',1,'村の出発前',s=>s.area==='village'&&s.phase===1],['ch1-forest',1,'森・ミオを探す',s=>s.area==='forest'&&!s.mioRescued],['ch1-ruins',1,'地下遺跡・探索開始',s=>s.area==='ruins'&&!s.ruinKey],['ch1-guardian',1,'遺跡の守護者戦前',s=>s.area==='ruins'&&s.ruinKey&&s.ruinBossHP===5],['ch1-boss',1,'封印の間・ボス戦前',s=>s.area==='seal'&&s.chapter1Story.mode==='cooperate'],
+ ['ch1-after-boss',1,'ボス戦後・長老への報告前',s=>s.area==='seal'&&s.chapter1Story.mode==='won'],
+ ['ch2-gate',2,'森の結界・探索開始',s=>s.area==='ch2_gate'&&!s.chapter2.windSolved],['ch2-hub',2,'三つの道の探索',s=>s.area==='ch2_hub'&&s.chapter2.records.length===0],['ch2-tower',2,'塔の入口・わるびー救出前',s=>s.area==='ch2_tower_gate'&&!s.chapter2.rescued],['ch2-floor1',2,'塔1階・光路パズル',s=>s.area==='ch2_tower1'&&s.chapter2.floors.length===0],['ch2-floor2',2,'塔2階・分光パズル',s=>s.area==='ch2_tower2'&&s.chapter2.floors.length===1],['ch2-floor3',2,'塔3階・命令の記録',s=>s.area==='ch2_tower3'&&s.chapter2.floors.length===2],['ch2-boss',2,'塔最上階・根の番人戦前',s=>s.area==='ch2_tower4'&&!s.chapter2.stopped&&s.chapter2.bossStage===1],
+ ['ch2-after-boss',2,'根の番人停止後・復旧方法の選択',s=>s.area==='ch2_tower4'&&s.chapter2.stopped&&!s.chapter2.recovery],
+ ['ch3-port',3,'港・探索開始',s=>s.area==='ch3_port'&&!s.chapter3.boatRescued],['ch3-observatory',3,'海底観測所・記録調査',s=>s.area==='ch3_observatory'&&!s.chapter3.authRead],['ch3-lighthouse',3,'灯台・電源の切り離し',s=>s.area==='ch3_lighthouse'&&!s.chapter3.lampSeparated],['ch3-boss',3,'潮の番人戦前',s=>s.area==='ch3_beacon'&&!s.chapter3.stopped&&!s.chapter3.valves.some(Boolean)],
+ ['ch3-after-boss',3,'潮の番人停止後・報告前',s=>s.area==='ch3_beacon'&&s.chapter3.stopped&&!s.chapter3.reported],
+ ['ch4-landing',4,'島の入り江・探索開始',s=>s.area==='ch4_landing'&&!s.chapter4.survey],['ch4-archive',4,'図書塔・記録の並べ替え',s=>s.area==='ch4_archive'&&!s.chapter4.sorted],['ch4-storage',4,'貯蔵庫・光の保全',s=>s.area==='ch4_storage'&&!s.chapter4.lightHeld],['ch4-boss',4,'記録機構戦前',s=>s.area==='ch4_scribe'&&!s.chapter4.scribeStopped&&!s.chapter4.backup],
+ ['ch4-after-boss',4,'記録機構停止後・報告と星図',s=>s.area==='ch4_scribe'&&s.chapter4.scribeStopped&&!s.chapter4.reported],
+ ['ch5-court',5,'神殿・星守の証言',s=>s.area==='ch5_court'&&!s.chapter5.truth],['ch5-gates',5,'四つの星門の接続',s=>s.area==='ch5_court'&&s.chapter5.truth&&s.chapter5.gates.length===0],['ch5-boss',5,'星核の間・最終戦前',s=>s.area==='ch5_core'&&!s.chapter5.battleStarted],['ch5-festival',5,'村への帰還・エンディング前',s=>s.area==='ch5_festival'&&!s.chapter5.completed]
+],found=new Map(),oldBoot=base.boot,oldWrite=fs.writeFileSync,log=console.log;
+fs.writeFileSync=(p,...a)=>oldWrite(typeof p==='string'&&p.startsWith('/tmp/')?path.join(require('os').tmpdir(),p.slice(5)):p,...a);console.log=()=>{};
+base.observe=run=>{if(run("$('start').style.display!=='none'||$('dialog').style.display==='block'||chapterClearOpen||end"))return;const s=JSON.parse(run('JSON.stringify(snapshot())'));for(const[id,chapter,title,predicate]of specs)if(!found.has(id)&&predicate(s)){s.player.hp=3;found.set(id,{id,chapter,title,data:s});}};
+try{require('../tests/temple-chapter5-flow.cjs')}finally{delete base.observe;base.boot=oldBoot;fs.writeFileSync=oldWrite;console.log=log}
+const missing=specs.filter(([id])=>!found.has(id)).map(([id])=>id);if(missing.length)throw Error('Missing checkpoints: '+missing.join(', '));
+fs.writeFileSync('assets/temple-checkpoints.json',JSON.stringify({version:1,source:'successful full five-chapter gameplay',checkpoints:specs.map(([id])=>found.get(id))}));console.log('Generated '+found.size+' real gameplay checkpoints');

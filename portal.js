@@ -10,7 +10,7 @@ const games=[
  ['あおびーの星守り','星を守る\nあおびー','バラエティ','STAR GUARDの世界へ出かけよう。','aobee_star_guard_v1_complete.html','#437898','#95cddb'],
  ['走れ！あおびー','走れ！\nあおびー','アクション','あおびーと一緒に、走り出そう。','hashire_aobee_v3.2.html','#378daa','#86d9d5'],
  ['あおびーのピコピコフィッシング','海へ、\n釣りに行こう！','釣り','魚の動きを読んで釣り上げよう。','aobee_pico_fishing_v68_portal.html','#168db5','#8ce6e5'],
- ['あおびーと星の神殿','星の神殿へ、\n冒険の旅','アクション','星の消えた村から始まる、新しい冒険。','aobee_star_temple_portal.html?v=temple-tower-20261117','#3b7d78','#d8c58b'],
+ ['あおびーと星の神殿','星の神殿へ、\n冒険の旅','アクション','星の消えた村から始まる、新しい冒険。','aobee_star_temple_portal.html?v=temple-recovery-20261117','#3b7d78','#d8c58b'],
  ['押して！あおびー','じっくり、\nひと押し。','パズル','考えながら遊ぶ、あおびーのパズル。','oshite_aobee_superhard_reina_v15_hint.html?v=progress16','#7f80b2','#beb5e4'],
  ['あおびー群星絵巻','小さな星たちが、\n天下を動かす。','SLG','城を育て、兵糧を前線へ届ける戦国戦略シミュレーション。','yabou/index.html?v=logistics111d','#205152','#d9bf83'],
  ['あおびーゴルフ','青空へ、\nナイスショット！','スポーツ','風とランを読んで18ホールへ。','aobee_golf.html?v=golf10','#258ca4','#b6e77a'],
