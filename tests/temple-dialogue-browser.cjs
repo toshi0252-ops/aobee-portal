@@ -27,7 +27,7 @@ const assert=require('node:assert/strict'),path=require('node:path');
    assert.equal(await page.locator('#dialogNext').textContent(),'読み終える ✓');
    await page.locator('#dialogNext').press('Enter');
    assert.equal(await page.locator('#dialog').isVisible(),false);
-   assert.equal(await page.locator('#act').getAttribute('aria-label'),'調べる・攻撃');
+   assert.equal(await page.locator('#act').getAttribute('aria-label'),'調べる');
   }
   assert.deepEqual(errors,[]);
   console.log('PASS dialogue at 4 sizes: title hidden, long text scroll, fixed next, drag suppression, single advance, scroll reset, keyboard finish, action label, no JS errors');

@@ -11,7 +11,7 @@ function boot(saved){
  const window={addEventListener(){},visualViewport:null};
  const ctx=vm.createContext({document:doc,window,Image,console,innerWidth:960,innerHeight:540,performance:{now:()=>now},requestAnimationFrame(){},setTimeout(){},clearTimeout(){},MutationObserver:class{observe(){}},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},confirm:()=>true,location:{reload(){}},getComputedStyle:()=>({position:'fixed'}),Date:{now:()=>now}});
  ctx.globalThis=ctx;
- for(const [,attrs,s]of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)){const src=attrs.match(/src="([^"]+)"/);const file=src?.[1].split('?')[0];const script=['../assets/temple-visuals.js','../assets/temple-presentation.js','../assets/temple-journey.js','../assets/temple-recovery.js'].includes(file)?fs.readFileSync(file.slice(3),'utf8'):s;vm.runInContext(script,ctx)}
+ for(const [,attrs,s]of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)){const src=attrs.match(/src="([^"]+)"/);const file=src?.[1].split('?')[0];const script=['../assets/temple-visuals.js','../assets/temple-presentation.js','../assets/temple-journey.js','../assets/temple-recovery.js','../assets/temple-combat.js'].includes(file)?fs.readFileSync(file.slice(3),'utf8'):s;vm.runInContext(script,ctx)}
  const run=s=>{const result=vm.runInContext(s,ctx);if(module.exports.observe)module.exports.observe(code=>vm.runInContext(code,ctx));return result};
  function flush(){let n=0;while(run("$('dialog').style.display==='block'")){if(++n>100)throw Error('dialogue loop');run('nextLine()')}now+=1000;}
  function act(){now+=1000;run('action()');flush()}

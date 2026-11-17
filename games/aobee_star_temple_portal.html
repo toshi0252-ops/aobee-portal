@@ -184,13 +184,13 @@ ctx.fillStyle='#ffffff0b';ctx.fillRect(px+4,py+4,3,3);if(ch==='#'){ctx.fillStyle
  if(x===12&&y===15){ctx.fillStyle='#b4e6ed';ctx.font='28px serif';ctx.fillText('⇩',px+7,py+30)}
  }if(area==='ruins'){if(x===3&&y===12){ctx.fillStyle='#d3b6f4';ctx.font='28px serif';ctx.fillText('◇',px+9,py+30)}if(y===7&&x>=10&&x<=14){ctx.fillStyle=ruinKey?'#938a7b':'#24283c';ctx.fillRect(px,py,T,T)}if([[5,10],[18,10]].some(([a,b])=>a===x&&b===y)){ctx.fillStyle=ruinSwitches.has(x===5?'west':'east')?'#f8d979':'#7894ab';ctx.beginPath();ctx.arc(px+20,py+20,13,0,7);ctx.fill()}if(x===12&&y===9&&!ruinKey&&ruinSwitches.size===2){ctx.fillStyle='#ffdf83';ctx.font='30px serif';ctx.fillText('⚿',px+8,py+32)}if(x===12&&y===15){ctx.fillStyle='#a9d6e5';ctx.font='25px serif';ctx.fillText('⇩',px+8,py+30)}}if(ch==='='){ctx.fillStyle='#bca97a';ctx.fillRect(px,py,T,T);ctx.fillStyle='#8d785b';ctx.fillRect(px+4,py+4,32,32)}}function pos(x,y){return [(x-ox)*T,(y-oy)*T]}if(area==='ruins'&&ruinKey&&ruinBossHP>0){let [bx,by]=pos(ruinBossX,ruinBossY);if(bossWarnAt){ctx.fillStyle='rgba(255,80,70,.3)';for(let xx=8;xx<=16;xx++)ctx.fillRect(xx*T,by-2,40,5*T);}ctx.fillStyle='#a57bba';ctx.beginPath();ctx.arc(bx+20,by+20,24,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.font='16px system-ui';ctx.fillText('✦',bx+14,by+25);ctx.font='12px system-ui';ctx.fillText('守護機械 '+ruinBossHP,bx-4,by-8)}if(area==='ruins'&&ruinBossHP===0){let [bx,by]=pos(12,1);ctx.fillStyle='#ffda82';ctx.font='24px serif';ctx.fillText('✧',bx+12,by+28)}if(area==='village'){[[10,6,'長老','#f6d58b'],[5,5,'村人','#f4a5b9'],[14,5,'村人','#d1a8ed']].forEach(([x,y,n,c])=>{let [px,py]=pos(x,y);ctx.fillStyle=c;ctx.beginPath();ctx.arc(px+20,py+20,14,0,7);ctx.fill();ctx.fillStyle='#182b4a';ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillText(n,px+20,py-3)})}else if(area==='forest'){if(phase>=2&&!mioRescued){[[7,12,'ribbon','🎀'],[3,8,'tracks','⌁'],[16,11,'charm','✧']].forEach(([x,y,id,sym])=>{if(clues.has(id))return;let [cx,cy]=pos(x,y);ctx.fillStyle='#fff3b0';ctx.font='24px system-ui';ctx.textAlign='center';ctx.fillText(sym,cx+20,cy+29)});if(clues.size===3){let [mx,my]=pos(5,3);ctx.fillStyle='#f8d6a7';ctx.beginPath();ctx.arc(mx+20,my+20,13,0,Math.PI*2);ctx.fill();ctx.fillStyle='#182b4a';ctx.font='11px system-ui';ctx.fillText('ミオ',mx+20,my-3)}}[[4,3],[19,4],[18,13]].forEach(([x,y],i)=>{if(taken.has('s'+i))return;let [px,py]=pos(x,y);ctx.fillStyle='#ffe78b';ctx.font='32px serif';ctx.textAlign='center';ctx.fillText('✦',px+20,py+31)});enemy.forEach(e=>{let [px,py]=pos(e.x,e.y);ctx.fillStyle='#b9589a';ctx.beginPath();ctx.arc(px+20,py+20,14,0,7);ctx.fill();ctx.fillStyle='white';ctx.fillRect(px+13,py+17,4,5);ctx.fillRect(px+23,py+17,4,5)})}let [px,py]=pos(player.x,player.y);ctx.fillStyle='#172a3666';ctx.beginPath();ctx.ellipse(px+20,py+35,15,5,0,0,7);ctx.fill();if(pic.complete&&pic.naturalWidth)(invuln>0&&Math.floor(invuln/2)%2?null:ctx.drawImage(pic,px+1,py-10,38,47));else{ctx.fillStyle='#6ac9ff';ctx.beginPath();ctx.arc(px+20,py+19,17,0,7);ctx.fill()}if(area==='forest'&&phase===3){let [wx,wy]=pos(20,2);ctx.fillStyle='#202235';ctx.beginPath();ctx.arc(wx+20,wy+19,18,0,7);ctx.fill();ctx.fillStyle='#f7e68a';ctx.font='20px serif';ctx.fillText('★',wx+20,wy+12)}ctx.textAlign='left'}
 let last=0, nextStepAt=0;function simulationStep(t){if($('start').style.display!=='none'||$('dialog').style.display==='block'||document.hidden)return;
- if(area==='ruins'&&ruinKey&&ruinBossHP>0&&bossIntro&&!end&&$('dialog').style.display!=='block'&&$('start').style.display==='none'){
+ if(area==='ruins'&&ruinKey&&ruinBossHP>0&&bossIntro&&!(typeof TempleCombat==='object'&&TempleCombat.stunned())&&!end&&$('dialog').style.display!=='block'&&$('start').style.display==='none'){
   if(!bossAttackAt)bossAttackAt=t+1700;
   if(!bossWarnAt&&t>=bossAttackAt){bossWarnAt=t+850;toast('守護機械が横一列に光を集めている！')}
   if(bossWarnAt&&t>=bossWarnAt){bossWarnAt=0;bossAttackAt=t+2600;
-   if(player.y>=1&&player.y<=6&&player.x>=8&&player.x<=16&&invuln<=0){player.hp--;invuln=22;updateHud();toast('星光の衝撃！');if(player.hp<=0){player.hp=3;updateHud();player.x=12;player.y=13;bossAttackAt=t+2500;say([['あおびー','危なかった……！ いったん入口からやり直そう。']])}}}
+   if(player.y>=1&&player.y<=6&&player.x>=8&&player.x<=16&&invuln<=0){if(typeof TempleCombat==='object')TempleCombat.hurt(1);else player.hp--;invuln=22;updateHud();toast('星光の衝撃！');if(player.hp<=0){player.hp=3;updateHud();player.x=12;player.y=13;bossAttackAt=t+2500;say([['あおびー','危なかった……！ いったん入口からやり直そう。']])}}}
  }
-if(invuln>0&&area==='ruins')invuln--;if(area==='forest'&&!end&&$('dialog').style.display!=='block'&&$('start').style.display==='none'){enemyClock++;if(invuln>0)invuln--;if(enemyClock%7===0){enemy.forEach(e=>{let dx=Math.sign(player.x-e.x),dy=Math.sign(player.y-e.y);if(Math.abs(player.x-e.x)+Math.abs(player.y-e.y)===1){if(invuln===0){player.hp--;invuln=18;updateHud();toast('敵の攻撃！');if(player.hp<=0){player.hp=3;updateHud();change('village');say([['長老','危ないところじゃったな。体力を回復しておいたぞ。']])}}}else if(Math.abs(player.x-e.x)+Math.abs(player.y-e.y)<5){let nx=e.x+(Math.random()<.5?dx:0),ny=e.y+(Math.random()<.5?dy:0);if(!(ny===15&&nx>=3&&nx<=7)&&!wall(nx,ny)&&!(nx===player.x&&ny===player.y)&&!enemy.some(a=>a!==e&&a.x===nx&&a.y===ny)){e.x=nx;e.y=ny}}})}}if(hold&&t>=nextStepAt&&$('dialog').style.display!=='block'){move(...hold);nextStepAt=t+170}}let simulationTime=0,frameBefore=null,accumulator=0;function loop(now){if(frameBefore===null)frameBefore=now;const dt=Math.min(100,Math.max(0,now-frameBefore));frameBefore=now;if(!document.hidden){accumulator+=dt;while(accumulator>=1000/60){simulationTime+=1000/60;simulationStep(simulationTime);accumulator-=1000/60;}draw();}else accumulator=0;requestAnimationFrame(loop)}function begin(){ $('start').style.display='none';say([['語り','ほしの村では、今夜の星灯り祭りに向けて準備が進んでいた。'],['あおびー','みんな忙しそう。ぼくも手伝おう！'],['語り','まずは広場の長老に話しかけよう。']],()=>objective('広場の長老に話しかけよう'))} $('begin').onclick=begin;$('dialog').onclick=nextLine;$('act').onpointerdown=e=>{e.preventDefault();action()};document.querySelectorAll('[data-dir]').forEach(b=>{let dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};b.onpointerdown=e=>{e.preventDefault();hold=dirs[b.dataset.dir];move(...hold);nextStepAt=simulationTime+170;b.setPointerCapture(e.pointerId)};b.onpointerup=b.onpointercancel=()=>hold=null});function templeKey(e){return e.key.length===1?e.key.toLowerCase():e.key;}
+if(invuln>0&&area==='ruins')invuln--;if(area==='forest'&&typeof TempleCombat==='undefined'&&!end&&$('dialog').style.display!=='block'&&$('start').style.display==='none'){enemyClock++;if(invuln>0)invuln--;if(enemyClock%7===0){enemy.forEach(e=>{let dx=Math.sign(player.x-e.x),dy=Math.sign(player.y-e.y);if(Math.abs(player.x-e.x)+Math.abs(player.y-e.y)===1){if(invuln===0){if(typeof TempleCombat==='object')TempleCombat.hurt(1);else player.hp--;invuln=18;updateHud();toast('敵の攻撃！');if(player.hp<=0){player.hp=3;updateHud();change('village');say([['長老','危ないところじゃったな。体力を回復しておいたぞ。']])}}}else if(Math.abs(player.x-e.x)+Math.abs(player.y-e.y)<5){let nx=e.x+(Math.random()<.5?dx:0),ny=e.y+(Math.random()<.5?dy:0);if(!(ny===15&&nx>=3&&nx<=7)&&!wall(nx,ny)&&!(nx===player.x&&ny===player.y)&&!enemy.some(a=>a!==e&&a.x===nx&&a.y===ny)){e.x=nx;e.y=ny}}})}}if(hold&&t>=nextStepAt&&$('dialog').style.display!=='block'){move(...hold);nextStepAt=t+170}}let simulationTime=0,frameBefore=null,accumulator=0;function loop(now){if(frameBefore===null)frameBefore=now;const dt=Math.min(100,Math.max(0,now-frameBefore));frameBefore=now;if(!document.hidden){accumulator+=dt;while(accumulator>=1000/60){simulationTime+=1000/60;simulationStep(simulationTime);accumulator-=1000/60;}draw();}else accumulator=0;requestAnimationFrame(loop)}function begin(){ $('start').style.display='none';say([['語り','ほしの村では、今夜の星灯り祭りに向けて準備が進んでいた。'],['あおびー','みんな忙しそう。ぼくも手伝おう！'],['語り','まずは広場の長老に話しかけよう。']],()=>objective('広場の長老に話しかけよう'))} $('begin').onclick=begin;$('dialog').onclick=nextLine;$('act').onpointerdown=e=>{e.preventDefault();action()};document.querySelectorAll('[data-dir]').forEach(b=>{let dirs={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};b.onpointerdown=e=>{e.preventDefault();hold=dirs[b.dataset.dir];move(...hold);nextStepAt=simulationTime+170;b.setPointerCapture(e.pointerId)};b.onpointerup=b.onpointercancel=()=>hold=null});function templeKey(e){return e.key.length===1?e.key.toLowerCase():e.key;}
 document.onkeydown=e=>{
  const key=templeKey(e),target=e.target;
  if(e.ctrlKey||e.metaKey||e.altKey||target?.isContentEditable||target?.closest?.('input,textarea,select')){hold=null;return;}
@@ -304,10 +304,10 @@ function closeEquipment(){$('equipmentPanel').hidden=true;templeGearOpen=false;c
 $('equipment').onclick=()=>{if($('start').style.display!=='none'||$('dialog').style.display==='block')return;templeGearOpen=true;clearStick();$('equipmentPanel').hidden=false;$('equip-'+templeWeapon).focus();};
 for(const key of Object.keys(templeWeapons))$('equip-'+key).onclick=()=>{templeWeapon=key;templeAttack=null;updateEquipment();saveGame(true);closeEquipment();};
 $('equipmentClose').onclick=closeEquipment;
-document.addEventListener('keydown',e=>{if(templeGearOpen){if(e.key==='Escape'){e.preventDefault();closeEquipment();}else if(e.key==='Tab'){e.preventDefault();const buttons=[$('equip-sword'),$('equip-spear'),$('equip-hammer'),$('equipmentClose')],i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?3:1))%4].focus();}}});
+document.addEventListener('keydown',e=>{if(templeGearOpen){if(e.key==='Escape'){e.preventDefault();closeEquipment();}else if(e.key==='Tab'){e.preventDefault();const buttons=[...$('equipmentPanel').querySelectorAll('button')],i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?buttons.length-1:1))%buttons.length].focus();}}});
 window.addEventListener('blur',()=>{templeMove=null;templeAttack=null;});
 updateEquipment();
-</script><script src="../assets/temple-visuals.js?v=tower-20261117"></script><script src="../assets/temple-presentation.js?v=party-20261117"></script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
+</script><script src="../assets/temple-visuals.js?v=action-20261117"></script><script src="../assets/temple-presentation.js?v=party-20261117"></script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
 (()=>{
 const g=ctx,tile=40;let cameraY=0;
 function rect(x,y,w,h,c){g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
@@ -769,7 +769,7 @@ action=function(){
 };
 const storyStep=simulationStep;
 simulationStep=function(t){storyStep(t);
- if(area!=='seal'||chapter1Story.mode!=='battle'||questJournalOpen||templeGearOpen||$('dialog').style.display==='block'||$('start').style.display!=='none'||document.hidden)return;
+ if(area!=='seal'||chapter1Story.mode!=='battle'||(typeof TempleCombat==='object'&&TempleCombat.stunned())||questJournalOpen||templeGearOpen||$('dialog').style.display==='block'||$('start').style.display!=='none'||document.hidden)return;
  // This simulation runs at 60 Hz. Modal time must not advance attack deadlines.
  t=sealClock+=1000/60;
  if(!sealNextAt){sealCycle='waiting';sealNextAt=t+1000;return;}
@@ -777,7 +777,7 @@ simulationStep=function(t){storyStep(t);
  if(sealCycle==='waiting'){sealCycle='warning';sealNextAt=t+900;toast('赤い床から離れよう！');return;}
  if(sealCycle==='warning'){
   sealCycle='open';sealNextAt=t+1800;
-  if(sealDanger(player.x,player.y)){player.hp--;updateHud();
+  if(sealDanger(player.x,player.y)){if(typeof TempleCombat==='object')TempleCombat.hurt(1);else player.hp--;updateHud();
    if(player.hp<=0){player.hp=3;chapter1Story.bossHP=9;chapter1Story.mode='cooperate';player.x=12;player.y=14;templeMove=null;updateHud();say([['案内','入口へ戻った。西のスイッチから、もう一度合図できる。']]);return;}
    tryS105ChapterSupport('ch1_star_eating_shadow');saveGame(true);
   }toast('放出が止まった！ 武器で反撃しよう');return;
@@ -1156,16 +1156,16 @@ const TempleChapter2=(()=>{
  function towerDanger(x,y){return state.bossStage===1?y>=4&&y<=8:state.bossStage===2?x>=10&&x<=14:y>=3&&y<=12&&x>=6&&x<=18;}
  const prevTowerStep=simulationStep;simulationStep=function(t){
   prevTowerStep(t);
-  if(area!=='ch2_tower4'||state.stopped||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
+  if(area!=='ch2_tower4'||state.stopped||(typeof TempleCombat==='object'&&TempleCombat.stunned())||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
   towerClock+=1000/60;if(!towerDue){towerDue=towerClock+900;return;}if(towerClock<towerDue)return;
   if(towerCycle==='waiting'){towerCycle='warning';towerDue=towerClock+1100;toast('根の番人が光を集めている。赤い床の外へ！');return;}
   if(towerCycle==='warning'){
    towerCycle='open';towerDue=towerClock+4800;toast(state.bossStage===3?'放出が止まった！ 北の停止端末を調べよう':'防御が開いた！ 金色の命令端末を攻撃しよう');
-   if(towerDanger(player.x,player.y)){player.hp--;if(player.hp<=0){player.hp=3;state.bossStage=1;state.redirected=false;state.held=false;player.x=12;player.y=14;templeMove=null;resetCycle();toast('入口で体力を回復。長い会話なしで再挑戦できる');}updateHud();saveGame(true);}return;
+   if(towerDanger(player.x,player.y)){if(typeof TempleCombat==='object')TempleCombat.hurt(1);else player.hp--;if(player.hp<=0){player.hp=3;state.bossStage=1;state.redirected=false;state.held=false;player.x=12;player.y=14;templeMove=null;resetCycle();toast('入口で体力を回復。長い会話なしで再挑戦できる');}updateHud();saveGame(true);}return;
   }towerCycle='waiting';towerDue=towerClock+800;
  };
 
- return {start,ensurePartyIntroduction,getState:()=>({...state,records:[...state.records],read:[...state.read],angles:[...state.angles],floors:[...state.floors]}),getBattleState:()=>({cycle:towerCycle,stage:state.bossStage}),isZone};
+ return {combatPhase(phase){state.bossStage=phase;},completeCombat(){state.bossStage=3;state.held=true;state.redirected=true;towerCycle='open';TempleCombat.finishAt(12,6,()=>towerInteract());},start,ensurePartyIntroduction,getState:()=>({...state,records:[...state.records],read:[...state.read],angles:[...state.angles],floors:[...state.floors]}),getBattleState:()=>({cycle:towerCycle,stage:state.bossStage}),isZone};
 })();
 
 </script><style>#chapter2Clear[hidden]{display:none}#chapter2Clear{position:fixed;inset:0;z-index:51;display:grid;place-items:center;background:#092b2ce8;padding:12px}#chapter2Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#214b46;border:1px solid #c8d5a1;border-radius:14px;padding:24px;color:#eee8c9}#chapter2Clear h2{color:#f5dda2}#chapter2Clear p{line-height:1.7}#chapter2Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#203d39;font-weight:bold}</style><div id="chapter2Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter2ClearTitle"><section><h2 id="chapter2ClearTitle">第2章 クリア</h2><p>深緑の森に、星の光が戻った。<br>次の星図は、海の向こうへ。</p><p id="chapter2ClearSummary"></p><p id="chapter2SaveStatus"></p><button id="chapter2Explore" type="button">村と森の探索を続ける</button></section></div><script>$('chapter2Explore').onclick=()=>{$('chapter2Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter2Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter2Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter2Explore').focus();}});</script><script>
@@ -1283,12 +1283,12 @@ const TempleChapter3=(()=>{
  };
  const oldAction=action;action=function(){if(!here()||!s101CanInteract()){oldAction();return;}if(playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;templeAttack=null;interact();if($('dialog').style.display!=='block')saveGame(true);};
  const oldStep=simulationStep;simulationStep=function(t){oldStep(t);
-  if(area!=='ch3_beacon'||state.stopped||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
+  if(area!=='ch3_beacon'||state.stopped||(typeof TempleCombat==='object'&&TempleCombat.stunned())||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
   clock+=1000/60;if(!due){due=clock+900;return;}if(clock<due)return;
   if(cycle==='waiting'){cycle='warning';due=clock+1100;toast('赤い床に波が押し寄せる。反対側へ！');return;}
   if(cycle==='warning'){
    cycle='open';due=clock+3000;
-   if(wave===0?player.x<=11:player.x>=12){player.hp--;if(player.hp<=0){player.hp=3;state.valves=[false,false];player.x=12;player.y=14;templeMove=null;cycle='waiting';due=clock+1000;wave=0;toast('入口で回復。航路灯の電源は確保したまま再挑戦できる');}updateHud();saveGame(true);}return;
+   if(wave===0?player.x<=11:player.x>=12){if(typeof TempleCombat==='object')TempleCombat.hurt(1);else player.hp--;if(player.hp<=0){player.hp=3;state.valves=[false,false];player.x=12;player.y=14;templeMove=null;cycle='waiting';due=clock+1000;wave=0;toast('入口で回復。航路灯の電源は確保したまま再挑戦できる');}updateHud();saveGame(true);}return;
   }wave=1-wave;cycle='waiting';due=clock+900;
  };
  const oldDraw=draw;draw=function(){if(!here()){oldDraw();return;}
@@ -1316,7 +1316,7 @@ const TempleChapter3=(()=>{
   }
   if(area==='ch3_beacon'){
    if(!state.stopped&&cycle==='warning')for(let y=1;y<17;y++)for(let x=1;x<23;x++)if(wave===0?x<=11:x>=12)rect(x*40+2,y*40+2,36,36,'#e3867ca0');
-   rect(450,105,100,75,state.stopped?'#789e9b':'#557d91');g.strokeStyle=cycle==='open'||state.stopped?'#ffe0a1':'#8cd3d8';g.lineWidth=5;g.beginPath();g.arc(500,142,26,0,7);g.stroke();
+   rect(450,184,100,75,state.stopped?'#789e9b':'#557d91');g.strokeStyle=cycle==='open'||state.stopped?'#ffe0a1':'#8cd3d8';g.lineWidth=5;g.beginPath();g.arc(500,220,26,0,7);g.stroke();
    for(const [i,x]of [6,17].entries()){post(x,11,state.valves[i]);label('水門'+(state.valves[i]?'・固定':''),x*40+20,435);}post(12,5,state.stopped);label('停止端末',500,235);label('航路灯は独立電源で点灯中',500,90);label('分配室へ戻る',500,640);
   }
   TempleVisuals.details(g,area);
@@ -1330,7 +1330,7 @@ const TempleChapter3=(()=>{
  const oldJournal=openQuestJournal;openQuestJournal=function(){oldJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第3章・星を映さぬ港】\n'+[['帰還船の救助',state.boatRescued],['管理者認証鍵の記録',state.authRead],['航路灯の電源を確保',state.lampSeparated],['異常転送を停止',state.stopped],['第3章クリア',state.reported],['任意：工具箱を返却',state.toolsReturned]].map(([s,b])=>(b?'✓ ':'・')+s).join('\n')+'\n\n'+$('questJournalList').textContent;};
  document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter3Start" type="button" hidden>第3章へ出発</button><button id="chapter3Record" type="button" hidden>第3章の記録</button>');
  $('chapter3Start').onclick=start;$('chapter3Record').onclick=()=>{if(s101CanInteract()&&state.reported)showRecord();};$('questJournal').onclick=openQuestJournal;sync();
- return {start,getState:()=>({...state,pumps:[...state.pumps],valves:[...state.valves]}),getBattleState:()=>({cycle,wave})};
+ return {completeCombat(){state.valves=[true,true];cycle='open';TempleCombat.finishAt(12,6,()=>interact());},start,getState:()=>({...state,pumps:[...state.pumps],valves:[...state.valves]}),getBattleState:()=>({cycle,wave})};
 })();
 
 </script><style>#chapter3Clear[hidden]{display:none}#chapter3Clear{position:fixed;inset:0;z-index:52;display:grid;place-items:center;background:#102c43eb;padding:12px}#chapter3Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#284d60;border:1px solid #d7cc9f;border-radius:14px;padding:24px;color:#f0e9cb}#chapter3Clear h2{color:#ffe0a0}#chapter3Clear p{line-height:1.7}#chapter3Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#203c49;font-weight:bold}</style><div id="chapter3Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter3ClearTitle"><section><h2 id="chapter3ClearTitle">第3章 クリア</h2><p>船を導く灯りは、消えなかった。<br>次の星図は、海図にない島へ。</p><p id="chapter3ClearSummary"></p><p id="chapter3SaveStatus"></p><button id="chapter3Explore" type="button">港と村の探索を続ける</button></section></div><script>$('chapter3Explore').onclick=()=>{$('chapter3Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter3Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter3Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter3Explore').focus();}});</script><script>
@@ -1450,10 +1450,10 @@ const TempleChapter4=(()=>{
  };
  const oldAction=action;action=function(){if(!here()||!s101CanInteract()){oldAction();return;}if(playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;templeAttack=null;interact();if($('dialog').style.display!=='block')saveGame(true);};
  function danger(x,y){return y<=9&&(state.protected===0?x<=9:state.protected===1?x>=15:x>=10&&x<=14);}
- const oldStep=simulationStep;simulationStep=function(t){oldStep(t);if(area!=='ch4_scribe'||state.scribeStopped||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
+ const oldStep=simulationStep;simulationStep=function(t){oldStep(t);if(area!=='ch4_scribe'||state.scribeStopped||(typeof TempleCombat==='object'&&TempleCombat.stunned())||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
   clock+=1000/60;if(!due){due=clock+900;return;}if(clock<due)return;
   if(cycle==='waiting'){cycle='warning';due=clock+1100;toast('赤い範囲に記録消去の光が集まっている。外へ！');return;}
-  if(cycle==='warning'){cycle='open';due=clock+3200;if(danger(player.x,player.y)){player.hp--;if(player.hp<=0){player.hp=3;state.protected=0;state.backup=false;player.x=12;player.y=14;templeMove=null;resetCycle();toast('入口で回復。原本は失われず、複製から再挑戦できる');}updateHud();saveGame(true);}return;}
+  if(cycle==='warning'){cycle='open';due=clock+3200;if(danger(player.x,player.y)){if(typeof TempleCombat==='object')TempleCombat.hurt(1);else player.hp--;if(player.hp<=0){player.hp=3;state.protected=0;state.backup=false;player.x=12;player.y=14;templeMove=null;resetCycle();toast('入口で回復。原本は失われず、複製から再挑戦できる');}updateHud();saveGame(true);}return;}
   cycle='waiting';due=clock+800;
  };
  const oldDraw=draw;draw=function(){if(!here()){oldDraw();return;}
@@ -1476,7 +1476,7 @@ const TempleChapter4=(()=>{
   }
   if(area==='ch4_scribe'){
    if(cycle==='warning'&&!state.scribeStopped)for(let y=1;y<17;y++)for(let x=1;x<23;x++)if(danger(x,y))rect(x*40+2,y*40+2,36,36,'#dc849ba0');
-   rect(445,100,110,76,state.scribeStopped?'#9eafa7':'#7b7295');for(let n=0;n<3;n++)rect(458+n*28,115,20,44,'#ccc6ab');label(state.scribeStopped?'忘却の書記・保護モード':'忘却の書記',500,90);
+   rect(445,184,110,76,state.scribeStopped?'#9eafa7':'#7b7295');for(let n=0;n<3;n++)rect(458+n*28,199,20,44,'#ccc6ab');label(state.scribeStopped?'忘却の書記・保護モード':'忘却の書記',500,90);
    for(const [i,x]of [6,12,18].entries()){post(x,6,state.scribeStopped||order.slice(0,state.protected).includes(i));label(bookTitles[i],x*40+20,285);}post(6,11,state.backup);post(17,11);label('複製を保護',260,435);label('削除命令の記録',700,435);label('貯蔵庫へ',500,640);
   }
   if(area==='ch4_chart'){
@@ -1491,7 +1491,7 @@ const TempleChapter4=(()=>{
  const oldControls=storyControls;storyControls=function(){oldControls();sync();};
  const oldJournal=openQuestJournal;openQuestJournal=function(){oldJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第4章・消された島と星の記録】\n'+[['島の碑文',state.survey],['年代の照合',state.sorted],['名札を持ち主に確認',state.nameConfirmed],['蓄積光を安全に保持',state.lightHeld],['記録機構を停止',state.scribeStopped],['神殿への星図・第4章クリア',state.reported],['任意：集落の時計を修理',state.clockFixed]].map(([s,b])=>(b?'✓ ':'・')+s).join('\n')+'\n\n'+$('questJournalList').textContent;};
  document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter4Start" type="button" hidden>第4章へ出発</button><button id="chapter4Record" type="button" hidden>第4章の記録</button>');$('chapter4Start').onclick=start;$('chapter4Record').onclick=()=>{if(s101CanInteract()&&state.reported)showRecord();};$('questJournal').onclick=openQuestJournal;sync();
- return {start,getState:()=>({...state,read:[...state.read]}),getBattleState:()=>({cycle})};
+ return {combatPhase(phase){state.protected=Math.max(state.protected,phase-1);},completeCombat(){state.backup=true;state.protected=2;cycle='open';TempleCombat.finishAt(12,7,()=>interact());},start,getState:()=>({...state,read:[...state.read]}),getBattleState:()=>({cycle})};
 })();
 
 </script><style>#chapter4Clear[hidden]{display:none}#chapter4Clear{position:fixed;inset:0;z-index:53;display:grid;place-items:center;background:#292b46ed;padding:12px}#chapter4Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#505570;border:1px solid #d7cc9f;border-radius:14px;padding:24px;color:#f0e9cb}#chapter4Clear h2{color:#ffe0a0}#chapter4Clear p{line-height:1.7}#chapter4Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#343b53;font-weight:bold}</style><div id="chapter4Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter4ClearTitle"><section><h2 id="chapter4ClearTitle">第4章 クリア</h2><p>消された記録を、消さずに持ち帰る。<br>神殿への星図が、開いた。</p><p id="chapter4ClearSummary"></p><p id="chapter4SaveStatus"></p><button id="chapter4Explore" type="button">島と港の探索を続ける</button></section></div><script>$('chapter4Explore').onclick=()=>{$('chapter4Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter4Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter4Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter4Explore').focus();}});</script><script>
@@ -1624,10 +1624,10 @@ const TempleChapter5=(()=>{
  const oldMove=move;move=function(dx,dy){if(!here()){oldMove(dx,dy);return;}if(!s101CanInteract()||playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;player.dir=dx<0?'left':dx>0?'right':dy<0?'up':'down';const nx=player.x+dx,ny=player.y+dy;if(!blocked(nx,ny)){const ox=player.x,oy=player.y;player.x=nx;player.y=ny;templeMove={x:ox,y:oy,tx:nx,ty:ny,area,time:performance.now()};travel();}saveGame(true);};
  const oldAction=action;action=function(){if(!here()||!s101CanInteract()){oldAction();return;}if(playMenuOpen||landscapeBlocked||innerWidth<innerHeight)return;templeAttack=null;interact();if($('dialog').style.display!=='block')saveGame(true);};
  function danger(x,y){return state.stage===1?y>=4&&y<=8:state.stage===2?x>=10&&x<=14:y<=12&&(x+y)%4===0;}
- const oldStep=simulationStep;simulationStep=function(t){oldStep(t);if(area!=='ch5_core'||!state.battleStarted||state.networkBalanced||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
+ const oldStep=simulationStep;simulationStep=function(t){oldStep(t);if(area!=='ch5_core'||!state.battleStarted||(typeof TempleCombat==='object'&&TempleCombat.stunned())||state.networkBalanced||!s101CanInteract()||playMenuOpen||landscapeBlocked||document.hidden)return;
   clock+=1000/60;if(!due){due=clock+1000;return;}if(clock<due)return;
   if(cycle==='waiting'){cycle='warning';due=clock+1100;toast('星の番人が光を集めている。赤い予兆の外へ！');return;}
-  if(cycle==='warning'){cycle='open';due=clock+3600;if(danger(player.x,player.y)){player.hp--;if(player.hp<=0){player.hp=3;state.stage=1;state.relays=[false,false,false,false];state.hits=0;state.warubeeHeld=false;state.mioReady=false;player.x=12;player.y=14;templeMove=null;resetCycle();toast('入口で回復。四つの星門は接続したまま、番人戦から再挑戦できる');}updateHud();saveGame(true);}return;}
+  if(cycle==='warning'){cycle='open';due=clock+3600;if(danger(player.x,player.y)){if(typeof TempleCombat==='object')TempleCombat.hurt(1);else player.hp--;if(player.hp<=0){player.hp=3;state.stage=1;state.relays=[false,false,false,false];state.hits=0;state.warubeeHeld=false;state.mioReady=false;player.x=12;player.y=14;templeMove=null;resetCycle();toast('入口で回復。四つの星門は接続したまま、番人戦から再挑戦できる');}updateHud();saveGame(true);}return;}
   cycle='waiting';due=clock+900;
  };
  const oldDraw=draw;draw=function(){if(!here()){oldDraw();return;}
@@ -1647,7 +1647,7 @@ const TempleChapter5=(()=>{
   }
   if(area==='ch5_core'){
    if(state.battleStarted&&!state.networkBalanced&&cycle==='warning')for(let y=1;y<17;y++)for(let x=1;x<23;x++)if(danger(x,y))rect(x*40+2,y*40+2,36,36,'#e28f85a0');
-   rect(438,100,124,85,state.networkBalanced?'#89b5a0':'#607b91');g.strokeStyle=state.networkBalanced||cycle==='open'?'#ffe3a3':'#9bc4d7';g.lineWidth=6;g.beginPath();g.arc(500,142,30,0,7);g.stroke();post(12,5,state.networkBalanced);label(state.networkBalanced?'分配核・安定':'星の番人・第'+state.stage+'段階',500,85);
+   rect(438,184,124,85,state.networkBalanced?'#89b5a0':'#607b91');g.strokeStyle=state.networkBalanced||cycle==='open'?'#ffe3a3':'#9bc4d7';g.lineWidth=6;g.beginPath();g.arc(500,220,30,0,7);g.stroke();post(12,5,state.networkBalanced);label(state.networkBalanced?'分配核・安定':'星の番人・第'+state.stage+'段階',500,85);
    for(const [i,[x,y]]of [[6,6],[17,6],[6,11],[17,11]].entries()){post(x,y,state.relays[i]);label(['村','森','港','島'][i]+'の端末',x*40+20,y*40+50);}if(state.stage===3){rect(286,450,28,24,'#e2c98d');label('協力台・立って合図',300,492);label('ミオの観測を確認',700,435);}label('庭園へ戻る',500,640);
   }
   if(area==='ch5_festival'){
@@ -1664,7 +1664,7 @@ const TempleChapter5=(()=>{
  const oldControls=storyControls;storyControls=function(){oldControls();sync();};
  const oldJournal=openQuestJournal;openQuestJournal=function(){oldJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【最終章・星の神殿】\n'+(state.truth?'✓ 星守の証言と旧認証鍵\n':'・星守の証言\n')+keys.map((k,i)=>(state.gates.includes(k)?'✓ ':'・')+['村','森','港','島'][i]+'の星門').join('\n')+'\n'+(state.networkBalanced?'✓ 分散復旧\n':'・分散復旧\n')+(state.completed?'✓ 全5章の本編クリア\n':'・村の祭りへ帰る\n')+'\n'+$('questJournalList').textContent;};
  document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter5Start" type="button" hidden>最終章へ出発</button><button id="journeyRecord" type="button" hidden>旅のクリア記録</button>');$('chapter5Start').onclick=start;$('journeyRecord').onclick=()=>{if(s101CanInteract()&&state.completed)showRecord();};$('questJournal').onclick=openQuestJournal;sync();
- return {start,getState:()=>({...state,gates:[...state.gates],villageLoad:[...state.villageLoad],relays:[...state.relays]}),getBattleState:()=>({cycle})};
+ return {combatPhase(phase){state.stage=phase;},startCombat(){TempleCombat.finishAt(12,6,()=>interact());},completeCombat(){state.stage=3;state.relays=[true,true,true,true];state.warubeeHeld=true;state.mioReady=true;cycle='open';TempleCombat.finishAt(12,6,()=>interact());},start,getState:()=>({...state,gates:[...state.gates],villageLoad:[...state.villageLoad],relays:[...state.relays]}),getBattleState:()=>({cycle})};
 })();
 
 </script><style>#journeyClear[hidden]{display:none}#journeyClear{position:fixed;inset:0;z-index:54;display:grid;place-items:center;background:linear-gradient(145deg,#1d3448f5,#4b5150f5);padding:12px}#journeyClear section{width:min(500px,94vw);max-height:88dvh;overflow:auto;background:linear-gradient(135deg,#36545d,#263d52);border:1px solid #e6ce94;border-radius:16px;padding:24px;color:#f0e9cb;box-shadow:0 10px 50px #0008}#journeyClear h2{color:#ffe0a0}#journeyClear p{line-height:1.8}#journeyClear button{min-height:44px;width:100%;margin-top:10px;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#263e4c;font-weight:bold}#journeyClear .sub{background:#2d4657;color:#eee0bd}</style><div id="journeyClear" hidden role="dialog" aria-modal="true" aria-labelledby="journeyClearTitle"><section><small>あおびーと星の神殿</small><h2 id="journeyClearTitle">全5章 メインストーリークリア</h2><p>誰か一人の光ではなく、<br>みんなで守る、星の灯り。</p><p id="journeySummary"></p><p id="journeySaveStatus"></p><p>各章のメニューから地域へ戻れます。<br>残った依頼は、クリア後も続けられます。</p><button id="journeyExplore" type="button">祭りのあとも探索を続ける</button><button id="journeyTitle" class="sub" type="button">タイトルへ戻る</button></section></div><script>function closeJourneyRecord(){$('journeyClear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();}$('journeyExplore').onclick=()=>{closeJourneyRecord();saveGame(true);};$('journeyTitle').onclick=()=>{if(!saveGame(true)){$('journeySaveStatus').textContent='保存できませんでした。探索に戻ってセーブを再試行してください。';return;}closeJourneyRecord();location.reload();};document.addEventListener('keydown',e=>{if($('journeyClear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('journeyExplore').click();}if(e.key==='Tab'){e.preventDefault();(document.activeElement===$('journeyExplore')?$('journeyTitle'):$('journeyExplore')).focus();}});</script><style>#templeJournalBody{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;text-align:left}#templeJournalBody #questJournalList{overflow:visible}#templeNavigation{padding:12px;margin:0 0 18px;border:1px solid #c8b47c;border-radius:10px;background:#142d39}#templeNavigation h3{margin:0 0 10px;color:#ffe3a2;font-size:16px}#templeNavigation p{line-height:1.7;margin:8px 0}#templeNavigation small{display:block;line-height:1.6;color:#c9d5dd}</style><script>
@@ -1793,7 +1793,7 @@ nextLine=function(){
 #wrap #dialog{background:linear-gradient(135deg,#102e3af5,#142b3af5);box-shadow:0 5px 26px #07152588,inset 0 1px #fff1b418}
 </style><script>
 const sceneryDraw=draw;draw=function(){TemplePresentation.begin();sceneryDraw();TempleVisuals.atmosphere(ctx,area);TemplePresentation.finish()};
-document.documentElement.dataset.templeVisuals='recovery-v7';
+document.documentElement.dataset.templeVisuals='combat-v8';
 </script><style>
 #hud{font-size:14px;min-height:42px;grid-template-columns:102px minmax(0,1fr);max-width:760px;background:#082337ed;padding:6px 9px}
 #objective{font-size:14px;line-height:1.4;color:#fff0cf}
@@ -1813,4 +1813,4 @@ document.documentElement.dataset.templeVisuals='recovery-v7';
 #journeyMapClose{background:#dac38b!important;color:#183546!important;text-align:center!important;min-height:44px!important}
 #chapter2Start,#chapter3Start,#chapter4Start,#chapter5Start{display:none!important}
 @media(max-height:430px){#journeyMap section{padding:12px 16px}}
-</style><script src="../assets/temple-journey.js?v=quests-20261117"></script><script src="../assets/temple-recovery.js?v=recovery-20261117"></script></body></html>
+</style><script src="../assets/temple-journey.js?v=quests-20261117"></script><script src="../assets/temple-recovery.js?v=action-20261117"></script><script src="../assets/temple-combat.js?v=action-20261117"></script></body></html>
