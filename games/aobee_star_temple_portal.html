@@ -483,7 +483,7 @@ action=function(){
   else if(q.state==='complete')say([['タネ婆','助かったよ。森の奥にはまだ入らないでおくれ。']],()=>{
    if(questBook.claim('S101'))toast('回復薬を2個受け取った！ 依頼の手帳から使えるよ');else toast('回復薬がいっぱい。使ってから、もう一度話しかけよう');
   });
-  else say([['タネ婆','あのときはありがとう。今もちゃんと役に立っているよ。'],['案内','森の南の道を東へ回れば、中央の木々を避けて進めます。']]);
+  else say([['タネ婆',chapter1Story.reportSeen?'届けてくれた薬草で、森仕事のみんなの薬を仕込めたよ。森が静かになっても、けがには気をつけるんだよ。':'あの三株、よく育っていたね。煎じ薬にしておいたよ。薬が足りなくなったら、手帳から使うんだよ。']]);
   return;
  }
  if(area==='forest'&&phase>=2){
@@ -538,7 +538,7 @@ action=function(){
   if(q.state==='available')say([['ミオ','観測台の小さな灯りだけ、まだ消えたままなの。'],['あおびー','光の向きを変えれば届くかな？'],['案内','反射板を調べると矢印が時計回りに変わります。南東の光源から、①北→②西→③北へ光をつなぎましょう。']],()=>questBook.accept('S103'));
   else if(q.state==='active')say([['案内','①は北、②は西、③は北。違っていても、何度でも回して調整できます。']]);
   else if(q.state==='complete')say([['ミオ','届いた！ 大きな星はまだ戻らないけど、記録は続けられる。']],()=>{if(questBook.claim('S103'))toast('観測記録を1件受け取った！');});
-  else say([['ミオ','あのときはありがとう。今もちゃんと役に立っているよ。']]);
+  else say([['ミオ',chapter1Story.reportSeen?'観測台の灯りが戻ったおかげで、異変の前と後の星図を比べられる。次の旅にも、この記録を持っていこう。':'反射板、きれいにつながってる。今夜からまた星の位置を記録できるよ。あなたが戻してくれた灯り、大事にするね。']]);
   return;
  }
  const index=s103Panels.findIndex(p=>s103Facing(p.x,p.y)||(player.x===p.x&&player.y===p.y));
@@ -583,8 +583,8 @@ action=function(){
  if(facingNpc('elder')&&q.state!=='locked'){
   if(q.state==='available')say([['長老','古い地図は二つに裂けておる。誰も使わなくなって久しい。'],['あおびー','道がわかれば、危ない場所も避けられるね。'],['案内','村の南東の倉庫と、森外縁の東側に地図片があります。倉庫の机で合わせましょう。']],()=>questBook.accept('S104'));
   else if(q.state==='active')say([['案内','地図片は倉庫と森の東側。二枚とも集めたら、倉庫の机を調べよう。']]);
-  else if(q.state==='complete')say([['長老','道は教えてくれる。だが、地図にない場所もある。']],()=>{if(questBook.claim('S104'))toast('古い地図を復元した！ 遺跡の南東の宝箱が地図に記された');});
-  else say([['長老','あのときはありがとう。今もちゃんと役に立っているよ。'],['案内','地図に記された任意宝箱は遺跡の南東。取らずに本編を進めても大丈夫です。']]);
+  else if(q.state==='complete')say([['長老','おお、二枚がつながったか！ この曲がり角は昔の遺跡の道じゃ。よく復元してくれた。'],['長老','南東の印は、崩れた石に埋もれた古い宝箱じゃ。地図の印を頼りに探せば、見つけられるはずじゃ。']],()=>{if(questBook.claim('S104'))toast('古い地図を復元した！ 遺跡の南東の宝箱が地図に記された');});
+  else say([['長老',s104ChestOpened?'地図の宝箱も見つけたのじゃな。眠っていた道の記憶を、また一つ取り戻せた。あの地図は、おぬしが持っていておくれ。':'復元した地図の南東の印は調べたかの？ 遺跡の石積みに隠れた宝箱じゃ。急がず、旅の合間に探すとよい。']]);
   return;
  }
  const piece=s104Pieces.find(p=>p.area===area&&s104Near(p.x,p.y));
@@ -599,18 +599,20 @@ action=function(){
   }else say([['案内','復元した地図には、遺跡の南東に宝箱の印がある。']]);return;
  }
  if(area==='ruins'&&s104Near(20,12)){
+  if(!s104Revealed()){toast('崩れた石積みだ。何か手掛かりがあれば調べられそうだ');return;}
   if(s104ChestOpened){toast('この宝箱は開けてある');return;}
   say([['案内','任意の宝箱を開けた。星のしずくで体力が回復した。']],()=>{s104ChestOpened=true;player.hp=3;updateHud();});return;
  }
  s104Action();
 };
+function s104Revealed(){return s104ChestOpened||questBook.view('S104').progress.includes('assembled');}
 function drawS104(g){
  const q=questBook.view('S104');g.save();
  if(area==='village'){TemplePresentation.prop(g,0,823,545,160,106);TemplePresentation.label(g,'地図を合わせる作業机',823,440,{targetY:510});}
  if(phase>=2)for(const p of s104Pieces)if(p.area===area&&!q.progress.includes(p.id)&&q.state!=='claimed'){
   const x=p.x*40+20,y=p.y*40+20;g.fillStyle='#f2ddb0';g.fillRect(x-12,y-13,25,28);g.strokeStyle='#826f52';g.lineWidth=2;g.beginPath();g.moveTo(x-7,y+8);g.lineTo(x-1,y-5);g.lineTo(x+8,y+4);g.stroke();TemplePresentation.label(g,'地図片',x,y-21);
  }
- if(area==='ruins'){TemplePresentation.prop(g,s104ChestOpened?9:8,820,522,58,54);if(q.state==='claimed')TemplePresentation.label(g,s104ChestOpened?'発見済み':'地図の宝箱',820,467)}g.restore();
+ if(area==='ruins'&&s104Revealed()){TemplePresentation.prop(g,s104ChestOpened?9:8,820,522,58,54);TemplePresentation.label(g,s104ChestOpened?'発見済み':'地図の宝箱',820,467)}g.restore();
 }
 const s104Journal=openQuestJournal;
 openQuestJournal=function(){s104Journal();if(!questJournalOpen)return;const q=questBook.view('S104');if(q.state!=='locked')$('questJournalList').textContent+='\n'+(q.state==='claimed'?'地図：遺跡の南東に任意宝箱。'+(s104ChestOpened?'回収済み。':'未回収。'):q.state==='complete'?'長老に地図の復元を報告しよう。':'長老に相談。倉庫と森東側の地図片を集め、倉庫の机で合わせよう。');};
@@ -628,7 +630,7 @@ action=function(){
   if(q.state==='available')say([['トト','祭りの星飾り、なくしちゃった……。'],['あおびー','最後に持ってた場所、覚えてる？'],['案内','広場の足跡、橋のそばの村人、村の西の低木を順に調べましょう。']],()=>questBook.accept('S102'));
   else if(q.state==='active')say([['案内',!q.progress.includes('tracks')?'広場の東側に足跡があります。':!q.progress.includes('witness')?'村の南西、橋のそばの村人に聞いてみよう。':'橋の西側の低木に、星飾りが引っかかっています。']]);
   else if(q.state==='complete')say([['トト','見つかった！ これ、いちばん上に飾るんだ。']],()=>{if(questBook.claim('S102'))toast('星飾りを返した！ 祭りの飾りの記録が増えた');});
-  else say([['トト','あのときはありがとう。今もちゃんと役に立っているよ。']]);return;
+  else say([['トト',chapter1Story.reportSeen?'見て、返してくれた星飾り！ 祭りでいちばん高いところに飾るんだ。もう落とさないように、ひもも結び直したよ。':'星飾り、もう袋にしまったよ。祭りの日にはいちばん上に飾るから、あおびーも見にきてね！']]);return;
  }
  if(s104Near(13,9)&&!q.progress.includes('tracks')&&q.state!=='claimed'){
   say([['案内','広場に小さな足跡が続いている。南西の橋の方へ向かっているようだ。']],()=>questBook.record('S102','tracks'));return;
@@ -677,7 +679,7 @@ action=function(){
    const next=s105Route[s105Step+1];
    if(next[0]===player.x&&next[1]===player.y){toast('進む先を空けて、隣から声をかけよう');return;}
    say([['案内','守り手が、安全な道を一歩進んだ。']],()=>{s105Step++;if(s105Step===4){questBook.record('S105','home');say([['あおびー','よかった。ちゃんと帰れたね！']],()=>{if(questBook.claim('S105'))toast('守り手が巣に帰った。小さな灯りがともった');});}});
-  }else say([['森の小さな守り手','あのときはありがとう。今もちゃんと役に立っているよ。']]);return;
+  }else say([['案内','小さな守り手は巣の入り口から顔を出し、あおびーに葉っぱを振った。開けてくれた道を、仲間たちも行き来している。']]);return;
  }
  if(s103Facing(4,s105LogMoved()?14:15)){
   if(q.state==='available'){toast('まず倒木の西にいる守り手に声をかけよう');return;}
@@ -1789,7 +1791,7 @@ nextLine=function(){
 #wrap #dialog{background:linear-gradient(135deg,#102e3af5,#142b3af5);box-shadow:0 5px 26px #07152588,inset 0 1px #fff1b418}
 </style><script>
 const sceneryDraw=draw;draw=function(){TemplePresentation.begin();sceneryDraw();TempleVisuals.atmosphere(ctx,area);TemplePresentation.finish()};
-document.documentElement.dataset.templeVisuals='state-v4';
+document.documentElement.dataset.templeVisuals='quests-v5';
 </script><style>
 #hud{font-size:14px;min-height:42px;grid-template-columns:102px minmax(0,1fr);max-width:760px;background:#082337ed;padding:6px 9px}
 #objective{font-size:14px;line-height:1.4;color:#fff0cf}
@@ -1809,4 +1811,4 @@ document.documentElement.dataset.templeVisuals='state-v4';
 #journeyMapClose{background:#dac38b!important;color:#183546!important;text-align:center!important;min-height:44px!important}
 #chapter2Start,#chapter3Start,#chapter4Start,#chapter5Start{display:none!important}
 @media(max-height:430px){#journeyMap section{padding:12px 16px}}
-</style><script src="../assets/temple-journey.js?v=state-20261117"></script></body></html>
+</style><script src="../assets/temple-journey.js?v=quests-20261117"></script></body></html>

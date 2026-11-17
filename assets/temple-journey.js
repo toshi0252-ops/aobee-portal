@@ -25,8 +25,13 @@ var TempleJourney=(()=>{
   if(['ch5_village','ch5_forest','ch5_port','ch5_island'].includes(area)&&c5.gates.includes(area.slice(4)))return place+'は接続済み。設定をやり直す必要はありません。南から庭園へ戻れます';
   return fallback;
  }
- const oldObjective=objective;objective=function(text){oldObjective(contextualGoal(text))};
- function refreshGuidance(){oldObjective(contextualGoal($('objective').textContent))}
+ let guideTimer=null;
+ function closeGuidance(){clearTimeout(guideTimer);$('objective').hidden=true;$('purposeButton').setAttribute('aria-expanded','false')}
+ function showGuidance(){clearTimeout(guideTimer);$('objective').hidden=false;$('purposeButton').setAttribute('aria-expanded','true');guideTimer=setTimeout(closeGuidance,6500)}
+ const oldObjective=objective;objective=function(text){const previous=$('objective').textContent;oldObjective(contextualGoal(text));if(previous!==$('objective').textContent&&$('start').style.display==='none')showGuidance()};
+ function refreshGuidance(){oldObjective(contextualGoal($('objective').textContent));if($('start').style.display==='none')showGuidance()}
+ document.body.insertAdjacentHTML('beforeend','<button id="purposeButton" type="button" hidden aria-controls="objective" aria-expanded="false">目的</button><style>#objective[hidden]{display:none!important}#hud{right:148px;width:max-content;max-width:calc(100vw - 156px);grid-template-columns:auto minmax(0,1fr)}#hud:has(#objective[hidden]){grid-template-columns:auto;gap:0}#purposeButton{position:fixed;top:max(4px,env(safe-area-inset-top));right:76px;z-index:25;min-width:60px;min-height:44px;border:1px solid #bca87c;border-radius:8px;background:#17333c;color:#ffe7a3;font-size:14px;touch-action:manipulation}#purposeButton[hidden]{display:none}</style>');
+ $('purposeButton').onclick=()=>{$('objective').hidden?showGuidance():closeGuidance()};closeGuidance();
  const oldChange=change;change=function(...args){const r=oldChange(...args);refreshGuidance();return r};
  function closeClear(){for(const id of ['chapterClear','chapter2Clear','chapter3Clear','chapter4Clear'])$(id).hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls()}
  function continueStory(){
@@ -70,7 +75,7 @@ var TempleJourney=(()=>{
   if(mapOpen)return;
   if(s101CanInteract()&&area==='village'&&chapter1Story.reportSeen){
    const forest=TempleChapter2.getState();
-   if((facingNpc('elder')&&questBook.view('S104').state!=='claimed'&&!(forest.recovery&&!forest.reported))||(facingNpc('toto')&&questBook.view('S102').state!=='claimed')){finishStoryAction();return}
+   if((facingNpc('elder')&&questBook.view('S104').state!=='locked'&&!(forest.recovery&&!forest.reported))||(facingNpc('toto')&&questBook.view('S102').state!=='locked')){finishStoryAction();return}
   }
   if(s101CanInteract()&&area==='ch3_port'&&TempleChapter3.getState().reported&&s103Facing(5,13)){TempleChapter4.start();return}
   if(s101CanInteract()&&area==='ch4_chart'&&TempleChapter4.getState().reported&&s103Facing(12,5)){TempleChapter5.start();return}
@@ -121,7 +126,7 @@ var TempleJourney=(()=>{
   g.restore();
  }
  const oldHero=TemplePresentation.hero;TemplePresentation.hero=function(g,...args){drawParty(g,false);oldHero(g,...args);drawParty(g,true)};
- const oldFinish=TemplePresentation.finish;TemplePresentation.finish=function(){oldFinish();$('travelMapButton').hidden=$('start').style.display!=='none'||$('dialog').style.display==='block'||chapterClearOpen||templeGearOpen||questJournalOpen;};
+ const oldFinish=TemplePresentation.finish;TemplePresentation.finish=function(){oldFinish();$('purposeButton').hidden=$('start').style.display!=='none'||$('dialog').style.display==='block'||chapterClearOpen||templeGearOpen||questJournalOpen;$('travelMapButton').hidden=$('start').style.display!=='none'||$('dialog').style.display==='block'||chapterClearOpen||templeGearOpen||questJournalOpen;};
  const oldDetails=TempleVisuals.details;TempleVisuals.details=function(g,place){
   oldDetails(g,place);
   if(place==='forest'&&chapter1Story.reportSeen)TemplePresentation.label(g,'深緑の森へ ↑',500,92,{always:true});
