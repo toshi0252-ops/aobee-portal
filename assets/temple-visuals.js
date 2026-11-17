@@ -121,11 +121,11 @@ var TempleVisuals=(()=>{
    for(const [x,y]of [[90,110],[830,92],[170,520],[800,560]])for(let i=0;i<8;i++){const a=i*Math.PI/4;line(g,x+Math.cos(a)*7,y+Math.sin(a)*7,x+Math.cos(a)*25,y+Math.sin(a)*25,['#e3c993','#b7c8d4','#c6a5bb'][i%3],2)}
   }
   if(['ch2_tower4','ch3_beacon','ch4_scribe','ch5_core'].includes(area)){
-   sprite(g,7,500,195,116,106);
+   sprite(g,7,500,area==='ch2_tower4'?274:195,116,106);
    const chapter=area==='ch2_tower4'?TempleChapter2:area==='ch3_beacon'?TempleChapter3:area==='ch4_scribe'?TempleChapter4:TempleChapter5;
    const cycle=chapter.getBattleState().cycle,state=chapter.getState(),stopped=state.stopped||state.scribeStopped||state.networkBalanced;
    g.strokeStyle=stopped?'#9bdcab':cycle==='open'?'#ffe3a3':cycle==='warning'?'#edaa97':'#83a5bc';g.lineWidth=3;
-   g.beginPath();g.ellipse(500,142,50,54,0,0,Math.PI*2);g.stroke();
+   g.beginPath();g.ellipse(500,area==='ch2_tower4'?221:142,50,54,0,0,Math.PI*2);g.stroke();
   }
   g.restore();
  }

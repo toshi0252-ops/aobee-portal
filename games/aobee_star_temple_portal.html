@@ -307,7 +307,7 @@ $('equipmentClose').onclick=closeEquipment;
 document.addEventListener('keydown',e=>{if(templeGearOpen){if(e.key==='Escape'){e.preventDefault();closeEquipment();}else if(e.key==='Tab'){e.preventDefault();const buttons=[$('equip-sword'),$('equip-spear'),$('equip-hammer'),$('equipmentClose')],i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?3:1))%4].focus();}}});
 window.addEventListener('blur',()=>{templeMove=null;templeAttack=null;});
 updateEquipment();
-</script><script src="../assets/temple-visuals.js?v=art-20261116"></script><script src="../assets/temple-presentation.js?v=party-20261117"></script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
+</script><script src="../assets/temple-visuals.js?v=tower-20261117"></script><script src="../assets/temple-presentation.js?v=party-20261117"></script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
 (()=>{
 const g=ctx,tile=40;let cameraY=0;
 function rect(x,y,w,h,c){g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
@@ -1056,8 +1056,9 @@ const TempleChapter2=(()=>{
     g.strokeStyle=state.floors.includes(f)?'#e5d99a':'#8eb7bd';g.lineWidth=4;for(const [x,y,i]of panels){const [dx,dy]=[[0,-1],[1,0],[0,1],[-1,0]][state.angles[i]];g.beginPath();g.moveTo(x*40+20,y*40+20);g.lineTo(x*40+20+dx*140,y*40+20+dy*140);g.stroke();}if(state.floors.includes(f)){g.beginPath();g.moveTo(500,380);g.lineTo(540,380);g.lineTo(540,300);g.stroke();}
    }else{
     if(!state.stopped&&towerCycle==='warning')for(let y=1;y<17;y++)for(let x=1;x<23;x++)if(towerDanger(x,y))rect(x*40+2,y*40+2,36,36,'#df716ba0');
-    rect(447,105,106,72,state.stopped?'#779d83':'#6f777e');rect(458,93,84,24,'#a2b5ac');g.strokeStyle=state.stopped?'#a5dcb0':towerCycle==='open'?'#ffe0a0':'#7cbed0';g.lineWidth=6;g.beginPath();g.arc(500,141,23,0,7);g.stroke();
-    label(state.stopped?'根の番人・停止':'根の番人・第'+state.bossStage+'段階',500,85);plaque(12,5);label(state.bossStage===3?'停止端末':'命令端末',500,235);
+    rect(447,184,106,72,state.stopped?'#779d83':'#6f777e');rect(458,172,84,24,'#a2b5ac');g.strokeStyle=state.stopped?'#a5dcb0':towerCycle==='open'?'#ffe0a0':'#7cbed0';g.lineWidth=6;g.beginPath();g.arc(500,220,23,0,7);g.stroke();
+    label(state.stopped?'根の番人・停止':'根の番人・第'+state.bossStage+'段階',500,150);plaque(12,5);label(state.bossStage===3?'停止端末':'命令端末',500,276);
+    if(!state.stopped)TemplePresentation.label(g,state.bossStage===2&&!state.redirected?'防御中：西の光路を切替':state.bossStage===3&&!state.held?'西の協力台で合図':towerCycle==='open'?(state.bossStage===3?'停止できる！ 北の端末を調べる':'攻撃できる！ 光る端末を狙う'):towerCycle==='warning'?'赤い床の外へ退避':'光の放出を待とう',500,102,{always:true});
     if(state.stopped){plaque(8,10);plaque(16,10);label('急速復旧',340,435);label('森を保護して復旧',660,435);}
     else{plaque(6,11);label('防御の光路切替',260,435);rect(286,450,28,22,'#cbb580');label('協力台・立って合図',300,490);}
    }
@@ -1088,7 +1089,7 @@ const TempleChapter2=(()=>{
   const f=floor();
   if(f<4)return state.floors.includes(f)?'北の階段から次の層へ。南から前の層にも戻れるよ':'光路を切り替え、中央の確認台で受光状態を確かめよう';
   if(state.stopped)return '西：急速復旧／東：森を保護しながら復旧。どちらでも森を救える';
-  return state.bossStage===1?'根の番人：赤い床を避け、放出後に中央の命令端末を攻撃':state.bossStage===2?'根の番人：西の光路切替で防御を外し、放出後に端末を攻撃':'西の協力台で合図し、放出後に北の停止端末を調べよう';
+  return state.bossStage===1?'根の番人：赤い床を避け、放出後に中央の命令端末を攻撃':state.bossStage===2?(state.redirected?'防御の光路は切替済み。金色に光った命令端末を攻撃しよう':'根の番人：西の光路切替で防御を外し、放出後に端末を攻撃'):(state.held?'わるびーが補助端末を保持中。金色に光った北の停止端末を調べよう':'西の協力台で合図し、放出後に北の停止端末を調べよう');
  }
  function report(){
   say([['長老','森までつながる星脈の流れを、取り戻したのじゃな。'],['ミオ','でも、切替先の記録は新しかった。誰かが光の行き先を変えている。'],['あおびー','番人は、間違った命令で森を守ろうとしていただけだったよ。'],['森の守り手',state.recovery==='gentle'?'根をいたわってくれて、ありがとう。ゆっくりでも、森はちゃんと育つ。':'光は戻った。根の手入れは、ここからぼくたちが続けるよ。'],['わるびー',state.trust==='trust'?'信じてくれて……助かった。次も、ちゃんと合図する。':'理由を聞いてくれてよかった。ひとりで抱えるより、ずっとましだった。'],['ミオ','港町の灯台が、星のない夜にだけ光っているんだって。この星図も、海へ続いてる。'],['あおびー','行こう。今度はみんなで。'],['語り','海の向こうへ、星の光が細く流れていた。深緑の森を抜けた三人の前に、次の星図が開く。']],()=>{state.reported=true;objective(towerGoal());sync();showRecord();});
@@ -1139,7 +1140,8 @@ const TempleChapter2=(()=>{
    }return false;}
    if(state.bossStage===2&&s103Facing(6,11)){state.redirected=true;toast('西の光路を切り替え、防御が外れた！');objective(towerGoal());saveGame(true);return;}
    if(state.bossStage===3&&player.x===7&&player.y===11){state.held=true;say([['あおびー','わるびー、別の端末をお願い！'],['わるびー','こっちは押さえた。そっちの停止を頼む！']],()=>objective(towerGoal()));return;}
-   if(towerCycle!=='open'){toast('赤い予兆を避け、光の放出が止まってから端末を狙おう');return;}
+   if(state.bossStage<3)templeAttack={time:performance.now(),weapon:templeWeapon,area};
+   if(towerCycle!=='open'){toast('今は防御中。赤い床を避け、金色に光った命令端末を狙おう');return;}
    if(state.bossStage===3){
     if(!state.held){toast('西の協力台に立って、わるびーへ合図しよう');return;}
     if(!s103Facing(12,5)){toast('北の停止端末の隣から調べよう');return;}
@@ -1158,7 +1160,7 @@ const TempleChapter2=(()=>{
   towerClock+=1000/60;if(!towerDue){towerDue=towerClock+900;return;}if(towerClock<towerDue)return;
   if(towerCycle==='waiting'){towerCycle='warning';towerDue=towerClock+1100;toast('根の番人が光を集めている。赤い床の外へ！');return;}
   if(towerCycle==='warning'){
-   towerCycle='open';towerDue=towerClock+2400;
+   towerCycle='open';towerDue=towerClock+4800;toast(state.bossStage===3?'放出が止まった！ 北の停止端末を調べよう':'防御が開いた！ 金色の命令端末を攻撃しよう');
    if(towerDanger(player.x,player.y)){player.hp--;if(player.hp<=0){player.hp=3;state.bossStage=1;state.redirected=false;state.held=false;player.x=12;player.y=14;templeMove=null;resetCycle();toast('入口で体力を回復。長い会話なしで再挑戦できる');}updateHud();saveGame(true);}return;
   }towerCycle='waiting';towerDue=towerClock+800;
  };
@@ -1791,7 +1793,7 @@ nextLine=function(){
 #wrap #dialog{background:linear-gradient(135deg,#102e3af5,#142b3af5);box-shadow:0 5px 26px #07152588,inset 0 1px #fff1b418}
 </style><script>
 const sceneryDraw=draw;draw=function(){TemplePresentation.begin();sceneryDraw();TempleVisuals.atmosphere(ctx,area);TemplePresentation.finish()};
-document.documentElement.dataset.templeVisuals='quests-v5';
+document.documentElement.dataset.templeVisuals='tower-v6';
 </script><style>
 #hud{font-size:14px;min-height:42px;grid-template-columns:102px minmax(0,1fr);max-width:760px;background:#082337ed;padding:6px 9px}
 #objective{font-size:14px;line-height:1.4;color:#fff0cf}
