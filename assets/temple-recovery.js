@@ -1,13 +1,13 @@
 /* Three manual slots, legacy migration and reproducible story checkpoints. */
 var TempleRecovery=(()=>{
- const BANK='aobee_temple_manual_slots_v1',BACKUP='aobee_temple_before_debug_v1',BUILD='action-20261117';
+ const BANK='aobee_temple_manual_slots_v1',BACKUP='aobee_temple_before_debug_v1',BUILD='discovery-20261117';
  let opened=false,wasClear=false,debugActive=false,checkpointCache=null,returnFocus=null;
  const previousSnapshot=snapshot;snapshot=function(){return {...previousSnapshot(),debugCheckpoint:debugActive}};
  const previousRestore=restoreGame;restoreGame=function(data){const result=previousRestore(data);if(result!==false)debugActive=data.debugCheckpoint===true;return result};
  function readBank(){const raw=localStorage.getItem(BANK);if(!raw)return {version:1,slots:[null,null,null]};const bank=JSON.parse(raw);if(bank.version!==1||!Array.isArray(bank.slots)||bank.slots.length!==3)throw Error('スロットの保存内容を読み取れません。上書きせずに閉じてください');return bank}
  function entry(data){return {savedAt:new Date().toISOString(),data}}
  function migrate(){const bank=readBank();if(localStorage.getItem(BANK)===null){const legacy=readSave();if(legacy)bank.slots[0]=entry(legacy);localStorage.setItem(BANK,JSON.stringify(bank));}return bank}
- function describe(data){if(!validSave(data))return '読み込めないデータ';const chapter=/^ch([2-5])_/.exec(data.area)?.[1]||'1';return '第'+chapter+'章・'+(templePlaces[data.area]||data.area)+(data.debugCheckpoint?'〈デバッグ〉':'')}
+ function describe(data){if(!validSave(data))return '読み込めないデータ';const chapter=/^ch([2-5])_/.exec(data.area)?.[1]||'1';return '第'+chapter+'章・'+(templePlaces[data.area]||data.area)+(data.debugCheckpoint?'〈デバッグ〉':'')+' / HP '+data.player.hp+'/'+savedHealthLimit(data)}
  function status(text){$('recoveryStatus').textContent=text}
  function canSave(){return $('start').style.display==='none'&&$('dialog').style.display!=='block'&&!pendingDialogues.length&&!end}
  function saveSlot(index){try{if(!Number.isInteger(index)||index<0||index>2)return false;if(!canSave())throw Error('会話を読み終えてから保存してください');const bank=migrate(),data=snapshot();if(!validSave(data))throw Error('現在の状態を保存できません');bank.slots[index]=entry(data);localStorage.setItem(BANK,JSON.stringify(bank));renderSlots();status('スロット'+(index+1)+'に保存しました');return true}catch(e){status('保存できませんでした：'+e.message);return false}}

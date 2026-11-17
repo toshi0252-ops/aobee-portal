@@ -119,7 +119,7 @@ var TempleJourney=(()=>{
  const oldRestore=restoreGame;restoreGame=function(...args){const r=oldRestore(...args);resetParty();if(r!==false){refreshGuidance();setTimeout(()=>TempleChapter2.ensurePartyIntroduction(),0)}return r};
  function drawParty(g,front){
   if($('start').style.display!=='none')return;const hero=templePose();
-  g.save();g.setTransform(1,0,0,1,0,-Math.max(0,Math.min(180,hero.y*40-250)));
+  g.save();g.setTransform(1,0,0,1,-templeCameraX(),-Math.max(0,Math.min(180,hero.y*40-250)));
   for(const actor of party().sort((a,b)=>a.y-b.y))if((actor.y>hero.y)===front){
    const x=actor.x*40+20,y=actor.y*40+34-actor.bob;g.fillStyle='#102b3d66';g.beginPath();g.ellipse(x,y+2,18,5,0,0,7);g.fill();TemplePresentation.follower(g,actor.who,x,y);
   }

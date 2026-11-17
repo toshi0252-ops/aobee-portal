@@ -34,9 +34,9 @@ var TemplePresentation=(()=>{
   const m=g.getTransform(),sy=y+m.f;if(sy<safeTop||sy>525)return;
   g.save();const size=font(options.size||14);g.font='700 '+size+'px sans-serif';g.textAlign='center';
   const width=Math.min(600,g.measureText(text).width+20),height=size+12;
-  const cx=Math.max(width/2+12,Math.min(948-width/2,x)),top=y-size-7;
+  const cx=Math.max(width/2+12-m.e,Math.min(948-width/2-m.e,x)),top=y-size-7;
   // Keep nameplates and adjacent mechanism labels apart on short screens.
-  const screenBox={x:cx-width/2,y:top+m.f,w:width,h:height};
+  const screenBox={x:cx+m.e-width/2,y:top+m.f,w:width,h:height};
   if(labels.some(b=>screenBox.x<b.x+b.w&&screenBox.x+width>b.x&&screenBox.y<b.y+b.h&&screenBox.y+height>b.y)&&!options.always){g.restore();return}
   labels.push(screenBox);g.fillStyle='#082438f2';g.fillRect(cx-width/2,top,width,height);g.strokeStyle='#d3bf8177';g.lineWidth=1;g.strokeRect(cx-width/2+.5,top+.5,width-1,height-1);g.fillStyle='#fff1cb';g.fillText(text,cx,y);g.restore();
  }
