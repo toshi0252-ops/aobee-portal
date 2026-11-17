@@ -1,6 +1,6 @@
 /* Three manual slots, legacy migration and reproducible story checkpoints. */
 var TempleRecovery=(()=>{
- const BANK='aobee_temple_manual_slots_v1',BACKUP='aobee_temple_before_debug_v1',BUILD='mobile-20261117';
+ const BANK='aobee_temple_manual_slots_v1',BACKUP='aobee_temple_before_debug_v1',BUILD='balanced-20261118';
  let opened=false,wasClear=false,debugActive=false,checkpointCache=null,returnFocus=null;
  const previousSnapshot=snapshot;snapshot=function(){return {...previousSnapshot(),debugCheckpoint:debugActive}};
  const previousRestore=restoreGame;restoreGame=function(data){const result=previousRestore(data);if(result!==false)debugActive=data.debugCheckpoint===true;return result};
