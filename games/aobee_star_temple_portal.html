@@ -747,7 +747,7 @@ restoreGame=function(d){const result=storyRestore(d);if(result===false)return fa
  return result;
 };
 const storyWall=wall;
-wall=function(x,y){if(area==='seal')return !Number.isInteger(x)||!Number.isInteger(y)||x<=0||x>=23||y<=0||y>=17||(x===16&&y===11);return storyWall(x,y);};
+wall=function(x,y){if(area==='seal')return !Number.isInteger(x)||!Number.isInteger(y)||x<=0||x>=23||y<=0||y>=17||(x===16&&y===11&&['cooperate','battle'].includes(chapter1Story.mode));return storyWall(x,y);};
 const storyMove=move;
 move=function(...args){storyMove(...args);if(area==='seal'&&player.x===12&&player.y===16){change('forest',{x:20,y:4});objective(chapter1Story.mode==='won'?'長老に装置の安定化を報告しよう':'北東の遺跡から封印の間へ戻れるよ');saveGame(true);}};
 const storyAction=action;
@@ -785,7 +785,7 @@ function drawChapter1Story(g){
  if(area==='forest'&&stars>0){g.save();g.fillStyle='#d4e4e410';g.fillRect(40,40,880,640);g.restore();}
  if(area==='village'&&chapter1Story.reportSeen){g.save();g.fillStyle='#ffe6a0';for(const [x,y]of [[305,215],[654,215]]){g.beginPath();g.arc(x,y,4,0,Math.PI*2);g.fill();}g.restore();}
  if(area!=='seal')return;g.save();g.textAlign='center';g.font='14px sans-serif';
- for(const x of [8,16])TemplePresentation.prop(g,7,x*40+20,480,65,43);TemplePresentation.companion(g,660,469);TemplePresentation.label(g,'合図のスイッチ',340,430);TemplePresentation.label(g,'わるびーの協力台',660,430);
+ for(const x of [8,16])TemplePresentation.prop(g,7,x*40+20,480,65,43);if(['cooperate','battle'].includes(chapter1Story.mode)){TemplePresentation.companion(g,660,469);TemplePresentation.label(g,'合図のスイッチ',340,430);TemplePresentation.label(g,'わるびーの協力台',660,430);}else{TemplePresentation.label(g,'協力台・停止済み',340,430);}
  if(chapter1Story.mode==='battle'){
   if(sealCycle==='warning'){g.fillStyle='#ef766766';for(let y=1;y<17;y++)for(let x=1;x<23;x++)if(sealDanger(x,y))g.fillRect(x*40+2,y*40+2,36,36);}
   TemplePresentation.prop(g,11,500,220,106,127);g.strokeStyle=sealCycle==='open'?'#f9dca2':'#9ba0bd';g.lineWidth=6;g.beginPath();g.arc(500,180,25,0,Math.PI*2);g.stroke();g.fillStyle='#e6d39c';g.fillText('星喰いの影 · 第'+sealStage()+'段階 · '+chapter1Story.bossHP+'/9',500,125);
@@ -881,7 +881,7 @@ storyControls();
 const TempleChapter2=(()=>{
  const zones=['ch2_gate','ch2_hub','ch2_water','ch2_canopy','ch2_cave','ch2_tower_gate','ch2_tower1','ch2_tower2','ch2_tower3','ch2_tower4'];
  const titles={ch2_gate:'結界の向こう',ch2_hub:'深緑の三叉路',ch2_water:'水音の小径',ch2_canopy:'樹冠の渡り道',ch2_cave:'反響の洞窟',ch2_tower_gate:'根の中継塔・入口',ch2_tower1:'中継塔・入光層',ch2_tower2:'中継塔・分光層',ch2_tower3:'中継塔・命令層',ch2_tower4:'中継塔・根の番人'};
- const fresh=()=>({started:false,wind:0,windSolved:false,bridge:false,canopy:false,echo:false,records:[],read:[],leafHelped:false,towerReached:false,trust:'',rescued:false,angles:[0,0,0,1],floors:[],bossStage:1,redirected:false,held:false,stopped:false,recovery:'',reported:false});
+ const fresh=()=>({started:false,mioJoined:false,warubeeJoined:false,wind:0,windSolved:false,bridge:false,canopy:false,echo:false,records:[],read:[],leafHelped:false,towerReached:false,trust:'',rescued:false,angles:[0,0,0,1],floors:[],bossStage:1,redirected:false,held:false,stopped:false,recovery:'',reported:false});
  let state=fresh(),towerClock=0,towerCycle='waiting',towerDue=0;
  const isZone=()=>zones.includes(area);
  const recordName={water:'水辺の記録',canopy:'樹冠の記録',cave:'洞窟の記録'};
@@ -898,7 +898,12 @@ const TempleChapter2=(()=>{
  function start(){
   if(!chapter1Story.reportSeen||!s101CanInteract())return;
   if(state.started){enter(state.windSolved?'ch2_hub':'ch2_gate',12,14);return;}
-  say([['長老','村の灯りは落ち着いた。だが、森の奥でも星が消え始めているらしい。'],['長老','古い星図を持っていきなさい。ただし、わしの記録が正しいとは限らん。'],['あおびー','知らないことは、知らないって言ってくれたらいいよ。みんなで確かめよう。'],['ミオ','まだ消えていない線がある。わたしが星図を読むね。'],['語り','第2章　迷いの森の向こう'],['案内','新しい森では、三つの道を好きな順に探索できます。村にはいつでも戻れます。']],()=>{state.started=true;sync();enter('ch2_gate');});
+  say([['長老','村の灯りは落ち着いた。だが、森の奥でも星が消え始めているらしい。'],['長老','古い星図を持っていきなさい。ただし、わしの記録が正しいとは限らん。'],['あおびー','知らないことは、知らないって言ってくれたらいいよ。みんなで確かめよう。'],['ミオ','まだ消えていない線がある。わたしも一緒に行って、星図を読みたい。'],['あおびー','ありがとう、ミオ。道に迷ったら、一緒に確かめよう！'],['語り','ミオが星図を手に、あおびーの隣へ並んだ。わるびーは、一足先に森の奥へ向かっている。'],['語り','第2章　迷いの森の向こう'],['案内','新しい森では、三つの道を好きな順に探索できます。村にはいつでも戻れます。']],()=>{state.started=true;state.mioJoined=true;sync();enter('ch2_gate');});
+ }
+ function ensurePartyIntroduction(){
+  if(!state.started||state.mioJoined||!/^ch[2-5]_/.test(area)||!s101CanInteract())return;
+  const joined=state.rescued||state.reported;
+  say([['ミオ','この先もわたしが星図を読むね。一緒に確かめながら進みたい。'],['あおびー','ありがとう。よろしくね、ミオ！'],...(joined?[['わるびー','あの足場では助かった。この先は、ぼくも一緒に行く。'],['あおびー','うん。もう一人で抱え込まずに、三人で進もう。']]:[['ミオ','わるびーは先に森の奥へ向かったみたい。塔へ続く道を探そう。']])],()=>{state.mioJoined=true;state.warubeeJoined=joined;TempleJourney.resetParty();saveGame(true);setTimeout(()=>TempleJourney.continueStory(),0)});
  }
  function remember(id,lines){
   if(state.records.includes(id)){say([['観測記録',lines[0][1]],['ミオ','この記録は星図に写してあるよ。']]);return;}
@@ -929,12 +934,12 @@ const TempleChapter2=(()=>{
    if(s103Facing(17,6)){remember('water',[['水辺の記録','中継塔は、森の光をすべて送る装置ではない。必要な光を森に残し、余った分を次の地域へ渡す。'],['あおびー','光を送ること自体が、悪いわけじゃないんだ。']]);return;}
    if(s103Facing(18,12)){
     if(!state.bridge){toast('苗木の根元まで水が届いていない。上流を確かめよう');return;}
-    state.leafHelped=true;say([['語り','苗木の根元に小さな葉が開いた。'],['あおびー','よかった。塔を調べる前に、この森も守っていこう。']]);return;
+    if(state.leafHelped){toast('苗木には水が届いている。元気に育っているよ');return;}state.leafHelped=true;say([['語り','苗木の根元に小さな葉が開いた。'],['あおびー','よかった。塔を調べる前に、この森も守っていこう。']]);return;
    }
   }
   if(area==='ch2_canopy'){
-   if(player.x===7&&player.y===11){state.canopy=!state.canopy;say([['あおびー','わるびー、向こうの操作台をお願い！'],['わるびー','合図はちゃんとしてよ。……今だ！'],['語り',state.canopy?'二つの滑車がそろい、樹冠へ続く足場がつながった。':'足場を元の位置に戻した。']],()=>objective(goal()));return;}
-   if(s103Facing(17,5)){remember('canopy',[['樹冠の記録','根の中継塔。光路の切替は、複数の操作台で確認してから実行すること。'],['わるびー','一人では勝手に変えられない。誰かが、その確認まで書き換えたんだ。']]);return;}
+   if(player.x===7&&player.y===11){if(state.canopy){toast('足場は固定済み。観測記録へ進めます');return;}say([['語り','向こう側の操作台に、先行していたわるびーがいた。'],['わるびー','こっちはぼくが押さえる。そっちから合図して。'],['あおびー','わかった。今、合図するね！'],['語り','二つの滑車がそろい、樹冠へ続く足場がつながった。'],['わるびー','ぼくは先に塔の様子を見る。気をつけて来て。']],()=>{state.canopy=true;objective(goal());});return;}
+   if(s103Facing(17,5)){remember('canopy',[['樹冠の記録','根の中継塔。光路の切替は、複数の操作台で確認してから実行すること。'],['わるびーの書き置き','一人では勝手に変えられない。誰かが、その確認まで書き換えたんだ。']]);return;}
   }
   if(area==='ch2_cave'){
    for(const [x,y,long]of [[5,7,false],[12,7,true],[19,7,false]])if(s103Facing(x,y)){
@@ -1065,8 +1070,8 @@ const TempleChapter2=(()=>{
   g.restore();
  };
  const prevSnapshot=snapshot;snapshot=function(){return {...prevSnapshot(),chapter2:{...state,records:[...state.records],read:[...state.read]}}};
- function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of ['started','windSolved','bridge','canopy','echo','leafHelped','towerReached','rescued','redirected','held','stopped','reported'])n[k]=s[k]===true;n.wind=Number.isInteger(s.wind)&&s.wind>=0&&s.wind<4?s.wind:0;for(const k of ['records','read'])n[k]=Array.isArray(s[k])?[...new Set(s[k].filter(x=>Object.hasOwn(recordName,x)))]:[];n.trust=['trust','ask'].includes(s.trust)?s.trust:'';n.recovery=['rapid','gentle'].includes(s.recovery)?s.recovery:'';n.angles=Array.isArray(s.angles)&&s.angles.length===4?s.angles.map(v=>Number.isInteger(v)&&v>=0&&v<4?v:0):[0,0,0,1];n.floors=Array.isArray(s.floors)?[...new Set(s.floors.filter(v=>[1,2,3].includes(v)))]:[];n.bossStage=[1,2,3].includes(s.bossStage)?s.bossStage:1;return n;}
- const prevRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter2);$('chapter2Clear').hidden=true;resetCycle();const result=prevRestore(d);if(result===false)return false;if(isZone()){state.started=true;if(area==='ch2_tower_gate'&&!state.rescued&&player.y<8){player.x=12;player.y=14;}objective(goal());templeMove=null;}else if(state.recovery)objective(towerGoal());sync();return result;};
+ function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of ['started','mioJoined','warubeeJoined','windSolved','bridge','canopy','echo','leafHelped','towerReached','rescued','redirected','held','stopped','reported'])n[k]=s[k]===true;n.wind=Number.isInteger(s.wind)&&s.wind>=0&&s.wind<4?s.wind:0;for(const k of ['records','read'])n[k]=Array.isArray(s[k])?[...new Set(s[k].filter(x=>Object.hasOwn(recordName,x)))]:[];n.trust=['trust','ask'].includes(s.trust)?s.trust:'';n.recovery=['rapid','gentle'].includes(s.recovery)?s.recovery:'';n.angles=Array.isArray(s.angles)&&s.angles.length===4?s.angles.map(v=>Number.isInteger(v)&&v>=0&&v<4?v:0):[0,0,0,1];n.floors=Array.isArray(s.floors)?[...new Set(s.floors.filter(v=>[1,2,3].includes(v)))]:[];n.bossStage=[1,2,3].includes(s.bossStage)?s.bossStage:1;return n;}
+ const prevRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter2);$('chapter2Clear').hidden=true;resetCycle();const result=prevRestore(d);if(result===false)return false;if(isZone()){state.started=true;if(area==='ch2_tower_gate'&&!state.rescued&&player.y<8){player.x=12;player.y=14;}objective(goal());templeMove=null;}else if(area==='village'&&state.recovery&&!state.reported)objective(towerGoal());sync();return result;};
  const prevControls=storyControls;storyControls=function(){prevControls();sync();};
  const prevJournal=openQuestJournal;openQuestJournal=function(){prevJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第2章・迷いの森の向こう】\n'+(state.windSolved?'✓ 結界の道標':'▶ 結界の道標')+'\n'+['water','canopy','cave'].map(k=>(state.records.includes(k)?'✓ ':'・')+recordName[k]).join('\n')+'\n'+(state.leafHelped?'✓ 苗木に水を戻した\n':'')+(state.towerReached?'✓ 中継塔の入口に到達\n':'')+(state.floors.length?'✓ 光路の復旧 '+state.floors.length+'/3\n':'')+(state.stopped?'✓ 根の番人を停止\n':'')+(state.reported?'✓ 第2章クリア\n':'')+'\n'+$('questJournalList').textContent;};
  document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter2Record" type="button" hidden>第2章の記録</button><button id="chapter2Start" type="button" hidden>第2章へ出発</button>');
@@ -1108,7 +1113,7 @@ const TempleChapter2=(()=>{
    if(s103Facing(17,9)){
     if(!state.trust){toast('まず西か東の石碑で、わるびーへの返事を選ぼう');return;}
     if(state.rescued){toast('足場の安全装置は固定されている');return;}
-    state.rescued=true;say([['語り','安全装置を押さえると、向こうからわるびーが留め金を戻した。崩れた足場がつながる。'],['あおびー','ひとりで抱えないで。一緒なら、ここまでできるよ。'],['わるびー','……わかってる。ありがとう。']],()=>objective(towerGoal()),'towerSafety');return;
+    say([['語り','安全装置を押さえると、向こうからわるびーが留め金を戻した。崩れた足場がつながる。'],['あおびー','ひとりで抱えないで。一緒なら、ここまでできるよ。'],['わるびー','……わかってる。ありがとう。この先も、一緒に行っていい？'],['あおびー','もちろん。今度は三人で、合図を確かめながら進もう。'],['ミオ','星図はわたしが読むね。わるびー、よろしく！'],['語り','わるびーが支柱から手を離し、二人のもとへ歩いてきた。']],()=>{state.rescued=true;state.warubeeJoined=true;TempleJourney.resetParty();objective(towerGoal());},'towerSafety');return;
    }
    if(s103Facing(12,5)){if(!state.rescued){toast('先に足場の安全装置を固定しよう');return;}enter('ch2_tower1');return;}
    return false;
@@ -1156,7 +1161,7 @@ const TempleChapter2=(()=>{
   }towerCycle='waiting';towerDue=towerClock+800;
  };
 
- return {start,getState:()=>({...state,records:[...state.records],read:[...state.read],angles:[...state.angles],floors:[...state.floors]}),getBattleState:()=>({cycle:towerCycle,stage:state.bossStage}),isZone};
+ return {start,ensurePartyIntroduction,getState:()=>({...state,records:[...state.records],read:[...state.read],angles:[...state.angles],floors:[...state.floors]}),getBattleState:()=>({cycle:towerCycle,stage:state.bossStage}),isZone};
 })();
 
 </script><style>#chapter2Clear[hidden]{display:none}#chapter2Clear{position:fixed;inset:0;z-index:51;display:grid;place-items:center;background:#092b2ce8;padding:12px}#chapter2Clear section{max-width:460px;max-height:88dvh;overflow:auto;background:#214b46;border:1px solid #c8d5a1;border-radius:14px;padding:24px;color:#eee8c9}#chapter2Clear h2{color:#f5dda2}#chapter2Clear p{line-height:1.7}#chapter2Clear button{min-height:44px;width:100%;border-radius:9px;border:1px solid #dec98e;background:#ead49e;color:#203d39;font-weight:bold}</style><div id="chapter2Clear" hidden role="dialog" aria-modal="true" aria-labelledby="chapter2ClearTitle"><section><h2 id="chapter2ClearTitle">第2章 クリア</h2><p>深緑の森に、星の光が戻った。<br>次の星図は、海の向こうへ。</p><p id="chapter2ClearSummary"></p><p id="chapter2SaveStatus"></p><button id="chapter2Explore" type="button">村と森の探索を続ける</button></section></div><script>$('chapter2Explore').onclick=()=>{$('chapter2Clear').hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls();saveGame(true);};document.addEventListener('keydown',e=>{if($('chapter2Clear').hidden)return;if(e.key==='Escape'){e.preventDefault();$('chapter2Explore').click();}if(e.key==='Tab'){e.preventDefault();$('chapter2Explore').focus();}});</script><script>
@@ -1316,7 +1321,7 @@ const TempleChapter3=(()=>{
  };
  const oldSnapshot=snapshot;snapshot=function(){return {...oldSnapshot(),chapter3:{...state,pumps:[...state.pumps],valves:[...state.valves]}}};
  function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of Object.keys(n))if(typeof n[k]==='boolean')n[k]=s[k]===true;n.beacons=Number.isInteger(s.beacons)&&s.beacons>=0&&s.beacons<=3?s.beacons:0;for(const k of ['pumps','valves'])if(Array.isArray(s[k])&&s[k].length===2)n[k]=s[k].map(v=>v===true);return n;}
- const oldRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter3);$('chapter3Clear').hidden=true;clock=0;cycle='waiting';due=0;wave=0;const r=oldRestore(d);if(r===false)return false;if(here()){state.started=true;objective(goal());templeMove=null;}else if(state.started)objective(goal());sync();return r;};
+ const oldRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter3);$('chapter3Clear').hidden=true;clock=0;cycle='waiting';due=0;wave=0;const r=oldRestore(d);if(r===false)return false;if(here()){state.started=true;objective(goal());templeMove=null;}else if(state.started&&here())objective(goal());sync();return r;};
  const oldControls=storyControls;storyControls=function(){oldControls();sync();};
  const oldJournal=openQuestJournal;openQuestJournal=function(){oldJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第3章・星を映さぬ港】\n'+[['帰還船の救助',state.boatRescued],['管理者認証鍵の記録',state.authRead],['航路灯の電源を確保',state.lampSeparated],['異常転送を停止',state.stopped],['第3章クリア',state.reported],['任意：工具箱を返却',state.toolsReturned]].map(([s,b])=>(b?'✓ ':'・')+s).join('\n')+'\n\n'+$('questJournalList').textContent;};
  document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter3Start" type="button" hidden>第3章へ出発</button><button id="chapter3Record" type="button" hidden>第3章の記録</button>');
@@ -1366,7 +1371,7 @@ const TempleChapter4=(()=>{
     if(!state.nameConfirmed){state.nameConfirmed=true;say([['ミオ','この名札、記録の端に残っていた。きみのものか、確かめてくれる？'],['語り','子どもは刻まれた名を指でなぞり、小さな声で繰り返した。ミオは本人に確かめてから、星図に書き留めた。'],['名札を取り戻した子','自分の名前は、分かった。でも、まだ思い出せないこともあるんだ。'],['あおびー','うん。今は、分かったことを大切にしよう。']],()=>objective(goal()));}
     else say([['名札を取り戻した子','名前を呼んでもらえるって、こんな感じだったんだね。']]);return;
    }
-   if(s103Facing(6,10)){if(!state.cogFound){toast('時計の歯車が足りない。入り江の東を確かめよう');return;}state.clockFixed=true;say([['語り','古い歯車をはめると、集落の時計が静かに時を刻み始めた。'],['記録守','時刻は戻っても、過去は元どおりにはならない。だから、これからの記録を残そう。']]);return;}
+   if(s103Facing(6,10)){if(state.clockFixed){toast('島の時計は修理済み。時を刻んでいる');return;}if(!state.cogFound){toast('時計の歯車が足りない。入り江の東を確かめよう');return;}state.clockFixed=true;say([['語り','古い歯車をはめると、集落の時計が静かに時を刻み始めた。'],['記録守','時刻は戻っても、過去は元どおりにはならない。だから、これからの記録を残そう。']]);return;}
    for(const [x,choice]of [[8,'share'],[16,'owners']])if(s103Facing(x,11)){
     if(!state.scribeStopped||!state.nameConfirmed){toast('先に記録機構を止め、名札を持ち主へ返そう');return;}
     if(state.disclosure){enter('ch4_chart');return;}
@@ -1478,7 +1483,7 @@ const TempleChapter4=(()=>{
  };
  const oldSnapshot=snapshot;snapshot=function(){return {...oldSnapshot(),chapter4:{...state,read:[...state.read]}}};
  function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of Object.keys(n))if(typeof n[k]==='boolean')n[k]=s[k]===true;for(const k of ['sequence','protected'])n[k]=Number.isInteger(s[k])&&s[k]>=0&&s[k]<=3?s[k]:0;n.disclosure=['share','owners'].includes(s.disclosure)?s.disclosure:'';n.read=Array.isArray(s.read)?[...new Set(s.read.filter(v=>bookKeys.includes(v)))]:[];return n;}
- const oldRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter4);$('chapter4Clear').hidden=true;resetCycle();const r=oldRestore(d);if(r===false)return false;if(here()){state.started=true;templeMove=null;}if(state.started)objective(goal());sync();return r;};
+ const oldRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter4);$('chapter4Clear').hidden=true;resetCycle();const r=oldRestore(d);if(r===false)return false;if(here()){state.started=true;templeMove=null;}if(state.started&&here())objective(goal());sync();return r;};
  const oldControls=storyControls;storyControls=function(){oldControls();sync();};
  const oldJournal=openQuestJournal;openQuestJournal=function(){oldJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【第4章・消された島と星の記録】\n'+[['島の碑文',state.survey],['年代の照合',state.sorted],['名札を持ち主に確認',state.nameConfirmed],['蓄積光を安全に保持',state.lightHeld],['記録機構を停止',state.scribeStopped],['神殿への星図・第4章クリア',state.reported],['任意：集落の時計を修理',state.clockFixed]].map(([s,b])=>(b?'✓ ':'・')+s).join('\n')+'\n\n'+$('questJournalList').textContent;};
  document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter4Start" type="button" hidden>第4章へ出発</button><button id="chapter4Record" type="button" hidden>第4章の記録</button>');$('chapter4Start').onclick=start;$('chapter4Record').onclick=()=>{if(s101CanInteract()&&state.reported)showRecord();};$('questJournal').onclick=openQuestJournal;sync();
@@ -1651,7 +1656,7 @@ const TempleChapter5=(()=>{
  };
  const oldSnapshot=snapshot;snapshot=function(){return {...oldSnapshot(),chapter5:{...state,gates:[...state.gates],villageLoad:[...state.villageLoad],relays:[...state.relays]}}};
  function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of Object.keys(n))if(typeof n[k]==='boolean')n[k]=s[k]===true;n.gates=Array.isArray(s.gates)?[...new Set(s.gates.filter(v=>keys.includes(v)))]:[];n.villageLoad=Array.isArray(s.villageLoad)&&s.villageLoad.length===2?s.villageLoad.map(v=>Number.isInteger(v)&&v>=0&&v<4?v:0):[0,0];n.relays=Array.isArray(s.relays)&&s.relays.length===4?s.relays.map(v=>v===true):[false,false,false,false];n.forestAngle=Number.isInteger(s.forestAngle)&&s.forestAngle>=0&&s.forestAngle<4?s.forestAngle:0;n.portMode=[0,1,2].includes(s.portMode)?s.portMode:0;n.stage=[1,2,3].includes(s.stage)?s.stage:1;n.hits=Number.isInteger(s.hits)&&s.hits>=0&&s.hits<=3?s.hits:0;return n;}
- const oldRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter5);$('journeyClear').hidden=true;resetCycle();const r=oldRestore(d);if(r===false)return false;if(here()){state.started=true;templeMove=null;}if(state.started)objective(goal());sync();return r;};
+ const oldRestore=restoreGame;restoreGame=function(d){if(!validSave(d))return false;state=decode(d.chapter5);$('journeyClear').hidden=true;resetCycle();const r=oldRestore(d);if(r===false)return false;if(here()){state.started=true;templeMove=null;}if(state.started&&here())objective(goal());sync();return r;};
  const oldControls=storyControls;storyControls=function(){oldControls();sync();};
  const oldJournal=openQuestJournal;openQuestJournal=function(){oldJournal();if(!questJournalOpen||!state.started)return;$('questJournalList').textContent='【最終章・星の神殿】\n'+(state.truth?'✓ 星守の証言と旧認証鍵\n':'・星守の証言\n')+keys.map((k,i)=>(state.gates.includes(k)?'✓ ':'・')+['村','森','港','島'][i]+'の星門').join('\n')+'\n'+(state.networkBalanced?'✓ 分散復旧\n':'・分散復旧\n')+(state.completed?'✓ 全5章の本編クリア\n':'・村の祭りへ帰る\n')+'\n'+$('questJournalList').textContent;};
  document.querySelector('footer').insertAdjacentHTML('beforeend','<button id="chapter5Start" type="button" hidden>最終章へ出発</button><button id="journeyRecord" type="button" hidden>旅のクリア記録</button>');$('chapter5Start').onclick=start;$('journeyRecord').onclick=()=>{if(s101CanInteract()&&state.completed)showRecord();};$('questJournal').onclick=openQuestJournal;sync();
@@ -1784,7 +1789,7 @@ nextLine=function(){
 #wrap #dialog{background:linear-gradient(135deg,#102e3af5,#142b3af5);box-shadow:0 5px 26px #07152588,inset 0 1px #fff1b418}
 </style><script>
 const sceneryDraw=draw;draw=function(){TemplePresentation.begin();sceneryDraw();TempleVisuals.atmosphere(ctx,area);TemplePresentation.finish()};
-document.documentElement.dataset.templeVisuals='journey-v3';
+document.documentElement.dataset.templeVisuals='state-v4';
 </script><style>
 #hud{font-size:14px;min-height:42px;grid-template-columns:102px minmax(0,1fr);max-width:760px;background:#082337ed;padding:6px 9px}
 #objective{font-size:14px;line-height:1.4;color:#fff0cf}
@@ -1804,4 +1809,4 @@ document.documentElement.dataset.templeVisuals='journey-v3';
 #journeyMapClose{background:#dac38b!important;color:#183546!important;text-align:center!important;min-height:44px!important}
 #chapter2Start,#chapter3Start,#chapter4Start,#chapter5Start{display:none!important}
 @media(max-height:430px){#journeyMap section{padding:12px 16px}}
-</style><script src="../assets/temple-journey.js?v=continuous-20261117"></script></body></html>
+</style><script src="../assets/temple-journey.js?v=state-20261117"></script></body></html>

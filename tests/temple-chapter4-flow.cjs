@@ -39,7 +39,7 @@ function finish(help,choice){let g=play(help),{run,walk,act,flush}=g;
  g=resume(g);({run,walk,act,flush}=g);walk(12,6);run("player.dir='up'");act();assert.equal(run('TempleChapter4.getState().reported'),true);assert.equal(run('chapterClearOpen'),true);assert.equal(g.el('chapter4Clear').hidden,false);
  const xy=run('player.x+","+player.y');run('move(1,0);simulationStep(10000)');assert.equal(run('player.x+","+player.y'),xy);run("$('chapter4Explore').onclick()");
  g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第4章クリア/);run("$('questJournal').onclick()");assert.match(g.el('questJournalList').textContent,/✓ 神殿への星図/);run("closeQuestJournal();$('chapter4Record').onclick()");assert.equal(g.el('chapter4Clear').hidden,false);run("$('chapter4Explore').onclick()");
- walk(12,15);walk(12,15);walk(12,15);assert.equal(run('area'),'ch3_port');g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第4章クリア/);run('TempleChapter4.start()');flush();assert.equal(run('area'),'ch4_settlement');assert.equal(run('TempleChapter3.getState().reported'),true);assert.equal(run('TempleChapter2.getState().reported'),true);assert.equal(run('chapter1Story.reportSeen'),true);
+ walk(12,15);walk(12,15);walk(12,15);assert.equal(run('area'),'ch3_port');g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第3章クリア/);run('TempleChapter4.start()');flush();assert.equal(run('area'),'ch4_settlement');assert.equal(run('TempleChapter3.getState().reported'),true);assert.equal(run('TempleChapter2.getState().reported'),true);assert.equal(run('chapter1Story.reportSeen'),true);
  return g;
 }
 if(require.main===module){finish(true,'share');finish(false,'owners');}else module.exports={finish};

@@ -26,8 +26,8 @@ console.log=originalLog;fs.writeFileSync=originalWrite;
     assert.deepEqual(positions,[{who:'mio',x:6,y:10},{who:'warubee',x:7,y:10}]);
    }
    if(i===0){
-    const starting=await page.evaluate(()=>TempleJourney.party());assert.equal(starting.length,2);assert.deepEqual(starting.map(x=>x.who),['mio','warubee']);
-    await page.evaluate(()=>move(0,-1));await page.waitForFunction(()=>TempleJourney.party()[0].y===14&&TempleJourney.party()[1].y===15);
+    const starting=await page.evaluate(()=>TempleJourney.party());assert.equal(starting.length,1);assert.deepEqual(starting.map(x=>x.who),['mio']);
+    await page.evaluate(()=>move(0,-1));await page.waitForFunction(()=>TempleJourney.party()[0].y===14);
     assert(await page.evaluate(()=>TempleJourney.party().every(p=>!wall(p.x,p.y)&&(p.x!==player.x||p.y!==player.y))));
     await page.screenshot({animations:'disabled',path:path.join(out,'party-following.png')});
     await page.locator('#travelMapButton').click();assert(await page.locator('#journeyMap').isVisible());assert.match(await page.locator('#journeyRegion1').textContent(),/未解決の依頼/);

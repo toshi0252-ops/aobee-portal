@@ -6,6 +6,28 @@ var TempleJourney=(()=>{
  function completed(){if(TempleChapter5.getState().completed)return 5;for(let n=4;n>=2;n--)if(chapters()[n].getState().reported)return n;return chapter1Story.reportSeen?1:0}
  function region(){const m=area.match(/^ch([2-5])_/);return m?Number(m[1]):1}
  function sideQuests(){refreshQuests();return questDefinitions.filter(q=>questBook.view(q.id).state!=='claimed').length}
+ function contextualGoal(fallback){
+  const c2=TempleChapter2.getState(),c3=TempleChapter3.getState(),c4=TempleChapter4.getState(),c5=TempleChapter5.getState(),place=templePlaces[area]||area;
+  if(['village','forest','ruins','annex','seal'].includes(area)&&['won','reported'].includes(chapter1Story.mode)){
+   if(!chapter1Story.reportSeen)return '遺跡の異変は解決済み。村へ戻り、長老に報告しよう';
+   const prefix=c5.completed?'全5章クリア':'第1章クリア';
+   if(area==='village')return c2.recovery&&!c2.reported?'森の復旧を村の長老に報告しよう':prefix+'・村を再訪中。残った依頼を続けられます。旅の地図から目的地へ';
+   if(area==='forest')return prefix+'・森を再訪中。南は村、北東は遺跡、北は深緑の森。残った依頼も続けられます';
+   if(area==='ruins')return prefix+'・本堂の装置は停止済み。西は壁画の小部屋、北は封印の間、南は森';
+   if(area==='annex')return prefix+'・壁画は解読済み。読み返せます。南から本堂へ戻れます';
+   return prefix+'・封印の間の異変は解決済み。協力台の操作は不要。南から森へ戻れます';
+  }
+  if(area.startsWith('ch2_')&&c2.reported)return '第2章クリア・'+place+'は復旧済み。'+(area==='ch2_water'&&!c2.leafHelped?'残った苗木への水やりを続けられます':'再攻略は不要。出口や旅の地図から移動できます');
+  if(area.startsWith('ch3_')&&c3.reported)return '第3章クリア・'+place+'は安定しています。'+(area==='ch3_shore'&&!c3.toolsReturned?'残った工具箱の依頼を続けられます':'航路灯は点灯し、異常転送は停止済みです');
+  if(area.startsWith('ch4_')&&c4.reported)return '第4章クリア・'+place+'の記録は保護済み。'+(area==='ch4_settlement'&&!c4.clockFixed?'残った時計の修理を続けられます':'再攻略は不要。出口や旅の地図から移動できます');
+  if(area.startsWith('ch4_')&&c4.scribeStopped&&area!=='ch4_chart')return !c4.nameConfirmed?'記録機構は停止済み。集落の子どもに名札を確認して返そう':!c4.disclosure?'記録機構は停止済み。集落の石碑で記録の公開方法を決めよう':'記録は保護済み。集落から星見台へ進み、神殿の星図を照合しよう';
+  if(area.startsWith('ch5_')&&c5.completed)return '全5章クリア・'+place+'を再訪中。星脈と各地域の接続は安定しています';
+  if(['ch5_village','ch5_forest','ch5_port','ch5_island'].includes(area)&&c5.gates.includes(area.slice(4)))return place+'は接続済み。設定をやり直す必要はありません。南から庭園へ戻れます';
+  return fallback;
+ }
+ const oldObjective=objective;objective=function(text){oldObjective(contextualGoal(text))};
+ function refreshGuidance(){oldObjective(contextualGoal($('objective').textContent))}
+ const oldChange=change;change=function(...args){const r=oldChange(...args);refreshGuidance();return r};
  function closeClear(){for(const id of ['chapterClear','chapter2Clear','chapter3Clear','chapter4Clear'])$(id).hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls()}
  function continueStory(){
   const done=completed(),next=done+1;
@@ -52,6 +74,7 @@ var TempleJourney=(()=>{
   }
   if(s101CanInteract()&&area==='ch3_port'&&TempleChapter3.getState().reported&&s103Facing(5,13)){TempleChapter4.start();return}
   if(s101CanInteract()&&area==='ch4_chart'&&TempleChapter4.getState().reported&&s103Facing(12,5)){TempleChapter5.start();return}
+  if(s101CanInteract()&&['ch5_village','ch5_forest','ch5_port','ch5_island'].includes(area)&&TempleChapter5.getState().gates.includes(area.slice(4))&&[6,17,12].some((x,i)=>s103Facing(x,i===2?7:11))){toast('この星門は接続済み。設定は固定されています');refreshGuidance();return}
   oldAction();
  };
  const oldWall=wall;wall=function(x,y){
@@ -72,11 +95,12 @@ var TempleJourney=(()=>{
   if(!/^ch[2-5]_/.test(area)||!chapter1Story.reportSeen)return [];
   if(trailArea!==area||!trail.length||Math.abs(trail[trail.length-1].x-player.x)+Math.abs(trail[trail.length-1].y-player.y)>1)resetParty();
   const t=lastMove?Math.min(1,(performance.now()-lastMove)/130):1;
-  const result=['mio','warubee'].map((who,i)=>{const to=trail[Math.max(0,trail.length-2-i)],a=from[i]||to;return {who,x:a.x+(to.x-a.x)*t,y:a.y+(to.y-a.y)*t,moving:t<1,bob:t<1?Math.sin(t*Math.PI)*2:0}});
   const state=TempleChapter2.getState();
-  if(area==='ch2_canopy'&&!state.canopy)Object.assign(result[1],{x:18,y:11,bob:0});
-  if(area==='ch2_tower_gate'&&state.trust&&!state.rescued)Object.assign(result[1],{x:12,y:7,bob:0});
-  if(area==='ch5_festival'){Object.assign(result[0],{x:6,y:10,bob:0});Object.assign(result[1],{x:7,y:10,bob:0})}
+  const result=['mio','warubee'].map((who,i)=>{const to=trail[Math.max(0,trail.length-2-i)],a=from[i]||to;return {who,x:a.x+(to.x-a.x)*t,y:a.y+(to.y-a.y)*t,moving:t<1,bob:t<1?Math.sin(t*Math.PI)*2:0}}).filter(p=>p.who==='mio'?state.mioJoined:state.warubeeJoined);
+  function station(who,x,y){let p=result.find(p=>p.who===who);if(!p){p={who};result.push(p)}Object.assign(p,{x,y,bob:0,moving:false})}
+  if(area==='ch2_canopy'&&!state.canopy)station('warubee',18,11);
+  if(area==='ch2_tower_gate'&&!state.rescued)station('warubee',12,7);
+  if(area==='ch5_festival'){station('mio',6,10);station('warubee',7,10)}
   return result;
  }
  const oldMove=move;move=function(dx,dy){
@@ -84,10 +108,10 @@ var TempleJourney=(()=>{
   if(trailArea!==area)resetParty();const old={area,x:player.x,y:player.y};const before=party();oldMove(dx,dy);
   if(area==='forest'&&chapter1Story.reportSeen&&player.x===12&&player.y===2){TempleChapter2.start()}
   if(area==='village'&&TempleChapter2.getState().reported&&player.x===22&&player.y===9){TempleChapter3.start()}
-  if(area!==old.area){resetParty();return}
+  if(area!==old.area){resetParty();refreshGuidance();return}
   if(player.x!==old.x||player.y!==old.y){from=before.map(p=>({x:p.x,y:p.y}));trail.push({x:player.x,y:player.y,dir:player.dir});trail=trail.slice(-8);lastMove=performance.now()}
  };
- const oldRestore=restoreGame;restoreGame=function(...args){const r=oldRestore(...args);resetParty();return r};
+ const oldRestore=restoreGame;restoreGame=function(...args){const r=oldRestore(...args);resetParty();if(r!==false){refreshGuidance();setTimeout(()=>TempleChapter2.ensurePartyIntroduction(),0)}return r};
  function drawParty(g,front){
   if($('start').style.display!=='none')return;const hero=templePose();
   g.save();g.setTransform(1,0,0,1,0,-Math.max(0,Math.min(180,hero.y*40-250)));
@@ -105,5 +129,5 @@ var TempleJourney=(()=>{
   if(place==='ch3_port'&&TempleChapter3.getState().reported){g.fillStyle='#a18b67';g.fillRect(165,515,75,20);TemplePresentation.label(g,'島行きの船を調べる',220,500,{targetY:540})}
   if(place==='ch4_chart'&&TempleChapter4.getState().reported)TemplePresentation.label(g,'星図から神殿へ進む',500,110,{always:true});
  };
- return {continueStory,openMap,closeMap,visit,party,resetParty,completed};
+ return {continueStory,openMap,closeMap,visit,party,resetParty,completed,refreshGuidance};
 })();

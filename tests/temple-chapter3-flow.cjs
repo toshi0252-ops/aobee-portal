@@ -14,7 +14,7 @@ function play(help){let g=complete(help?'trust':'ask',help?'gentle':'rapid',help
  if(help){walk(9,7);run("player.dir='up'");act();assert.equal(run('TempleChapter3.getState().toolsFound'),true);}
  for(const x of [5,9,13]){walk(x,12);run("player.dir='up'");act();}
  assert.equal(run('TempleChapter3.getState().beacons'),3);assert.equal(run('TempleChapter3.getState().boatRescued'),false);
- walk(12,15);walk(12,15);assert.equal(run('area'),'village');g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/船を助け/);run('TempleChapter3.start()');flush();walk(2,9);
+ walk(12,15);walk(12,15);assert.equal(run('area'),'village');g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/村.*再訪/);run('TempleChapter3.start()');flush();walk(2,9);
  g=resume(g);({run,walk,act,flush}=g);walk(18,13);run("player.dir='up'");act();assert.equal(run('TempleChapter3.getState().boatRescued'),true);assert.equal(run('wall(9,7)'),true);
  run('draw()');fs.writeFileSync('/tmp/temple-ch3-shore.png',g.canvas.toBuffer('image/png'));
  walk(12,15);assert.equal(run('area'),'ch3_port');
@@ -46,7 +46,7 @@ function play(help){let g=complete(help?'trust':'ask',help?'gentle':'rapid',help
  const xy=run('player.x+","+player.y');run('move(1,0);simulationStep(10000)');assert.equal(run('player.x+","+player.y'),xy);
  run("$('chapter3Explore').onclick()");g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第3章クリア/);
  run("$('questJournal').onclick()");assert.match(g.el('questJournalList').textContent,/✓ 第3章クリア/);run("closeQuestJournal();$('chapter3Record').onclick()");assert.equal(g.el('chapter3Clear').hidden,false);run("$('chapter3Explore').onclick()");
- walk(12,15);assert.equal(run('area'),'village');g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第3章クリア/);run('TempleChapter3.start()');flush();assert.equal(run('area'),'ch3_port');assert.equal(run('TempleChapter2.getState().reported'),true);assert.equal(run('chapter1Story.reportSeen'),true);return g;
+ walk(12,15);assert.equal(run('area'),'village');g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/村.*再訪/);run('TempleChapter3.start()');flush();assert.equal(run('area'),'ch3_port');assert.equal(run('TempleChapter2.getState().reported'),true);assert.equal(run('chapter1Story.reportSeen'),true);return g;
 }
 if(require.main===module){play(true);play(false);}else module.exports={play};
 console.log('PASS chapter 3 full story: prior-chapter lock, menu departure, wrong lamps, manual tides, low-tide optional tools, high-tide ship rescue, drainage/records, independent navigation supply, transfer interlock, guardian retry and both valve orders, checkpoints, ending/record/journal/free return, earlier chapters preserved');

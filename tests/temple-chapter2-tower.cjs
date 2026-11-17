@@ -32,7 +32,7 @@ function complete(trust,recovery,help=true){let g=route(['water','cave','canopy'
  walk(recovery==='rapid'?8:16,11);run("player.dir='up'");run('action()');assert.equal(g.el('eventStillImage').dataset.scene,'forestRestored');assert.equal(g.el('eventStill').hidden,false);assert.equal(run('area'),'ch2_tower4');flush();assert.equal(g.el('eventStill').hidden,true);assert.equal(run('area'),'village');assert.equal(run('TempleChapter2.getState().recovery'),recovery);
  walk(10,7);run("player.dir='up'");act();assert.equal(run('TempleChapter2.getState().reported'),true);assert.equal(run('chapterClearOpen'),true);assert.equal(g.el('chapter2Clear').hidden,false);
  const xy=run('player.x+","+player.y');run('move(1,0)');assert.equal(run('player.x+","+player.y'),xy);
- run("$('chapter2Explore').onclick()");assert.equal(run('chapterClearOpen'),false);g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/第2章クリア/);assert.equal(run('chapter1Story.reportSeen'),true);
+ run("$('chapter2Explore').onclick()");assert.equal(run('chapterClearOpen'),false);g=resume(g);({run,walk,act,flush}=g);assert.match(g.el('objective').textContent,/村.*再訪/);assert.equal(run('chapter1Story.reportSeen'),true);
  run("$('chapter2Record').onclick()");assert.equal(g.el('chapter2Clear').hidden,false);run("$('chapter2Explore').onclick();TempleChapter2.start()");flush();assert.equal(run('area'),'ch2_hub');return g;
 }
 if(require.main===module){complete('trust','rapid');complete('ask','gentle');}else module.exports={complete};
