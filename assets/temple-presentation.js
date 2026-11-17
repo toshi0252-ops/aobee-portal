@@ -3,7 +3,7 @@ var TemplePresentation=(()=>{
  const villagers=new Image(),props=new Image();villagers.src='../assets/temple-npc-atlas.webp';props.src='../assets/temple-props-atlas.webp';
  const forestArt=new Image(),warubee=new Image();forestArt.src='../assets/temple-forest-guardian.webp';warubee.src='../assets/characters/warubee-race-rear-v1.png';
  let candidates=[],labels=[],safeTop=83;
- function scale(){return Math.min(innerWidth/960,innerHeight/540)}
+ function scale(){const box=$('game').getBoundingClientRect();return box.width>0?box.width/960:Math.min(innerWidth/960,innerHeight/540)}
  function font(px=14){return Math.max(18,Math.ceil(px/scale()))}
  function ready(img){return img.complete&&img.naturalWidth>0}
  function art(g,img,index,rows,x,bottom,w,h){if(!ready(img))return false;const cw=img.naturalWidth/4,ch=img.naturalHeight/rows;g.save();g.imageSmoothingEnabled=true;g.drawImage(img,index%4*cw,Math.floor(index/4)*ch,cw,ch,x-w/2,bottom-h,w,h);g.restore();return true}

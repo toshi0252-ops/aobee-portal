@@ -238,7 +238,7 @@ function saveGame(silent=false){
  try{localStorage.setItem(SAVE_KEY,JSON.stringify(snapshot()));if(!silent)toast('冒険をセーブしたよ！');return true}
  catch(err){if(!silent)toast('このブラウザでは保存できません');return false}
 }
-function templeCameraX(){return Math.max(0,Math.min(320,(templePose().x-12)*40))}
+function templeCameraX(){if(document.body.dataset.controlLayout==='rail')return 0;return Math.max(0,Math.min(320,(templePose().x-12)*40))}
 function maxHealth(){return typeof TempleAdventure==='object'?TempleAdventure.maxHealth():3}
 function savedHealthLimit(data){return typeof TempleAdventure==='object'?TempleAdventure.healthLimit(data):3}
 function validSave(d){
@@ -310,7 +310,7 @@ $('equipmentClose').onclick=closeEquipment;
 document.addEventListener('keydown',e=>{if(templeGearOpen){if(e.key==='Escape'){e.preventDefault();closeEquipment();}else if(e.key==='Tab'){e.preventDefault();const buttons=[...$('equipmentPanel').querySelectorAll('button')],i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?buttons.length-1:1))%buttons.length].focus();}}});
 window.addEventListener('blur',()=>{templeMove=null;templeAttack=null;});
 updateEquipment();
-</script><script src="../assets/temple-visuals.js?v=discovery-20261117"></script><script src="../assets/temple-presentation.js?v=discovery-20261117"></script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
+</script><script src="../assets/temple-visuals.js?v=discovery-20261117"></script><script src="../assets/temple-presentation.js?v=mobile-20261117"></script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
 (()=>{
 const g=ctx,tile=40;let cameraY=0;
 function rect(x,y,w,h,c){g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
@@ -1796,7 +1796,7 @@ nextLine=function(){
 #wrap #dialog{background:linear-gradient(135deg,#102e3af5,#142b3af5);box-shadow:0 5px 26px #07152588,inset 0 1px #fff1b418}
 </style><script>
 const sceneryDraw=draw;draw=function(){TemplePresentation.begin();sceneryDraw();TempleVisuals.atmosphere(ctx,area);TemplePresentation.finish()};
-document.documentElement.dataset.templeVisuals='discovery-v9';
+document.documentElement.dataset.templeVisuals='mobile-v10';
 </script><style>
 #hud{font-size:14px;min-height:42px;grid-template-columns:102px minmax(0,1fr);max-width:760px;background:#082337ed;padding:6px 9px}
 #objective{font-size:14px;line-height:1.4;color:#fff0cf}
@@ -1816,4 +1816,4 @@ document.documentElement.dataset.templeVisuals='discovery-v9';
 #journeyMapClose{background:#dac38b!important;color:#183546!important;text-align:center!important;min-height:44px!important}
 #chapter2Start,#chapter3Start,#chapter4Start,#chapter5Start{display:none!important}
 @media(max-height:430px){#journeyMap section{padding:12px 16px}}
-</style><script src="../assets/temple-journey.js?v=discovery-20261117"></script><script src="../assets/temple-recovery.js?v=discovery-20261117"></script><script src="../assets/temple-combat.js?v=discovery-20261117"></script><script src="../assets/temple-adventure.js?v=discovery-20261117"></script></body></html>
+</style><script src="../assets/temple-journey.js?v=discovery-20261117"></script><script src="../assets/temple-recovery.js?v=mobile-20261117"></script><script src="../assets/temple-combat.js?v=discovery-20261117"></script><script src="../assets/temple-adventure.js?v=mobile-20261117"></script><script src="../assets/temple-mobile.js?v=mobile-20261117"></script></body></html>
