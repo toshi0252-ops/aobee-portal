@@ -307,7 +307,7 @@ $('equipmentClose').onclick=closeEquipment;
 document.addEventListener('keydown',e=>{if(templeGearOpen){if(e.key==='Escape'){e.preventDefault();closeEquipment();}else if(e.key==='Tab'){e.preventDefault();const buttons=[$('equip-sword'),$('equip-spear'),$('equip-hammer'),$('equipmentClose')],i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?3:1))%4].focus();}}});
 window.addEventListener('blur',()=>{templeMove=null;templeAttack=null;});
 updateEquipment();
-</script><script src="../assets/temple-visuals.js?v=art-20261116"></script><script src="../assets/temple-presentation.js?v=characters-20261117"></script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
+</script><script src="../assets/temple-visuals.js?v=art-20261116"></script><script src="../assets/temple-presentation.js?v=party-20261117"></script><script>/* Original canvas scenery. Character artwork reuses the existing reference atlas. */
 (()=>{
 const g=ctx,tile=40;let cameraY=0;
 function rect(x,y,w,h,c){g.fillStyle=c;g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
@@ -828,7 +828,7 @@ window.addEventListener('resize',fitEdgeControls);window.visualViewport?.addEven
 })();
 </script><style>
 #chapterClear[hidden]{display:none}#chapterClear{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:#081b2ce8;color:#f5ebcf}#chapterClear section{width:min(460px,94vw);max-height:90dvh;overflow:auto;padding:24px;border:1px solid #dfc588;border-radius:16px;background:linear-gradient(145deg,#244651,#102b36);text-align:center;box-shadow:0 16px 50px #0008}#chapterClear h2{margin:8px 0 16px;color:#ffe0a0;font-size:26px}#chapterClear p{font-size:14px;line-height:1.8}#chapterClear button{display:block;width:100%;min-height:44px;margin-top:12px;padding:10px;border:1px solid #dfc588;border-radius:8px;background:#e8d29a;color:#203a43;font-weight:bold}#chapterClear .sub{background:#183743;color:#e8dcc0}@media(max-height:430px){#chapterClear section{padding:12px 20px}#chapterClear h2{font-size:21px;margin:3px 0 8px}#chapterClear p{font-size:12px;margin:5px 0}}
-</style><div id="chapterClear" hidden role="dialog" aria-modal="true" aria-labelledby="chapterClearTitle"><section><small>あおびーと星の神殿</small><h2 id="chapterClearTitle">第1章 クリア</h2><p>ほしの村に、小さな灯りが戻った。<br>あおびーの冒険は、ここから続いていく。</p><p id="chapterClearSummary"></p><p id="chapterClearSaveStatus"></p><p>村と森へ戻り、残った依頼を続けられます。</p><button id="chapterNext" type="button" hidden>第2章へ出発</button><button id="chapterExplore" type="button">村と森の探索を続ける</button><button id="chapterTitle" class="sub" type="button">タイトルへ戻る</button></section></div><script>
+</style><div id="chapterClear" hidden role="dialog" aria-modal="true" aria-labelledby="chapterClearTitle"><section><small>あおびーと星の神殿</small><h2 id="chapterClearTitle">第1章 クリア</h2><p>ほしの村に、小さな灯りが戻った。<br>あおびーの冒険は、ここから続いていく。</p><p id="chapterClearSummary"></p><p id="chapterClearSaveStatus"></p><p>村と森へ戻り、残った依頼を続けられます。</p><button id="chapterNext" type="button" hidden>深緑の森へ進む</button><button id="chapterExplore" type="button">村と森の探索を続ける</button><button id="chapterTitle" class="sub" type="button">タイトルへ戻る</button></section></div><script>
 function showChapterClear(){
  $('chapterNext').hidden=!chapter1Story.reportSeen;
  $('chapterClearSaveStatus').textContent=saveGame(true)?'クリア状態を保存しました。':'保存できませんでした。この画面を閉じて、メニューのセーブから再試行してください。';
@@ -962,7 +962,7 @@ const TempleChapter2=(()=>{
   if(y===15&&x===12){
    if(area.startsWith('ch2_tower')&&area!=='ch2_tower_gate'){const f=floor();enter(f===1?'ch2_tower_gate':'ch2_tower'+(f-1),12,f===1?6:3);resetCycle();return;}
 
-   if(area==='ch2_gate'){area='village';player.x=12;player.y=13;templeMove=null;objective(state.recovery?towerGoal():'準備ができたら、メニューから第2章へ戻ろう');saveGame(true);return;}
+   if(area==='ch2_gate'){area='village';player.x=12;player.y=13;templeMove=null;objective(state.recovery?towerGoal():'森の北の道、または旅の地図から深緑の森へ戻れます');saveGame(true);return;}
    if(area==='ch2_hub'){enter('ch2_gate',12,6);return;}
    enter('ch2_hub',area==='ch2_water'?3:area==='ch2_canopy'?20:12,area==='ch2_cave'?4:9);return;
   }
@@ -1010,7 +1010,7 @@ const TempleChapter2=(()=>{
    const px=x*40+20,py=y*40+16;if(TempleVisuals.sprite(g,0,px,py+35,72,92))continue;rect(px-4,py+12,8,24,'#624f38');
    for(const [dx,dy,r,c]of [[0,0,22,'#173d32'],[-10,-5,14,'#326650'],[9,-9,13,'#3d7357']]){g.fillStyle=c;g.beginPath();g.arc(px+dx,py+dy,r,0,7);g.fill();}
   }
-  const plaque=(x,y,c='#b4b99a')=>{rect(x*40+7,y*40+10,26,25,'#254049');rect(x*40+10,y*40+7,20,24,c);rect(x*40+13,y*40+13,14,2,'#4f665d');rect(x*40+13,y*40+19,10,2,'#4f665d');};
+  const plaque=(x,y,c='#b4b99a')=>{TempleVisuals.terminal(g,x*40+20,y*40+20,false)};
   // Glowing roots distinguish the deep forest from Chapter 1.
   g.strokeStyle='#6cb5a14d';g.lineWidth=3;for(const x of [100,860]){g.beginPath();g.moveTo(x,40);g.lineTo(x+30,220);g.lineTo(x-20,480);g.lineTo(x+60,680);g.stroke();}
   label(titles[area],480,72);
@@ -1062,7 +1062,7 @@ const TempleChapter2=(()=>{
   g.fillStyle='#09282c88';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();
   // Reuse the approved atlas; no new character design or generated artwork.
   if(pic.complete&&pic.naturalWidth){const index={down:0,up:1,left:2,right:3}[player.dir]||0,cw=pic.naturalWidth/4,ch=pic.naturalHeight/2;TemplePresentation.hero(g,pic,index,px+20,py+34);}
-  label('ミオ・わるびー同行',px+20,py+65);g.restore();
+  g.restore();
  };
  const prevSnapshot=snapshot;snapshot=function(){return {...prevSnapshot(),chapter2:{...state,records:[...state.records],read:[...state.read]}}};
  function decode(s){const n=fresh();if(!s||typeof s!=='object')return n;for(const k of ['started','windSolved','bridge','canopy','echo','leafHelped','towerReached','rescued','redirected','held','stopped','reported'])n[k]=s[k]===true;n.wind=Number.isInteger(s.wind)&&s.wind>=0&&s.wind<4?s.wind:0;for(const k of ['records','read'])n[k]=Array.isArray(s[k])?[...new Set(s[k].filter(x=>Object.hasOwn(recordName,x)))]:[];n.trust=['trust','ask'].includes(s.trust)?s.trust:'';n.recovery=['rapid','gentle'].includes(s.recovery)?s.recovery:'';n.angles=Array.isArray(s.angles)&&s.angles.length===4?s.angles.map(v=>Number.isInteger(v)&&v>=0&&v<4?v:0):[0,0,0,1];n.floors=Array.isArray(s.floors)?[...new Set(s.floors.filter(v=>[1,2,3].includes(v)))]:[];n.bossStage=[1,2,3].includes(s.bossStage)?s.bossStage:1;return n;}
@@ -1248,7 +1248,7 @@ const TempleChapter3=(()=>{
  }
  function travel(){const {x,y}=player;
   if(x===12&&y===15){
-   if(area==='ch3_port'){area='village';player.x=12;player.y=13;templeMove=null;objective('メニューから港へ戻れます');saveGame(true);return;}
+   if(area==='ch3_port'){area='village';player.x=12;player.y=13;templeMove=null;objective('村の東の道、または旅の地図から港へ戻れます');saveGame(true);return;}
    if(area==='ch3_beacon'){enter('ch3_lighthouse',12,3);return;}
    enter('ch3_port',area==='ch3_shore'?3:area==='ch3_observatory'?6:18,area==='ch3_shore'?9:3);return;
   }
@@ -1419,7 +1419,7 @@ const TempleChapter4=(()=>{
  }
  function travel(){const {x,y}=player;
   if(x===12&&y===15){
-   if(area==='ch4_landing'){area='ch3_port';player.x=12;player.y=13;templeMove=null;objective('メニューから島へ戻れます');saveGame(true);return;}
+   if(area==='ch4_landing'){area='ch3_port';player.x=12;player.y=13;templeMove=null;objective('港の島行きの船、または旅の地図から島へ戻れます');saveGame(true);return;}
    if(area==='ch4_settlement'){enter('ch4_landing',12,3);return;}
    if(area==='ch4_scribe'){enter('ch4_storage',12,3);return;}
    enter('ch4_settlement',area==='ch4_archive'?6:area==='ch4_storage'?18:12,3);return;
@@ -1602,7 +1602,7 @@ const TempleChapter5=(()=>{
  }
  function travel(){const {x,y}=player;
   if(x===12&&y===15){
-   if(area==='ch5_court'){if(state.networkBalanced)enter('ch5_festival');else{area='ch4_settlement';player.x=12;player.y=13;templeMove=null;objective('メニューから神殿へ戻れます');saveGame(true);}return;}
+   if(area==='ch5_court'){if(state.networkBalanced)enter('ch5_festival');else{area='ch4_settlement';player.x=12;player.y=13;templeMove=null;objective('島の星図、または旅の地図から神殿へ戻れます');saveGame(true);}return;}
    if(area==='ch5_festival'){area='village';player.x=12;player.y=13;templeMove=null;objective(goal());saveGame(true);return;}
    const pos={ch5_village:[3,9],ch5_forest:[6,3],ch5_port:[18,3],ch5_island:[20,9],ch5_core:[12,3]}[area];enter('ch5_court',...pos);return;
   }
@@ -1644,7 +1644,7 @@ const TempleChapter5=(()=>{
   if(area==='ch5_festival'){
    TempleVisuals.house(g,160,130,170,110,'#675574');TempleVisuals.house(g,620,130,170,110,'#4e7586');
    for(let i=0;i<12;i++){const x=210+i*48,y=270+Math.sin(i*.6)*12;rect(x,y,2,32,'#74664b');rect(x-8,y+22,18,20,['#f7d99a','#e9b6ad','#b9d8b3'][i%3]);rect(x-5,y+26,12,10,'#fff1c2');}
-   TempleVisuals.person(g,420,300,'長老・祭りを始める','#c4ae7e');TempleVisuals.person(g,700,420,'最後の星守','#adbcb0');label('ミオとわるびー',260,425);post(6,10,true);label('広場へ戻り、残った依頼を続ける',500,640);
+   TempleVisuals.person(g,420,300,'長老・祭りを始める','#c4ae7e');TempleVisuals.person(g,700,420,'最後の星守','#adbcb0');label('ミオとわるびー',280,350);label('広場へ戻り、残った依頼を続ける',500,640);
   }
   TempleVisuals.details(g,area);
   const pose=templePose(),px=pose.x*40,py=pose.y*40;g.fillStyle='#273b4980';g.beginPath();g.ellipse(px+20,py+35,18,5,0,0,7);g.fill();if(pic.complete&&pic.naturalWidth){const i={down:0,up:1,left:2,right:3}[player.dir]||0,cw=pic.naturalWidth/4,ch=pic.naturalHeight/2;TemplePresentation.hero(g,pic,i,px+20,py+34);}g.restore();
@@ -1670,7 +1670,7 @@ const templePlaces={
 function templeRouteHint(){
  const c2=TempleChapter2.getState(),c5=TempleChapter5.getState();
  const routes={
- village:'広場の北に長老。南の道から森へ。解放した章へはメニューから出発できます。',
+ village:'広場の北に長老。南の道から森へ。訪れた地域へは「旅の地図」から移動できます。',
  forest:'南は村、北東は地下遺跡。遺跡への道は、ミオの救助・星のかけら3つ・石門の解放で開きます。',
  ruins:'西の小部屋に壁画。南は森。北の奥へ進むには星の鍵と守護機械の停止が必要です。',
  annex:'中央の壁画を調べられます。南の出口から本堂へ戻れます。',
@@ -1784,7 +1784,7 @@ nextLine=function(){
 #wrap #dialog{background:linear-gradient(135deg,#102e3af5,#142b3af5);box-shadow:0 5px 26px #07152588,inset 0 1px #fff1b418}
 </style><script>
 const sceneryDraw=draw;draw=function(){TemplePresentation.begin();sceneryDraw();TempleVisuals.atmosphere(ctx,area);TemplePresentation.finish()};
-document.documentElement.dataset.templeVisuals='characters-v2';
+document.documentElement.dataset.templeVisuals='journey-v3';
 </script><style>
 #hud{font-size:14px;min-height:42px;grid-template-columns:102px minmax(0,1fr);max-width:760px;background:#082337ed;padding:6px 9px}
 #objective{font-size:14px;line-height:1.4;color:#fff0cf}
@@ -1794,4 +1794,14 @@ document.documentElement.dataset.templeVisuals='characters-v2';
 #act{font-size:16px}#dialogNext{font-size:16px}#playMenu{font-size:14px}
 @media(max-height:430px){#hud{font-size:13px;min-height:39px;padding:5px 8px}#objective{font-size:14px}#line{font-size:16px!important}#speaker{font-size:14px}}
 #start p,#start small{font-size:14px!important;line-height:1.4}#questJournalPanel,#equipmentPanel{font-size:16px}#rotateNote{font-size:14px}
-</style><div id="nearbyTarget" hidden aria-live="polite"></div></body></html>
+</style><div id="nearbyTarget" hidden aria-live="polite"></div><style>
+#travelMapButton{position:fixed;left:max(12px,env(safe-area-inset-left));bottom:12px;min-height:44px;padding:8px 13px;z-index:15;border:1px solid #dcc78e;border-radius:9px;background:#15384be8;color:#fff0cb;font:700 15px sans-serif;touch-action:manipulation}
+#travelMapButton[hidden],#journeyMap[hidden]{display:none}
+#journeyMap{position:fixed;inset:0;z-index:70;background:#061a2de8;display:grid;place-items:center;padding:10px;color:#fff0d2}
+#journeyMap section{width:min(570px,94vw);max-height:92dvh;box-sizing:border-box;overflow:auto;overscroll-behavior:contain;background:linear-gradient(135deg,#234454,#112f42);padding:18px;border:1px solid #dac18b;border-radius:12px}
+#journeyMap h2{font-size:23px;margin:0 0 8px}#journeyMap p{font-size:15px;line-height:1.6;margin:0 0 12px}
+#journeyMap button{width:100%;min-height:58px;padding:10px;margin:5px 0;border:1px solid #90a7a8;border-radius:8px;background:#153548;color:#fff0cb;text-align:left;font:700 16px/1.5 sans-serif;white-space:pre-line}
+#journeyMapClose{background:#dac38b!important;color:#183546!important;text-align:center!important;min-height:44px!important}
+#chapter2Start,#chapter3Start,#chapter4Start,#chapter5Start{display:none!important}
+@media(max-height:430px){#journeyMap section{padding:12px 16px}}
+</style><script src="../assets/temple-journey.js?v=continuous-20261117"></script></body></html>

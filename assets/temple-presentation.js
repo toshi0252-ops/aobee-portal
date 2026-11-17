@@ -10,6 +10,10 @@ var TemplePresentation=(()=>{
  function prop(g,index,x,bottom,w=64,h=70){return art(g,props,index,3,x,bottom,w,h)}
  function forest(g,index,x,bottom,w,h){if(!ready(forestArt))return false;const cw=forestArt.naturalWidth/3;g.save();g.imageSmoothingEnabled=true;g.drawImage(forestArt,index*cw,0,cw,forestArt.naturalHeight,x-w/2,bottom-h,w,h);g.restore();return true}
  function companion(g,x,bottom){if(!ready(warubee))return;g.save();g.imageSmoothingEnabled=true;g.drawImage(warubee,x-33,bottom-76,66,76);g.restore()}
+ function follower(g,who,x,bottom){
+  if(who==='mio')art(g,villagers,3,2,x,bottom,52,62);
+  else if(ready(warubee)){g.save();g.imageSmoothingEnabled=true;g.drawImage(warubee,x-27,bottom-64,54,64);g.restore()}
+ }
  function hero(g,img,index,x,bottom){
   if(!ready(img))return;const cw=img.naturalWidth/4,ch=img.naturalHeight/2;
   g.save();g.imageSmoothingEnabled=true;g.drawImage(img,index%4*cw,Math.floor(index/4)*ch,cw,ch,x-35,bottom-70,70,70);g.restore();
@@ -44,5 +48,5 @@ var TemplePresentation=(()=>{
   panel.hidden=!show;if(show)panel.textContent='近く：'+best.text;
  }
  TempleVisuals.person=(g,x,y,name)=>npc(g,x,y+18,name);
- return {prop,forest,companion,hero,npc,label,begin,finish,font,assetsReady:()=>ready(villagers)&&ready(props)&&ready(forestArt)};
+ return {prop,forest,companion,follower,hero,npc,label,begin,finish,font,assetsReady:()=>ready(villagers)&&ready(props)&&ready(forestArt)&&ready(warubee)};
 })();
