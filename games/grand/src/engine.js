@@ -649,7 +649,7 @@ const Engine = (() => {
     render() {
       const m = this.map; if (!m) return;
       for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-        const t = m.grid[y][x], px = x * TILE, py = y * TILE;
+        const t = (m.grid[y] || '')[x] || '.', px = x * TILE, py = y * TILE;
         const h1 = hash2(x, y);
         // 草地: 差を抑えた2色＋座標依存の微細ドット/草葉で質感を出す
         ctx.fillStyle = (x + y) % 2 ? '#7cb95e' : '#84bf64';

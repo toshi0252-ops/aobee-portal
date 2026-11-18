@@ -205,10 +205,10 @@
     { id: 'fcog2', x: 13, y: 7 },
     { id: 'fcog3', x: 9, y: 9 }
   ];
-  const HERB_SPOTS = [ { x: 4, y: 2 }, { x: 16, y: 3 }, { x: 10, y: 10 } ];
+  const HERB_SPOTS = [ { x: 4, y: 2 }, { x: 17, y: 3 }, { x: 10, y: 10 } ];
   function spawnForest() {
     World.actors = FOREST_COGS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'cog', x: c.x, y: c.y, visible: true }));
-    if (!S.flags.gearItem && !S.flags.gearDone) World.actors.push({ id: 'oocog', kind: 'oocog', x: 13, y: 3, visible: true });
+    if (!S.flags.gearItem && !S.flags.gearDone) World.actors.push({ id: 'oocog', kind: 'oocog', x: 15, y: 3, visible: true });
   }
 
   function onStep(x, y, tile) {
@@ -342,7 +342,7 @@
     if (curMap === 'forest') {
       const fcog = FOREST_COGS.find(c => c.x === x && c.y === y && !visitDone[c.id]);
       if (fcog) { startMoriBattle(fcog); return; }
-      if (x === 13 && y === 3 && !S.flags.gearItem && !S.flags.gearDone) { startOocogBattle(); return; }
+      if (x === 15 && y === 3 && !S.flags.gearItem && !S.flags.gearDone) { startOocogBattle(); return; }
       const herbSpot = HERB_SPOTS.find(h => h.x === x && h.y === y);
       if (herbSpot && S.flags.herbQuest && !S.flags.herbDone && !S.flags['herb:' + x + ',' + y]) {
         S.flags['herb:' + x + ',' + y] = true;
