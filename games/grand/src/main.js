@@ -376,6 +376,21 @@
     }
   }
 
+  /* 調べるスポット: 「マップ名:正面タイルのx,y」→ 会話キー（本筋に関係ない読み物・小ネタ・伝承） */
+  const SPOTS = {
+    'village:2,3': 'spotWorkshop', 'village:3,3': 'spotWorkshop', 'village:4,3': 'spotWorkshop',
+    'village:15,3': 'spotBakery', 'village:16,3': 'spotBakery', 'village:17,3': 'spotBakery',
+    'village:5,1': 'spotTree', 'village:6,1': 'spotTree', 'village:13,1': 'spotTree', 'village:14,1': 'spotTree',
+    'village:3,8': 'spotTree', 'village:16,8': 'spotTree',
+    'trail:2,2': 'spotTrailTree', 'trail:3,2': 'spotTrailTree',
+    'mill:2,3': 'spotMillHouse', 'mill:3,3': 'spotMillHouse', 'mill:4,3': 'spotMillHouse', 'mill:12,6': 'spotRiver',
+    'road:3,1': 'spotRoadTree', 'road:4,1': 'spotRoadTree', 'road:15,1': 'spotRoadTree', 'road:16,1': 'spotRoadTree',
+    'ranch:2,3': 'spotRanchHouse', 'ranch:3,3': 'spotRanchHouse', 'ranch:4,3': 'spotRanchHouse', 'ranch:15,8': 'spotPen',
+    'approach:5,1': 'spotOldTree', 'approach:6,1': 'spotOldTree', 'approach:15,1': 'spotOldTree', 'approach:16,1': 'spotOldTree',
+    'temple:9,3': 'spotPillar', 'temple:10,3': 'spotPillar', 'temple:9,4': 'spotPillar', 'temple:10,4': 'spotPillar',
+    'clockroom:3,4': 'spotCarving', 'clockroom:3,5': 'spotCarving', 'clockroom:16,4': 'spotCarving', 'clockroom:16,5': 'spotCarving'
+  };
+
   function onInteract() {
     if (Battle.active || Dialogue.active) return;
     const f = World.frontTile();
@@ -395,7 +410,11 @@
         } else if (S.chapter >= 2) Dialogue.play(Data.dlg.gardoCh2);
         else if (S.flags.bossDone) Dialogue.play(Data.dlg.gardoBossDone);
         else if (S.fragments >= 3) Dialogue.play(Data.dlg.gardoFragmentsDone);
-        else Dialogue.play(Data.dlg.gardoAfter);
+        else {
+          const n = (S.talks.gardo = (S.talks.gardo || 0) + 1);
+          if (n === 1) Dialogue.play(Data.dlg.gardoAfter);
+          else Dialogue.play(Data.dlg.gardoChat[(n - 2) % Data.dlg.gardoChat.length]);
+        }
       } else if (npc.id === 'baker') {
         if (S.flags.bossDone) Dialogue.play(Data.dlg.bakerBossDone);
         else {
@@ -419,7 +438,11 @@
           S.hp = S.maxHp;
           const tea = [Data.L('みのりさん', 'お茶をどうぞ。ほし草のお茶よ。……はい、これで元気いっぱいのはず。', 'minori')];
           const withTea = (lines, cb) => Dialogue.play(tea.concat(lines), cb || (() => { refreshHUD(); save(); }));
-          if (S.flags.cleared2) withTea(Data.dlg.minoriAfter2);
+          if (S.flags.cleared2) {
+            const n = (S.talks.minori = (S.talks.minori || 0) + 1);
+            if (n === 1) withTea(Data.dlg.minoriAfter2);
+            else withTea(Data.dlg.minoriChat[(n - 2) % Data.dlg.minoriChat.length]);
+          }
           else if (!S.flags.minoriMet) {
             withTea(Data.dlg.minoriFirst, () => { S.flags.minoriMet = true; refreshHUD(); save(); });
           } else if (!S.flags.herdDone) {
@@ -433,20 +456,31 @@
           Dialogue.play(Data.dlg.mioFirst, () => { S.flags.mioMet = true; S.hp = S.maxHp; refreshHUD(); save(); });
         } else {
           S.hp = S.maxHp;
-          Dialogue.play(Data.dlg.mioHeal.concat(Data.dlg.mioAfter), () => { refreshHUD(); save(); });
+          const n = (S.talks.mio = (S.talks.mio || 0) + 1);
+          const tail = n === 1 ? Data.dlg.mioAfter : Data.dlg.mioChat[(n - 2) % Data.dlg.mioChat.length];
+          Dialogue.play(Data.dlg.mioHeal.concat(tail), () => { refreshHUD(); save(); });
         }
       }
       else if (npc.id === 'mio2') {
-        Dialogue.play(Data.dlg.mioClock);
+        const n = (S.talks.mio2 = (S.talks.mio2 || 0) + 1);
+        Dialogue.play(n === 1 ? Data.dlg.mioClock : Data.dlg.mioClock2);
       }
       else if (npc.id === 'choro') {
-        Dialogue.play(Data.dlg.choroAfter);
+        const n = (S.talks.choro = (S.talks.choro || 0) + 1);
+        if (n === 1) Dialogue.play(Data.dlg.choroAfter);
+        else Dialogue.play(Data.dlg.choroChat[(n - 2) % Data.dlg.choroChat.length]);
       }
       else if (npc.id === 'warubee' && curMap === 'mill' && !S.flags.bossDone && !S.flags.bossStarted) {
         S.flags.bossStarted = true; startBoss();
       }
       return;
     }
+    // 調べるスポット（家具・大木・石柱・時計など）
+    const spotKey = curMap + ':' + f.x + ',' + f.y;
+    if (curMap === 'hill' && f.y === 2 && f.x >= 9 && f.x <= 11) { Dialogue.play(S.flags.cleared2 ? Data.dlg.spotWindmillAfter : Data.dlg.spotWindmill); return; }
+    if (curMap === 'clockroom' && f.y === 1 && f.x >= 9 && f.x <= 11) { Dialogue.play(S.flags.cleared3 ? Data.dlg.spotClockAfter : Data.dlg.spotClock); return; }
+    const spotDlg = SPOTS[spotKey];
+    if (spotDlg) { Dialogue.play(Data.dlg[spotDlg]); return; }
     const t = World.tileAt(f.x, f.y);
     if (t === 'C') { tryLightCandle(f.x, f.y); return; }
     if (t === 'L') { Dialogue.play([Data.L('', 'もう灯っている。')]); return; }
@@ -813,7 +847,7 @@
     }
   }
 
-  World.hooks = { onStep, onInteract, onMapEnter, applyTiles, hooksState };
+  World.hooks = { onStep, onInteract, onMapEnter, applyTiles, hooksState, SPOTS };
   window.addEventListener('beforeunload', () => { if (started) { S.playMs += Date.now() - S.startedAt; S.startedAt = Date.now(); save(); } });
 
   document.addEventListener('DOMContentLoaded', () => {
