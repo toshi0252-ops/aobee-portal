@@ -32,6 +32,7 @@ if (lbl) lbl.textContent = B.charged ? '歯車アタック！' : 'こうげき';
 /* 敵イラスト素材（高さpx・影幅px）。読込失敗時はコード描画にフォールバック */
 const ENEMY_ART = {
 cog: { src: 'assets/chars/enemy-cog.png', h: 150, shadow: 110 },
+oocog: { src: 'assets/chars/enemy-guardian.png', h: 200, shadow: 135 },
 millCog: { src: 'assets/chars/enemy-guardian.png', h: 190, shadow: 130 },
 karakuri: { src: 'assets/chars/enemy-karakuri.png', h: 210, shadow: 120 },
 kuwa: { src: 'assets/chars/enemy-kuwa.png', h: 150, shadow: 110 },

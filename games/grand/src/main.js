@@ -74,6 +74,11 @@
     }
     if (!f.opening) return '……';
     if (!f.boots) return '工房のガルドに話そう';
+    if (!f.gearDone) {
+      if (f.gearItem) return 'ガルドに丈夫な歯車を届けよう';
+      if (f.gearQuest) return '村はずれの森の祠で、丈夫な歯車を取ってこよう';
+      if (S.fragments >= 3) return '村長ダイジに話そう（村の南西の家）';
+    }
     if (S.fragments < 3 && curMap !== 'mill') return `小道で歯車の欠片を集めよう（${S.fragments}/3）`;
     if (!f.millGear) return curMap === 'mill' ? '水車小屋で小歯車を回収しよう' : '南の出口から水車小屋へ進もう';
     if (!f.bridgeOpen && nestsCleared() < 3) return `水車のコグの巣を壊そう（${nestsCleared()}/3）`;
@@ -194,15 +199,34 @@
     World.actors = NESTS.filter(n => !S.flags[n.id]).map(n => ({ id: n.id, kind: 'cog', x: n.x, y: n.y, visible: true }));
   }
 
+  /* ---------- 拡大版第1章: 村はずれの森（見えるコグ・中ボス・薬草） ---------- */
+  const FOREST_COGS = [
+    { id: 'fcog1', x: 4, y: 4 },
+    { id: 'fcog2', x: 13, y: 7 },
+    { id: 'fcog3', x: 9, y: 9 }
+  ];
+  const HERB_SPOTS = [ { x: 4, y: 2 }, { x: 16, y: 3 }, { x: 10, y: 10 } ];
+  function spawnForest() {
+    World.actors = FOREST_COGS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'cog', x: c.x, y: c.y, visible: true }));
+    if (!S.flags.gearItem && !S.flags.gearDone) World.actors.push({ id: 'oocog', kind: 'oocog', x: 13, y: 3, visible: true });
+  }
+
   function onStep(x, y, tile) {
     if (Battle.active || Dialogue.active) return;
     // 出入口
     const ex = World.map.exits.find(e => e.x === x && e.y === y);
     if (ex) {
-      if (ex.gate === 'fragments' && S.fragments < 3) {
-        Dialogue.play([Data.L('あおびー', `まだ欠片が足りない……あと${3 - S.fragments}つ。落とした場所をもう一度探そう。`, 'aobee')]);
-        World.player.gy -= 1; World.player.py = World.player.gy * Engine.TILE;
-        return;
+      if (ex.gate === 'mill') {
+        if (S.fragments < 3) {
+          Dialogue.play([Data.L('あおびー', `まだ欠片が足りない……あと${3 - S.fragments}つ。落とした場所をもう一度探そう。`, 'aobee')]);
+          World.player.gy -= 1; World.player.py = World.player.gy * Engine.TILE;
+          return;
+        }
+        if (!S.flags.gearDone) {
+          Dialogue.play(Data.dlg.gateGearMsg);
+          pushBack(ex);
+          return;
+        }
       }
       if (ex.gate === 'ch2' && S.chapter < 2) {
         Dialogue.play(Data.dlg.gateCh2Msg);
@@ -314,6 +338,20 @@
       startHoshigamiBattle();
       return;
     }
+    // 拡大版第1章: 村はずれの森（見えるコグに触れると戦闘／祠前で中ボス／光る草で薬草集め）
+    if (curMap === 'forest') {
+      const fcog = FOREST_COGS.find(c => c.x === x && c.y === y && !visitDone[c.id]);
+      if (fcog) { startMoriBattle(fcog); return; }
+      if (x === 13 && y === 3 && !S.flags.gearItem && !S.flags.gearDone) { startOocogBattle(); return; }
+      const herbSpot = HERB_SPOTS.find(h => h.x === x && h.y === y);
+      if (herbSpot && S.flags.herbQuest && !S.flags.herbDone && !S.flags['herb:' + x + ',' + y]) {
+        S.flags['herb:' + x + ',' + y] = true;
+        S.flags.herbCount = (S.flags.herbCount || 0) + 1;
+        Snd.pickup();
+        Dialogue.play(Data.dlg.herbPickup, () => { refreshHUD(); save(); });
+        return;
+      }
+    }
     // 第2章: 動物誘導（牧場を歩くたびに隣接判定）
     if (curMap === 'ranch') herdStep();
     // 第1章 肉付け: 水車のコグの巣（見えるコグに触れると戦闘）。倒した巣は戻らない
@@ -367,6 +405,7 @@
         setTimeout(() => Dialogue.play(Data.dlg.millIntro), 250);
       }
     }
+    if (id === 'forest') spawnForest();
     if (id === 'road' && !S.flags.roadIntro) {
       S.flags.roadIntro = true;
       setTimeout(() => Dialogue.play(Data.dlg.roadIntro), 250);
@@ -439,6 +478,10 @@
         } else if (S.chapter >= 2 && !S.flags.ch2Intro) {
           Dialogue.play(Data.dlg.ch2GardoNotice, () => { S.flags.ch2Intro = true; refreshHUD(); save(); });
         } else if (S.chapter >= 2) Dialogue.play(Data.dlg.gardoCh2);
+        else if (!S.flags.gearDone && S.flags.gearItem) {
+          Dialogue.play(Data.dlg.gardoGearGet, () => { S.flags.gearDone = true; Snd.gear(); refreshHUD(); save(); });
+        }
+        else if (!S.flags.gearDone && S.fragments >= 3) Dialogue.play(Data.dlg.gardoNeedGear);
         else if (S.flags.bossDone) Dialogue.play(Data.dlg.gardoBossDone);
         else if (S.fragments >= 3) Dialogue.play(Data.dlg.gardoFragmentsDone);
         else {
@@ -448,11 +491,58 @@
         }
       } else if (npc.id === 'baker') {
         if (S.flags.bossDone) Dialogue.play(Data.dlg.bakerBossDone);
+        else if (S.flags.breadCarry) Dialogue.play(Data.dlg.breadHint);
+        else if (S.flags.boots && (S.flags.gearQuest || S.flags.gearDone) && !S.flags.breadQuest && !S.flags.breadDone) {
+          Dialogue.play(Data.dlg.breadOffer, () => { S.flags.breadQuest = true; S.flags.breadCarry = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.breadDone && !S.flags.breadThanked) {
+          Dialogue.play(Data.dlg.breadThanks, () => { S.flags.breadThanked = true; refreshHUD(); save(); });
+        }
         else {
           const n = (S.talks.baker = (S.talks.baker || 0) + 1);
           if (n === 1) Dialogue.play(Data.dlg.baker);
           else Dialogue.play(Data.dlg.bakerChat[(n - 2) % Data.dlg.bakerChat.length]);
         }
+      } else if (npc.id === 'mayor') {
+        if (S.flags.breadCarry && !S.flags.breadDone) {
+          Dialogue.play(Data.dlg.mayorBread, () => {
+            S.flags.breadDone = true; S.flags.breadCarry = false; S.herbs += 1;
+            Snd.pickup(); refreshHUD(); save();
+          });
+        }
+        else if (!S.flags.boots) {
+          const n = (S.talks.mayor = (S.talks.mayor || 0) + 1);
+          Dialogue.play(Data.dlg.mayorChat[(n - 1) % Data.dlg.mayorChat.length]);
+        }
+        else if (!S.flags.gearQuest && !S.flags.gearDone) {
+          if (S.flags.gearItem) Dialogue.play(Data.dlg.mayorHasGear, () => { S.flags.gearQuest = true; refreshHUD(); save(); });
+          else Dialogue.play(Data.dlg.mayorFirst, () => { S.flags.gearQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.gearItem && !S.flags.gearDone) Dialogue.play(Data.dlg.mayorGearHint);
+        else if (!S.flags.gearDone) Dialogue.play(Data.dlg.mayorQuestHint);
+        else {
+          const n = (S.talks.mayor = (S.talks.mayor || 0) + 1);
+          Dialogue.play(Data.dlg.mayorChat[(n - 1) % Data.dlg.mayorChat.length]);
+        }
+      } else if (npc.id === 'herb') {
+        // 薬屋ハル婆は回復スポット（話すたびに全回復）。初回で薬草集めの頼みごと
+        const hurt = S.hp < S.maxHp;
+        if (hurt) S.hp = S.maxHp;
+        const withHeal = (lines, cb) => Dialogue.play(hurt ? Data.dlg.herbHeal.concat(lines) : lines, () => { refreshHUD(); save(); if (cb) cb(); });
+        if (!S.flags.herbMet) {
+          withHeal(Data.dlg.herbFirst, () => { S.flags.herbMet = true; S.flags.herbQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.herbQuest && !S.flags.herbDone && (S.flags.herbCount || 0) >= 3) {
+          withHeal(Data.dlg.herbThanks, () => { S.flags.herbDone = true; S.herbs += 2; Snd.pickup(); refreshHUD(); save(); });
+        }
+        else if (S.flags.herbQuest && !S.flags.herbDone) withHeal(Data.dlg.herbHint);
+        else {
+          const n = (S.talks.herb = (S.talks.herb || 0) + 1);
+          withHeal(Data.dlg.herbChat[(n - 1) % Data.dlg.herbChat.length]);
+        }
+      } else if (npc.id === 'postman') {
+        const n = (S.talks.postman = (S.talks.postman || 0) + 1);
+        Dialogue.play(Data.dlg.postChat[(n - 1) % Data.dlg.postChat.length]);
       } else if (npc.id === 'kid') {
         if (S.flags.swordFound && !S.flags.swordDone) {
           Dialogue.play(Data.dlg.kidQuestThanks, () => {
@@ -590,6 +680,39 @@
       if (res === 'win') {
         visitDone.mawari = true;
         refreshHUD(); save();
+      } else onLose();
+      refreshHUD();
+    });
+  }
+  /* 拡大版第1章: もりコグ戦（森の見える敵。再入場で復活） */
+  function startMoriBattle(cog) {
+    const begin = async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.mori }],
+        intro: 'もりコグ が あらわれた！'
+      });
+      if (res === 'win') {
+        visitDone[cog.id] = true;
+        World.actors = World.actors.filter(a => a.id !== cog.id);
+        refreshHUD(); save();
+      } else onLose();
+      refreshHUD();
+    };
+    if (S.flags.moriIntroSeen) begin();
+    else { S.flags.moriIntroSeen = true; Dialogue.play(Data.dlg.moriIntro, begin); }
+  }
+  /* 拡大版第1章: 中ボス「オオコグ」戦（森の祠。勝つと丈夫な歯車） */
+  function startOocogBattle() {
+    Dialogue.play(Data.dlg.oocogIntro, async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.oocog }],
+        intro: 'オオコグ が 祠を守っている！'
+      });
+      if (res === 'win') {
+        S.flags.gearItem = true;
+        World.actors = World.actors.filter(a => a.id !== 'oocog');
+        Snd.pickup();
+        Dialogue.play(Data.dlg.gearGet, () => { refreshHUD(); save(); });
       } else onLose();
       refreshHUD();
     });
