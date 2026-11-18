@@ -21,7 +21,9 @@ const Engine = (() => {
     gardo: { file: 'npc-gardo.png', cx: 0.51, cy: 0.29, side: 0.58 },
     baker: { file: 'npc-mami.png', cx: 0.50, cy: 0.27, side: 0.47 },
     kid:   { file: 'npc-poco.png', cx: 0.38, cy: 0.36, side: 0.62 },
-    minori: { file: 'npc-minori.png', cx: 0.50, cy: 0.28, side: 0.45 }
+    minori: { file: 'npc-minori.png', cx: 0.50, cy: 0.28, side: 0.45 },
+    mio: { file: 'npc-mio.png', cx: 0.50, cy: 0.28, side: 0.50 },
+    choro: { file: 'npc-choro.png', cx: 0.50, cy: 0.30, side: 0.55 }
   };
   const npcImgs = {};
   for (const k of Object.keys(NPC_FACE)) {
@@ -186,7 +188,7 @@ const Engine = (() => {
     const u = s / 44;
     c2.save(); c2.translate(cx, cy);
     const skin = '#f6cfa5';
-    const clothes = { gardo: '#8a5a2b', baker: '#f2f2f2', kid: '#58b368', minori: '#83986a' }[kind] || '#888';
+    const clothes = { gardo: '#8a5a2b', baker: '#f2f2f2', kid: '#58b368', minori: '#83986a', mio: '#efe9dc', choro: '#5a4a7a' }[kind] || '#888';
     c2.fillStyle = clothes;
     c2.beginPath(); c2.ellipse(0, 8 * u, 11 * u, 10 * u, 0, 0, Math.PI * 2); c2.fill();
     c2.fillStyle = skin;
@@ -204,6 +206,20 @@ const Engine = (() => {
       c2.fillStyle = '#e3c878'; // 麦わら帽子
       c2.beginPath(); c2.ellipse(0, -12 * u, 12.5 * u, 4.5 * u, 0, 0, Math.PI * 2); c2.fill();
       c2.beginPath(); c2.ellipse(0, -15.5 * u, 7 * u, 4 * u, 0, 0, Math.PI * 2); c2.fill();
+    } else if (kind === 'mio') {
+      c2.fillStyle = '#4a3b30'; // ロングヘア（両サイド）
+      c2.fillRect(-11 * u, -12 * u, 4.5 * u, 20 * u); c2.fillRect(6.5 * u, -12 * u, 4.5 * u, 20 * u);
+      c2.fillStyle = '#d23b3b'; // 赤いリボン
+      c2.beginPath(); c2.moveTo(0, -15 * u); c2.lineTo(-6 * u, -18 * u); c2.lineTo(-5 * u, -11.5 * u); c2.closePath(); c2.fill();
+      c2.beginPath(); c2.moveTo(0, -15 * u); c2.lineTo(6 * u, -18 * u); c2.lineTo(5 * u, -11.5 * u); c2.closePath(); c2.fill();
+      c2.fillStyle = '#d23b3b'; c2.fillRect(-11 * u, 4 * u, 22 * u, 2.6 * u); // 緋の帯
+      starPath(c2, 0, 9 * u, 3.4 * u, '#ffd21f', false); // 星の留め具
+    } else if (kind === 'choro') {
+      c2.fillStyle = '#e8e8e8'; // 白いひげ
+      c2.beginPath(); c2.ellipse(0, 1 * u, 6.5 * u, 5.5 * u, 0, 0, Math.PI * 2); c2.fill();
+      c2.fillStyle = '#c9c9c9'; // 眉
+      c2.fillRect(-7 * u, -10.5 * u, 5 * u, 1.8 * u); c2.fillRect(2 * u, -10.5 * u, 5 * u, 1.8 * u);
+      gearPath(c2, 13 * u, 4 * u, 4 * u, 8, '#c49a12'); // 杖の歯車
     }
     c2.fillStyle = '#222';
     c2.beginPath(); c2.arc(-3.5 * u, -6 * u, 1.3 * u, 0, Math.PI * 2); c2.fill();
@@ -489,7 +505,7 @@ const Engine = (() => {
     },
     solid(gx, gy) {
       const t = this.tileAt(gx, gy);
-      if (t === '#' || t === 'T' || t === 'H' || t === '~' || t === 'S' || t === 'N') return true;
+      if (t === '#' || t === 'T' || t === 'H' || t === '~' || t === 'S' || t === 'N' || t === 'W' || t === 'C' || t === 'L') return true;
       if (t === 'X' && !(this.hooks.hooksState && this.hooks.hooksState().bridgeOpen)) return true;
       if (this.map.npcs.some(n => !n.hidden && n.x === gx && n.y === gy)) return true;
       if (this.actors.some(a => a.visible && a.x === gx && a.y === gy)) return true;
@@ -635,6 +651,41 @@ const Engine = (() => {
           ctx.fillStyle = dg; ctx.fillRect(px, py, TILE, TILE);
           ctx.fillStyle = '#b39d45'; ctx.fillRect(px + 3, py + 6, 4, 4); ctx.fillRect(px + 24, py + 20, 4, 4);
         }
+        if (t === '_') { // 石床（神殿内）: 青灰の石畳＋目地
+          ctx.fillStyle = (x + y) % 2 ? '#5d6577' : '#646d80';
+          ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = 'rgba(20,24,34,0.35)'; ctx.fillRect(px, py + 30, TILE, 2); ctx.fillRect(px + 30, py, 2, TILE);
+          ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fillRect(px, py, TILE, 2);
+        }
+        if (t === 'W') { // 石壁（神殿）: 積み石＋上部の星の刻印
+          ctx.fillStyle = '#454e61'; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = '#525c72'; ctx.fillRect(px + 1, py + 1, TILE - 2, 13);
+          ctx.fillStyle = '#3a4152'; ctx.fillRect(px + 1, py + 16, TILE - 2, 15);
+          ctx.fillStyle = 'rgba(15,18,26,0.5)'; ctx.fillRect(px, py + 15, TILE, 1.6); ctx.fillRect(px + 15, py, 1.6, 15); ctx.fillRect(px + 7, py + 16, 1.6, 15);
+          ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fillRect(px, py, TILE, 2);
+          if ((x * 7 + y * 13) % 5 === 0) starPath(ctx, px + 16, py + 16, 4.5, 'rgba(255,210,31,0.35)', false);
+        }
+        if (t === 'C' || t === 'L') { // 燭台: 石床の上に台＋ロウソク（Lは点灯中: 炎とほのかな halo）
+          ctx.fillStyle = (x + y) % 2 ? '#5d6577' : '#646d80'; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = 'rgba(20,24,34,0.35)'; ctx.fillRect(px, py + 30, TILE, 2);
+          if (t === 'L') {
+            const fl = 1 + Math.sin(performance.now() / 130 + x * 3.1 + y * 1.7) * 0.12;
+            const hg = ctx.createRadialGradient(px + 16, py + 13, 2, px + 16, py + 13, 26 * fl);
+            hg.addColorStop(0, 'rgba(255,214,90,0.40)'); hg.addColorStop(1, 'rgba(255,214,90,0)');
+            ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(px + 16, py + 13, 26 * fl, 0, Math.PI * 2); ctx.fill();
+          }
+          ctx.fillStyle = '#6b7280'; ctx.fillRect(px + 10, py + 24, 12, 4); // 台座
+          ctx.fillStyle = '#8a929c'; ctx.fillRect(px + 14.5, py + 17, 3, 8); // 支柱
+          ctx.fillStyle = '#f2ede0'; ctx.fillRect(px + 12.5, py + 8, 7, 10); // ロウソク
+          if (t === 'L') {
+            const fl2 = Math.sin(performance.now() / 110 + x * 2.3) * 1.2;
+            ctx.fillStyle = '#ffb340';
+            ctx.beginPath(); ctx.ellipse(px + 16 + fl2 * 0.4, py + 4.5, 2.6, 4.2 + fl2 * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff3c4'; ctx.beginPath(); ctx.ellipse(px + 16, py + 5.5, 1.2, 2.1, 0, 0, Math.PI * 2); ctx.fill();
+          } else {
+            ctx.fillStyle = '#3c3c3c'; ctx.fillRect(px + 15.2, py + 5, 1.6, 3.4); // 芯（未点火）
+          }
+        }
       }
       // 出口サイン（行き先ラベル＋矢印）
       if (m.exits) {
@@ -686,6 +737,36 @@ const Engine = (() => {
         if (st.gearRestored) { ctx.save(); ctx.translate(10 * TILE, 16); ctx.rotate(performance.now() / 3000); gearPath(ctx, 0, 0, 15, 10, '#c49a12'); ctx.restore(); }
         else { ctx.fillStyle = '#6b7280'; ctx.fillRect(9 * TILE + 26, 10, 28, 5); }
       }
+      // 星時計の間: 北壁の大星時計（クリア後はゆっくり回り、針も動く）
+      if (this.mapId === 'clockroom') {
+        const stc = this.hooks.hooksState ? this.hooks.hooksState() : {};
+        const kx = 10 * TILE + 16, ky = 1 * TILE + 14;
+        ctx.save();
+        ctx.translate(kx, ky);
+        if (stc.clockRestored) { ctx.save(); ctx.rotate(performance.now() / 6000); gearPath(ctx, 0, 0, 47, 12, '#8a6d1f'); ctx.restore(); }
+        else gearPath(ctx, 0, 0, 47, 12, '#6e6420');
+        const cg2 = ctx.createRadialGradient(-8, -10, 4, 0, 0, 40);
+        cg2.addColorStop(0, '#2c3e63'); cg2.addColorStop(1, '#141d33');
+        ctx.fillStyle = cg2; ctx.beginPath(); ctx.arc(0, 0, 39, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#c49a12'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 39, 0, Math.PI * 2); ctx.stroke();
+        for (let i = 0; i < 12; i++) { // 時刻の星マーカー
+          const a = i * Math.PI / 6;
+          starPath(ctx, Math.cos(a) * 31, Math.sin(a) * 31, 3.2, i % 3 === 0 ? '#ffd21f' : 'rgba(255,210,31,0.55)', false);
+        }
+        // 針: 復活後は実時間でゆっくり進む。停止中は 11:55 で止まったまま
+        const baseA = stc.clockRestored ? performance.now() / 20000 : -Math.PI / 2 - 0.14;
+        ctx.strokeStyle = '#e8dcc3'; ctx.lineWidth = 3.4; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(baseA) * 21, Math.sin(baseA) * 21); ctx.stroke();
+        ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(baseA * 3 + 1.2) * 29, Math.sin(baseA * 3 + 1.2) * 29); ctx.stroke();
+        starPath(ctx, 0, 0, 5.5, '#ffd21f', false);
+        ctx.restore();
+        if (!stc.clockRestored) { // 停止中は欠けた歯の位置に空きスロットを見せる
+          ctx.fillStyle = 'rgba(10,12,20,0.85)';
+          ctx.beginPath(); ctx.arc(kx + 30, ky - 30, 6, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(255,210,31,0.6)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(kx + 30, ky - 30, 6, 0, Math.PI * 2); ctx.stroke();
+        }
+      }
       // NPC（接地影つき。NPCはイラスト優先、読込失敗時のみコード描画）
       for (const n of m.npcs) {
         if (n.hidden) continue;
@@ -736,6 +817,27 @@ const Engine = (() => {
       const joy = p.joyT > performance.now();
       groundShadow(ctx, p.px + 16, p.py + 33, 26);
       drawAobee(p.px + 16, p.py + 34, 42, p.dir, p.moving, joy);
+      // 暗闇マップ（星の神殿）: 暗幕に灯りの穴を開けて重ねる。ボス撃破後は神殿に灯りが戻る
+      if (m.dark) {
+        const std = this.hooks.hooksState ? this.hooks.hooksState() : {};
+        if (!std.templeLit) {
+          if (!this._darkCv) { this._darkCv = document.createElement('canvas'); this._darkCv.width = COLS * TILE; this._darkCv.height = ROWS * TILE; }
+          const dc = this._darkCv.getContext('2d');
+          dc.globalCompositeOperation = 'source-over';
+          dc.clearRect(0, 0, COLS * TILE, ROWS * TILE);
+          dc.fillStyle = 'rgba(5,8,20,0.90)';
+          dc.fillRect(0, 0, COLS * TILE, ROWS * TILE);
+          dc.globalCompositeOperation = 'destination-out';
+          const hole = (hx, hy, r) => {
+            const g = dc.createRadialGradient(hx, hy, r * 0.25, hx, hy, r);
+            g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.75, 'rgba(0,0,0,0.92)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+            dc.fillStyle = g; dc.beginPath(); dc.arc(hx, hy, r, 0, Math.PI * 2); dc.fill();
+          };
+          hole(p.px + 16, p.py + 18, 82); // 星灯りのお守り（プレイヤー周辺）
+          for (const l of (std.darkLights || [])) hole(l.x * TILE + 16, l.y * TILE + 16, 64); // 点灯した燭台
+          ctx.drawImage(this._darkCv, 0, 0);
+        }
+      }
       if (this.fade) { ctx.fillStyle = `rgba(0,0,0,${this.fade})`; ctx.fillRect(0, 0, COLS * TILE, ROWS * TILE); }
     }
   };

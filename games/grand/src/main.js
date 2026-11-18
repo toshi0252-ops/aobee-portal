@@ -11,6 +11,7 @@
     'assets/chars/enemy-cog.png', 'assets/chars/enemy-guardian.png', 'assets/chars/enemy-karakuri.png',
     'assets/chars/npc-minori.png', 'assets/chars/enemy-kuwa.png', 'assets/chars/enemy-moguru.png',
     'assets/chars/animal-cow.png', 'assets/chars/animal-sheep.png', 'assets/chars/animal-chicken.png',
+    'assets/chars/npc-mio.png', 'assets/chars/npc-choro.png', 'assets/chars/enemy-akari.png', 'assets/chars/enemy-hoshigami.png',
     'assets/warubee-front-v1.png'
   ];
   for (const src of PRELOAD_SRCS) { const im = new Image(); im.src = src; }
@@ -53,6 +54,14 @@
   /* ---------- HUD ---------- */
   function objective() {
     const f = S.flags;
+    if (S.chapter >= 3) {
+      if (!f.ch3Intro) return 'ガルドの話を聞こう';
+      if (!f.mioMet) return '参道を登って、神殿の守り人ミオに会おう';
+      if ((f.litCandles || []).length < 5) return `神殿の燭台を順に灯そう（${(f.litCandles || []).length}/5）`;
+      if (!f.warubeeSeen3) return '星時計の間へ進もう';
+      if (!f.boss3Done) return 'ホシガミさまを止めよう！';
+      return '第4章へつづく';
+    }
     if (S.chapter >= 2) {
       if (!f.ch2Intro) return 'ガルドの話を聞こう';
       if (!f.minoriMet) return '西の道を抜けて、星のしずく牧場へ行こう';
@@ -81,7 +90,10 @@
     bridgeOpen: !!S.flags.bridgeOpen,
     gearRestored: !!S.flags.gearRestored,
     windmillFast: S.chapter >= 2 && !S.flags.boss2Done, // 第2章ボス停止までは風車が暴走回転
-    boss2Ready: S.chapter >= 2 && !!S.flags.warubeeSeen && !S.flags.boss2Done && !S.flags.boss2Started // 丘のボス発生マスに目印を出す条件
+    boss2Ready: S.chapter >= 2 && !!S.flags.warubeeSeen && !S.flags.boss2Done && !S.flags.boss2Started, // 丘のボス発生マスに目印を出す条件
+    templeLit: !!S.flags.boss3Done, // 第3章ボス撃破後は神殿の暗闇が晴れる
+    clockRestored: !!S.flags.cleared3, // 星時計が復活したか（星時計の間の描画用）
+    darkLights: curMap === 'temple' ? (S.flags.litCandles || []).map(k => { const [lx, ly] = k.split(',').map(Number); return { x: lx, y: ly }; }) : [] // 点灯した燭台の位置（暗闇の灯り穴）
   });
 
   /* ---------- 第2章: 動物誘導 ---------- */
@@ -133,6 +145,34 @@
       }
     }
   }
+  /* ---------- 第3章: 燭台の順序点灯 ---------- */
+  function tryLightCandle(x, y) {
+    const defs = (Data.maps.temple && Data.maps.temple.candles) || [];
+    const def = defs.find(c => c.x === x && c.y === y);
+    if (!def) return;
+    S.flags.litCandles = S.flags.litCandles || [];
+    const next = S.flags.litCandles.length + 1;
+    if (def.n === next) {
+      S.flags.litCandles.push(x + ',' + y);
+      World.setTile(x, y, 'L');
+      Snd.pickup();
+      if (S.flags.litCandles.length >= defs.length) {
+        Dialogue.play(Data.dlg.candlesAllLit, () => { refreshHUD(); save(); });
+      } else {
+        Dialogue.play([Data.L('', `燭台に灯りがともった！（${S.flags.litCandles.length}/${defs.length}）`)], () => { refreshHUD(); save(); });
+      }
+    } else {
+      // 順番が違うと、灯っていた分も全部消える（ペナルティはやり直しだけ）
+      for (const k of S.flags.litCandles) {
+        const [cx, cy] = k.split(',').map(Number);
+        World.setTile(cx, cy, 'C');
+      }
+      S.flags.litCandles = [];
+      Snd.hurt();
+      Dialogue.play(Data.dlg.candleWrong, () => { refreshHUD(); save(); });
+    }
+  }
+
   function pushBack(ex) {
     const p = World.player;
     if (ex.y === 0) p.gy += 1; else if (ex.y === 13) p.gy -= 1;
@@ -157,6 +197,21 @@
       }
       if (ex.gate === 'herd' && !S.flags.herdDone) {
         Dialogue.play(Data.dlg.gateHerdMsg);
+        pushBack(ex);
+        return;
+      }
+      if (ex.gate === 'ch3' && S.chapter < 3) {
+        Dialogue.play(Data.dlg.gateCh3Msg);
+        pushBack(ex);
+        return;
+      }
+      if (ex.gate === 'mio' && !S.flags.mioMet) {
+        Dialogue.play(Data.dlg.mioGateMsg);
+        pushBack(ex);
+        return;
+      }
+      if (ex.gate === 'candles' && (S.flags.litCandles || []).length < 5) {
+        Dialogue.play(Data.dlg.candlesGateMsg);
         pushBack(ex);
         return;
       }
@@ -218,6 +273,21 @@
       startMoguruBattle();
       return;
     }
+    // 第3章: あかりコグ戦（神殿内部の2か所）。再入場で復活する
+    if (curMap === 'temple' && x === 5 && y === 6 && !visitDone.akari1) {
+      startAkariBattle('akari1');
+      return;
+    }
+    if (curMap === 'temple' && x === 14 && y === 7 && !visitDone.akari2) {
+      startAkariBattle('akari2');
+      return;
+    }
+    // 第3章: ボスゾーン（星時計の間・時計の前）
+    if (curMap === 'clockroom' && x === 10 && y === 6 && S.flags.warubeeSeen3 && !S.flags.boss3Done && !S.flags.boss3Started) {
+      S.flags.boss3Started = true;
+      startHoshigamiBattle();
+      return;
+    }
     // 第2章: 動物誘導（牧場を歩くたびに隣接判定）
     if (curMap === 'ranch') herdStep();
     // ボスゾーン（橋の向こう、わるびーのいる広場）
@@ -239,6 +309,13 @@
     if (S.flags.millGear && w.mapId === 'mill') {
       // 小歯車タイル除去
       for (let y = 0; y < 14; y++) for (let x = 0; x < 20; x++) if (w.tileAt(x, y) === 'G') w.setTile(x, y, '.');
+    }
+    if (w.mapId === 'temple') {
+      // 点灯済みの燭台を 'L' に復元する
+      for (const k of (S.flags.litCandles || [])) {
+        const [cx, cy] = k.split(',').map(Number);
+        if (w.tileAt(cx, cy) === 'C') w.setTile(cx, cy, 'L');
+      }
     }
   }
 
@@ -273,6 +350,29 @@
       S.flags.hillIntro = true;
       setTimeout(() => Dialogue.play(Data.dlg.hillIntro), 250);
     }
+    if (id === 'approach' && !S.flags.approachIntro) {
+      S.flags.approachIntro = true;
+      setTimeout(() => Dialogue.play(Data.dlg.approachIntro), 250);
+    }
+    if (id === 'temple' && !S.flags.templeIntro) {
+      S.flags.templeIntro = true;
+      setTimeout(() => Dialogue.play(Data.dlg.templeIntro), 250);
+    }
+    if (id === 'clockroom') {
+      // 長老とミオはボス撃破後に姿を見せる
+      for (const n of World.map.npcs) { if (n.id === 'choro' || n.id === 'mio2') n.hidden = !S.flags.boss3Done; }
+      if (!S.flags.warubeeSeen3 && S.chapter >= 3) {
+        // 初入室: わるびー目撃イベント（時計の前で鉢合わせ）
+        World.actors = [{ id: 'warubee', kind: 'warubee', x: 10, y: 3, visible: true }];
+        setTimeout(() => {
+          Dialogue.play(Data.dlg.warubeeSpot3, () => {
+            World.actors = [];
+            S.flags.warubeeSeen3 = true;
+            refreshHUD(); save();
+          });
+        }, 250);
+      }
+    }
   }
 
   function onInteract() {
@@ -287,6 +387,8 @@
             S.flags.boots = true; S.herbs += 1;
             Snd.pickup(); refreshHUD(); save();
           });
+        } else if (S.chapter >= 3) {
+          Dialogue.play(Data.dlg.gardoCh3);
         } else if (S.chapter >= 2 && !S.flags.ch2Intro) {
           Dialogue.play(Data.dlg.ch2GardoNotice, () => { S.flags.ch2Intro = true; refreshHUD(); save(); });
         } else if (S.chapter >= 2) Dialogue.play(Data.dlg.gardoCh2);
@@ -324,13 +426,30 @@
           } else withTea(Data.dlg.minoriAfter);
         }
       }
+      else if (npc.id === 'mio') {
+        // ミオは参道の回復スポット（話すたびに全回復）。初回は出会いイベント
+        if (!S.flags.mioMet) {
+          Dialogue.play(Data.dlg.mioFirst, () => { S.flags.mioMet = true; S.hp = S.maxHp; refreshHUD(); save(); });
+        } else {
+          S.hp = S.maxHp;
+          Dialogue.play(Data.dlg.mioHeal.concat(Data.dlg.mioAfter), () => { refreshHUD(); save(); });
+        }
+      }
+      else if (npc.id === 'mio2') {
+        Dialogue.play(Data.dlg.mioClock);
+      }
+      else if (npc.id === 'choro') {
+        Dialogue.play(Data.dlg.choroAfter);
+      }
       else if (npc.id === 'warubee' && curMap === 'mill' && !S.flags.bossDone && !S.flags.bossStarted) {
         S.flags.bossStarted = true; startBoss();
       }
       return;
     }
     const t = World.tileAt(f.x, f.y);
-    if (t === 'S') Dialogue.play(curMap === 'road' ? Data.dlg.roadSign : Data.dlg.sign);
+    if (t === 'C') { tryLightCandle(f.x, f.y); return; }
+    if (t === 'L') { Dialogue.play([Data.L('', 'もう灯っている。')]); return; }
+    if (t === 'S') Dialogue.play(curMap === 'road' ? Data.dlg.roadSign : curMap === 'approach' ? Data.dlg.approachSign : curMap === 'temple' ? Data.dlg.mural3 : Data.dlg.sign);
     else if (t === 'X') {
       if (!S.flags.millGear) Dialogue.play(Data.dlg.bridgeNoGear);
       else if (!S.flags.bridgeOpen) {
@@ -419,6 +538,52 @@
       refreshHUD();
     });
   }
+  function startAkariBattle(flagKey) {
+    Dialogue.play(Data.dlg.akariIntro, async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.akari }],
+        intro: 'あかりコグ が あらわれた！'
+      });
+      if (res === 'win') {
+        visitDone[flagKey] = true; // この滞在中は再出現しない（再入場で復活）
+        Dialogue.play(Data.dlg.akariOutro, () => { refreshHUD(); save(); });
+      } else onLose();
+      refreshHUD();
+    });
+  }
+  function startHoshigamiBattle() {
+    Dialogue.play(Data.dlg.hoshigamiIntro, async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.hoshigami }],
+        intro: 'ホシガミさま が 立ちはだかった！',
+        hint: [
+          'ホシガミさまは、明暗で弱点が変わる。',
+          '明るい間は歯車が見える → 歯車チャージが弱点。暗くなると歯車が見えない → ふつうのこうげきが弱点。',
+          'フェーズは2ターンごとに切り替わる。敵の表示をよく見て戦おう。'
+        ]
+      });
+      if (res === 'win') {
+        S.flags.boss3Done = true;
+        S.hp = S.maxHp; // 番人像が鎮まり、ひと息ついた
+        for (const n of World.map.npcs) { if (n.id === 'choro' || n.id === 'mio2') n.hidden = false; }
+        Dialogue.play(Data.dlg.hoshigamiOutro, () => {
+          S.hoshiba = 2;
+          S.herbs += 2;
+          Snd.pickup();
+          refreshHUD();
+          Dialogue.play(Data.dlg.lore3, () => {
+            Dialogue.play(Data.dlg.festival3, () => {
+              S.flags.cleared3 = true;
+              S.playMs += Date.now() - S.startedAt;
+              showClear3();
+              save();
+            });
+          });
+        });
+      } else { S.flags.boss3Started = false; onLose(); }
+      refreshHUD();
+    });
+  }
   function startBoss() {
     const pre = Data.dlg.bossPre.concat([{
       name: 'わるびー', text: '……選べよ、あおびー。どう出る？', face: 'warubee',
@@ -449,6 +614,15 @@
   function onLose() {
     S.losses++;
     S.hp = S.maxHp; S.guts = 0;
+    if (S.chapter >= 3) {
+      // 第3章の復活点は参道（ミオのところ）。ほし草も1つ分けてもらえる
+      S.herbs += 1;
+      curMap = 'approach';
+      World.loadMap('approach', 10, 12, true);
+      World.player.dir = 'up';
+      setTimeout(() => Dialogue.play(Data.dlg.lose3, () => { refreshHUD(); save(); }), 200);
+      return;
+    }
     if (S.chapter >= 2) {
       // 第2章の復活点は牧場（みのりさんの家前）。ほし草のお茶で、ほし草も1つ分けてもらえる
       S.herbs += 1;
@@ -490,6 +664,7 @@
       `たおれた回数： ${S.losses}回`;
     $('clear-next').innerHTML = '大歯車は戻った。でも、歯が1枚欠けたまま…。<br>わるびーは何を隠しているのか——第2章へつづく。';
     $('btn-to-ch2').style.display = '';
+    $('btn-to-ch3').style.display = 'none';
     $('clear-link').style.display = 'none';
     $('clear-screen').classList.remove('hidden');
   }
@@ -530,7 +705,40 @@
       `たおれた回数： ${S.losses}回`;
     $('clear-next').innerHTML = '風車は元通り。でも、神殿の星時計も止まったらしい——。<br>星歯の謎を追って、第3章へつづく。';
     $('btn-to-ch2').style.display = 'none';
+    $('btn-to-ch3').style.display = '';
     $('clear-link').style.display = '';
+    $('clear-screen').classList.remove('hidden');
+  }
+
+  /* ---------- 第3章: 開始とエンディング ---------- */
+  function startChapter3() {
+    S.chapter = 3;
+    S.flags.ch3Started = true;
+    curMap = 'village';
+    World.loadMap('village', 4, 5, true);
+    World.player.dir = 'up';
+    refreshHUD();
+    Dialogue.play(Data.dlg.ch3Start, () => {
+      S.flags.ch3Intro = true;
+      refreshHUD(); save();
+    });
+  }
+  function showClear3() {
+    const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
+    $('clear-title').textContent = '第3章 クリア！';
+    $('clear-stats').innerHTML =
+      `プレイ時間（累計）： ${mins}分${secs}秒<br>` +
+      `星歯： ${S.hoshiba}/7<br>` +
+      `灯した燭台： ${(S.flags.litCandles || []).length}/5<br>` +
+      `強がりで踏みとどまった回数： ${S.stats.gutsSaves}回<br>` +
+      `たおれた回数： ${S.losses}回`;
+    $('clear-next').innerHTML = '星時計は動き出した。星歯は7枚、わるびーの目的は「空に浮かぶ塔」——。<br>次は港町。灯台の歯車が止まったらしい。第4章へつづく。';
+    $('btn-to-ch2').style.display = 'none';
+    $('btn-to-ch3').style.display = 'none';
+    const link = $('clear-link');
+    link.href = '../aobee_star_temple_portal.html';
+    link.textContent = '元ネタの「星の神殿」で遊ぶ ↗';
+    link.style.display = '';
     $('clear-screen').classList.remove('hidden');
   }
 
@@ -557,6 +765,16 @@
       if (S.flags.cleared && (S.chapter || 1) < 2) {
         // 第1章クリア済みの旧セーブ（chapterフィールドなし含む）は第2章の冒頭から開始
         startChapter2();
+        return;
+      }
+      if (S.flags.cleared2 && (S.chapter || 1) < 3) {
+        // 第2章クリア済みセーブは第3章の冒頭から開始
+        startChapter3();
+        return;
+      }
+      if (S.chapter >= 3 && !S.flags.ch3Intro) {
+        // 第3章の知らせ会話の途中で閉じた場合の救済: もう一度流す
+        startChapter3();
         return;
       }
       if (S.chapter >= 2 && !S.flags.ch2Intro) {
@@ -599,7 +817,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     const sv = loadSave();
-    $('btn-continue').disabled = !(sv && sv.S && !sv.S.flags.cleared2);
+    $('btn-continue').disabled = !(sv && sv.S && !sv.S.flags.cleared3);
     $('btn-new').addEventListener('click', () => beginGame(false));
     $('btn-continue').addEventListener('click', () => beginGame(true));
     $('btn-howto').addEventListener('click', () => { $('howto-screen').classList.remove('hidden'); });
@@ -608,6 +826,10 @@
     $('btn-to-ch2').addEventListener('click', () => {
       $('clear-screen').classList.add('hidden');
       startChapter2();
+    });
+    $('btn-to-ch3').addEventListener('click', () => {
+      $('clear-screen').classList.add('hidden');
+      startChapter3();
     });
     // BGMミュート切替（状態は Snd 側で localStorage に保存される）
     const bgmBtn = $('btn-bgm');

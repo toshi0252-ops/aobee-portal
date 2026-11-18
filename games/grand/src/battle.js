@@ -35,7 +35,9 @@ cog: { src: 'assets/chars/enemy-cog.png', h: 150, shadow: 110 },
 millCog: { src: 'assets/chars/enemy-guardian.png', h: 190, shadow: 130 },
 karakuri: { src: 'assets/chars/enemy-karakuri.png', h: 210, shadow: 120 },
 kuwa: { src: 'assets/chars/enemy-kuwa.png', h: 150, shadow: 110 },
-moguru: { src: 'assets/chars/enemy-moguru.png', h: 215, shadow: 160 }
+moguru: { src: 'assets/chars/enemy-moguru.png', h: 215, shadow: 160 },
+akari: { src: 'assets/chars/enemy-akari.png', h: 150, shadow: 110 },
+hoshigami: { src: 'assets/chars/enemy-hoshigami.png', h: 220, shadow: 155 }
 };
 function cogFallback(art) {
 const c = document.createElement('canvas'); c.width = art.h; c.height = art.h;
@@ -84,7 +86,7 @@ d.className = 'enemy'; d.id = 'enemy-' + i;
 d.style.left = (50 + (i - (B.enemies.length - 1) / 2) * 34) + '%';
 const plate = document.createElement('div'); plate.className = 'eplate';
 const nm = document.createElement('div'); nm.className = 'ename';
-nm.textContent = e.name + (e.gears? `（歯車 あと${e.gearLeft}）`: (e.kind === 'boss'? `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`: ''));
+nm.textContent = e.name + (e.gears? `（歯車 あと${e.gearLeft}）`: (e.kind === 'hoshigami'? `（${e.phase === 'dark'? '暗': '明'}：弱点 ${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`: (e.kind === 'boss'? `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`: '')));
 const hp = document.createElement('div'); hp.className = 'ehp';
 const fill = document.createElement('div'); fill.style.width = (e.gears? (e.gearLeft / e.gears * 100): (Math.max(0, e.hp) / e.maxHp * 100)) + '%';
 hp.appendChild(fill); plate.appendChild(nm); plate.appendChild(hp);
@@ -100,6 +102,7 @@ B.enemies.forEach(e => {
 if (e._el) {
 e._el._fill.style.width = (e.gears? (e.gearLeft / e.gears * 100): (Math.max(0, e.hp) / e.maxHp * 100)) + '%';
 if (e.gears) e._el._nm.textContent = e.name + `（歯車 あと${e.gearLeft}）`;
+else if (e.kind === 'hoshigami') e._el._nm.textContent = e.name + `（${e.phase === 'dark'? '暗': '明'}：弱点 ${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`;
 else if (e.kind === 'boss') e._el._nm.textContent = e.name + `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`;
 if (e.gears? e.gearLeft <= 0: e.hp <= 0) e._el.style.opacity = '0.25';
 }
@@ -128,12 +131,12 @@ async function start(cfg) {
 return new Promise(async (resolve) => {
 const state = cfg.state;
 B = {
-state, cfg, charged: false, round: 0, busy: true, midDone: false,
+state, cfg, charged: false, round: 0, phaseRound: 0, busy: true, midDone: false,
 enemies: cfg.enemies.map(e => ({...e, hp: e.maxHp, weakMode: e.weakMode || 'normal', gearLeft: e.gears || 0}))
 };
 ui.classList.remove('hidden');
 document.getElementById('hud').classList.add('hidden');
-Engine.Snd.bgm(cfg.enemies.some(e => e.kind === 'boss' || e.kind === 'moguru') ? 'boss' : 'battle');
+Engine.Snd.bgm(cfg.enemies.some(e => e.kind === 'boss' || e.kind === 'moguru' || e.kind === 'hoshigami') ? 'boss' : 'battle');
 renderEnemy(); renderStatus(); setCmds(false);
 Engine.Snd.gear();
 await logSeq([cfg.intro || `${B.enemies[0].name} が あらわれた！`], 900);
@@ -180,7 +183,7 @@ return true;
 const EXP_THRESHOLDS = [0, 30, 75, 140, 230]; // 添字+1 = レベル（上限5）
 async function settleVictory() {
 const s = B.state;
-const droppable = B.enemies.some(e => !e.gears && e.kind !== 'boss'); // ボス・歯車制ボスはドロップなし
+const droppable = B.enemies.some(e => !e.gears && e.kind !== 'boss' && e.kind !== 'hoshigami'); // ボス・歯車制ボスはドロップなし
 if (droppable && Math.random() < 0.3) {
 s.herbs++;
 Engine.Snd.pickup();
@@ -259,6 +262,20 @@ await B.cfg.onMid();
 renderStatus();
 }
 }
+// ホシガミさま: 2ターンごとに明暗フェーズが切り替わり、弱点が入れ替わる（明=歯車が見える／暗=通常が効く）
+const ph = B.enemies.find(e => e.kind === 'hoshigami');
+if (ph && ph.hp > 0 && B) {
+B.phaseRound++;
+if (B.phaseRound % 2 === 0) {
+ph.phase = ph.phase === 'light' ? 'dark' : 'light';
+ph.weakMode = ph.phase === 'light' ? 'gear' : 'normal';
+if (ph._el) ph._el.classList.toggle('darkphase', ph.phase === 'dark');
+Engine.Snd.gear();
+log(ph.phase === 'dark' ? 'ホシガミさまは暗闇に沈んだ…！　歯車が見えない。ふつうのこうげきが効きそうだ。' : '灯りが戻った！　ホシガミさまの歯車が見える。歯車アタックのチャンス！');
+refreshEnemyHP();
+await wait(1150);
+}
+}
 return true;
 }
 
@@ -308,8 +325,9 @@ await wait(1000);
 const lvBonus = (s.level || 1) - 1; // レベル攻撃ボーナス: 通常 +(Lv-1)×2 / チャージ +(Lv-1)×3
 let dmg = B.charged? rnd(16, 22) + lvBonus * 3: rnd(7, 10) + lvBonus * 2;
 let note = '';
-if (target.kind === 'boss') {
+if (target.kind === 'boss' || target.kind === 'hoshigami') {
 if (target.weakMode === type) { dmg = Math.round(dmg * 1.8); note = '　弱点を突いた！';}
+else if (target.kind === 'hoshigami' && target.phase === 'dark' && type === 'gear') { dmg = Math.round(dmg * 0.5); note = '　暗くて歯車に当たらない！';}
 else dmg = Math.round(dmg * 0.9);
 }
 if (B.charged) note += '　歯車が1つ外れた！';
