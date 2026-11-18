@@ -689,6 +689,15 @@ const Engine = (() => {
       }
       // 出口サイン（行き先ラベル＋矢印）
       if (m.exits) {
+        // 画面上部のHUD（HTMLオーバーレイ）に北出口のラベルが隠れないよう、HUD下端のキャンバス座標を求める
+        let topInset = 0;
+        try {
+          const hudEl = document.getElementById('hud');
+          if (hudEl && typeof hudEl.getBoundingClientRect === 'function' && typeof cv.getBoundingClientRect === 'function') {
+            const hr = hudEl.getBoundingClientRect(), cr = cv.getBoundingClientRect();
+            if (cr.height > 0) topInset = Math.max(0, (hr.bottom - cr.top) * (cv.height / cr.height)) + 6;
+          }
+        } catch (e) { topInset = 0; }
         const groups = {};
         for (const ex of m.exits) { if (!ex.label) continue; const k = ex.to + '|' + ex.label; (groups[k] = groups[k] || []).push(ex); }
         for (const k of Object.keys(groups)) {
@@ -700,7 +709,7 @@ const Engine = (() => {
           const atLeft = maxX <= 0, atRight = minX >= COLS - 1;
           const cy = (arr.reduce((s, e) => s + e.y, 0) / arr.length) * TILE + 16;
           const bob = Math.round(Math.sin(performance.now() / 350) * 2);
-          const ly = atTop ? (ey + 1) * TILE + 10 : ey * TILE - 12;
+          const ly = atTop ? Math.max((ey + 1) * TILE + 10, topInset + 9) : ey * TILE - 12;
           ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           const w = ctx.measureText(arr[0].label).width + 14;
           const cx = Math.min(Math.max(cxRaw, w / 2 + 4), COLS * TILE - w / 2 - 4); // 左右端でも切れないようクランプ
@@ -710,7 +719,7 @@ const Engine = (() => {
           ctx.fillStyle = '#ffd21f';
           ctx.beginPath();
           if (atBottom) { ctx.moveTo(cx - 6, ey * TILE - 24 + bob); ctx.lineTo(cx + 6, ey * TILE - 24 + bob); ctx.lineTo(cx, ey * TILE - 16 + bob); }
-          else if (atTop) { ctx.moveTo(cx - 6, (ey + 1) * TILE + 22 + bob); ctx.lineTo(cx + 6, (ey + 1) * TILE + 22 + bob); ctx.lineTo(cx, (ey + 1) * TILE + 14 + bob); }
+          else if (atTop) { ctx.moveTo(cx - 6, ly + 12 + bob); ctx.lineTo(cx + 6, ly + 12 + bob); ctx.lineTo(cx, ly + 4 + bob); }
           else if (atLeft) { ctx.moveTo(TILE + 14 - bob, cy - 6); ctx.lineTo(TILE + 14 - bob, cy + 6); ctx.lineTo(TILE + 4 - bob, cy); }
           else if (atRight) { ctx.moveTo(COLS * TILE - TILE - 14 + bob, cy - 6); ctx.lineTo(COLS * TILE - TILE - 14 + bob, cy + 6); ctx.lineTo(COLS * TILE - TILE - 4 + bob, cy); }
           ctx.closePath(); ctx.fill();
