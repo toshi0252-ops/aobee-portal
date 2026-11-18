@@ -380,16 +380,13 @@ moveSel((e.key === 'ArrowDown' || e.key === 's') ? 1 : -1); e.preventDefault();
 activateSel(); e.preventDefault();
 }
 });
-/* スマホの仮想コントローラでもコマンド選択できるようにする（十字キー上下＋Aボタン） */
-document.querySelectorAll('#dpad .dbtn').forEach(b => {
-b.addEventListener('pointerdown', () => {
+/* スマホのフローティングスティック＋タップでもコマンド選択できるようにする（エンジンからの通知で連動） */
+window.addEventListener('grand-stickdir', (e) => {
 if (!cmdsVisible()) return;
-if (b.dataset.dir === 'down') moveSel(1);
-else if (b.dataset.dir === 'up') moveSel(-1);
+if (e.detail && e.detail.y === 1) moveSel(1);
+else if (e.detail && e.detail.y === -1) moveSel(-1);
 });
-});
-const touchA = document.getElementById('btn-a');
-if (touchA) touchA.addEventListener('pointerdown', () => { if (cmdsVisible()) activateSel(); });
+window.addEventListener('grand-tapa', () => { if (cmdsVisible()) activateSel(); });
 
 return { start, get active() { return!!B;}};
 })();

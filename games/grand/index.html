@@ -14,6 +14,11 @@
     <!-- 一枚絵カットシーン -->
     <div id="cutscene" class="hidden"><img id="cutscene-img" alt="カットシーン"></div>
 
+    <!-- タッチ操作（星の神殿形式：触った場所に出るフローティングスティック） -->
+    <div id="sticklayer"></div>
+    <div id="stick"><div id="knob"></div></div>
+    <button id="btn-b" type="button">B</button>
+
     <!-- タイトル画面 -->
     <div id="title-screen" class="overlay">
       <div class="title-inner">
@@ -35,10 +40,10 @@
       <div class="panel">
         <h2>あそびかた</h2>
         <ul>
-          <li>移動： 矢印キー / WASD（大文字でもOK）/ 画面の十字ボタン</li>
-          <li>決定・話す・調べる： Z / Enter / Space / 画面の「A」ボタン</li>
-          <li>ダッシュ： Shift を押しながら移動（工房でブーツをもらってから）</li>
-          <li>戦闘： 「こうげき」「歯車チャージ（1ターン溜めて大ダメージ＋歯車はずし）」「ほし草（回復）」の3つだけ。コマンドは ↑↓＋Z/Enter でも、1/2/3キーでも、スマホの十字キー＋Aボタンでも選べる</li>
+          <li>移動： 矢印キー / WASD（大文字でもOK）/ スマホは画面を触って、そのまま指を滑らせる（触った場所にスティックが出る）</li>
+          <li>決定・話す・調べる： Z / Enter / Space / スマホはタップ</li>
+          <li>ダッシュ： Shift を押しながら移動 / スマホはスティックを奥まで倒す（工房でブーツをもらってから）</li>
+          <li>戦闘： 「こうげき」「歯車チャージ（1ターン溜めて大ダメージ＋歯車はずし）」「ほし草（回復）」の3つだけ。コマンドは ↑↓＋Z/Enter でも、1/2/3キーでも、スマホのスティック＋タップでも選べる</li>
           <li>強がりゲージ： たまるとピンチで1回だけHP1で踏みとどまる</li>
           <li>第2章： 動物は近づくと反対へ逃げる。柵エリアへ追い込もう。装甲の硬い敵は、歯車チャージで歯車を外して止める</li>
           <li>第3章： 神殿は暗闇。燭台は壁画の順番に灯そう（間違えると消える）。ボスは明暗で弱点が変わる</li>
@@ -93,19 +98,6 @@
     </div>
   </div>
 
-  <!-- タッチ操作 -->
-  <div id="touch">
-    <div id="dpad">
-      <button data-dir="up" class="dbtn up">▲</button>
-      <button data-dir="left" class="dbtn left">◀</button>
-      <button data-dir="right" class="dbtn right">▶</button>
-      <button data-dir="down" class="dbtn down">▼</button>
-    </div>
-    <div id="abtns">
-      <button id="btn-b" class="abtn">B</button>
-      <button id="btn-a" class="abtn">A</button>
-    </div>
-  </div>
   <p id="foot">キーボード： 矢印/WASD=移動　Z/Enter/Space=決定　Shift=ダッシュ</p>
 </div>
 <script src="src/data.js"></script>

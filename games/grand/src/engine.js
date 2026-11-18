@@ -359,6 +359,7 @@ const Engine = (() => {
     updateDir();
   });
   const touchDir = { x: 0, y: 0 };
+  let stickDash = false; // スティックを奥まで倒している間はダッシュ
   function updateDir() {
     let x = 0, y = 0;
     if (keys['arrowleft'] || keys['a']) x = -1;
@@ -367,26 +368,85 @@ const Engine = (() => {
     else if (keys['arrowdown'] || keys['s']) y = 1;
     if (x === 0 && y === 0) { x = touchDir.x; y = touchDir.y; }
     Input.dirX = x; Input.dirY = y;
-    Input.dash = !!(keys['shift']);
+    Input.dash = !!(keys['shift']) || stickDash;
   }
+  /* タッチ操作（星の神殿形式）: ステージのどこを触っても、その場所に半透明スティックが出る。
+     ドラッグで移動（遊び14px／最大44px／優勢軸の4方向）、奥まで倒すとダッシュ、
+     動かさずすぐ離すタップはAボタン扱い。Bは右端の小ボタンだけ残す。 */
   function bindTouch() {
     if ('ontouchstart' in window) document.body.classList.add('touch');
-    document.querySelectorAll('#dpad .dbtn').forEach((b) => {
-      const d = b.dataset.dir, v = DIRV[d];
-      const on = (e) => { e.preventDefault(); audioInit(); touchDir.x = v[0]; touchDir.y = v[1]; b.classList.add('on'); updateDir(); };
-      const off = (e) => { e.preventDefault(); if (touchDir.x === v[0] && touchDir.y === v[1]) { touchDir.x = 0; touchDir.y = 0; } b.classList.remove('on'); updateDir(); };
-      b.addEventListener('touchstart', on, { passive: false }); b.addEventListener('touchend', off, { passive: false });
-      b.addEventListener('mousedown', on); b.addEventListener('mouseup', off); b.addEventListener('mouseleave', off);
-    });
-    const a = document.getElementById('btn-a'), bb = document.getElementById('btn-b');
-    const aOn = (e) => { e.preventDefault(); audioInit(); pressA(); a.classList.add('on'); };
-    const aOff = (e) => { e.preventDefault(); Input.aPressed = false; a.classList.remove('on'); };
-    a.addEventListener('touchstart', aOn, { passive: false }); a.addEventListener('touchend', aOff, { passive: false });
-    a.addEventListener('mousedown', aOn); a.addEventListener('mouseup', aOff);
-    bb.addEventListener('touchstart', (e) => { e.preventDefault(); Input.bPressed = true; }, { passive: false });
-    bb.addEventListener('touchend', () => { Input.bPressed = false; });
-    cv.addEventListener('touchstart', () => { audioInit(); pressA(); }, { passive: true });
-    cv.addEventListener('touchend', () => { Input.aPressed = false; });
+    const canListen = (el) => !!(el && typeof el.addEventListener === 'function');
+    const tapA = () => {
+      audioInit(); pressA(); setTimeout(() => { Input.aPressed = false; }, 90);
+      try { window.dispatchEvent(new CustomEvent('grand-tapa')); } catch (err) {}
+    };
+    const stage = document.getElementById('stage');
+    const layer = document.getElementById('sticklayer');
+    const stickEl = document.getElementById('stick');
+    const knobEl = document.getElementById('knob');
+    const DEAD = 14, REACH = 44;
+    let sp = null; // { id, cx, cy, t, max } 進行中のスティック操作
+    function clearStick() {
+      sp = null; touchDir.x = 0; touchDir.y = 0; stickDash = false;
+      if (stickEl) stickEl.style.display = 'none';
+      updateDir();
+    }
+    if (canListen(layer) && stage && stickEl && knobEl) {
+      layer.addEventListener('pointerdown', (e) => {
+        if (sp) return;
+        audioInit();
+        const r = stage.getBoundingClientRect();
+        sp = { id: e.pointerId, cx: e.clientX, cy: e.clientY, t: performance.now(), max: 0 };
+        try { layer.setPointerCapture(e.pointerId); } catch (err) {}
+        stickEl.style.left = (e.clientX - r.left) + 'px';
+        stickEl.style.top = (e.clientY - r.top) + 'px';
+        knobEl.style.left = '50%'; knobEl.style.top = '50%';
+        stickEl.style.display = 'block';
+        e.preventDefault();
+      });
+      layer.addEventListener('pointermove', (e) => {
+        if (!sp || e.pointerId !== sp.id) return;
+        const dx = e.clientX - sp.cx, dy = e.clientY - sp.cy;
+        const dist = Math.hypot(dx, dy);
+        if (dist > sp.max) sp.max = dist;
+        const sc = dist > 0 ? Math.min(dist, REACH) / dist : 0;
+        knobEl.style.left = (52 + dx * sc) + 'px';
+        knobEl.style.top = (52 + dy * sc) + 'px';
+        let nx = 0, ny = 0;
+        if (dist >= DEAD) { if (Math.abs(dx) > Math.abs(dy)) nx = Math.sign(dx); else ny = Math.sign(dy); }
+        if ((nx !== touchDir.x || ny !== touchDir.y) && (nx !== 0 || ny !== 0)) {
+          try { window.dispatchEvent(new CustomEvent('grand-stickdir', { detail: { x: nx, y: ny } })); } catch (err) {}
+        }
+        touchDir.x = nx; touchDir.y = ny;
+        stickDash = dist >= REACH;
+        updateDir();
+        e.preventDefault();
+      });
+      const endStick = (e) => {
+        if (!sp || e.pointerId !== sp.id) return;
+        const wasTap = performance.now() - sp.t < 350 && sp.max < DEAD;
+        clearStick();
+        if (wasTap) tapA();
+      };
+      layer.addEventListener('pointerup', endStick);
+      layer.addEventListener('pointercancel', endStick);
+      window.addEventListener('blur', () => { if (sp) clearStick(); });
+    }
+    // 会話ボックス上のタップでも決定（選択肢ボタン自体は除く）
+    if (canListen(dlgEl)) {
+      dlgEl.addEventListener('pointerdown', (e) => {
+        if (e.target && e.target.closest && e.target.closest('button')) return;
+        tapA();
+      });
+    }
+    const bb = document.getElementById('btn-b');
+    if (canListen(bb)) {
+      bb.addEventListener('pointerdown', (e) => { e.preventDefault(); audioInit(); Input.bPressed = true; bb.classList.add('on'); });
+      const bOff = () => { Input.bPressed = false; bb.classList.remove('on'); };
+      bb.addEventListener('pointerup', bOff);
+      bb.addEventListener('pointercancel', bOff);
+      bb.addEventListener('pointerleave', bOff);
+    }
   }
 
   /* ---------- 会話 ---------- */
