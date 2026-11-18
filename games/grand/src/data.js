@@ -263,7 +263,7 @@ const Data = (() => {
     hoshigami:{ id: 'hoshigami', name: 'ホシガミさま', kind: 'hoshigami', maxHp: 95, atk: 9, exp: 60, phase: 'light', weakMode: 'gear' }
   };
 
-  const L = (name, text, face) => ({ name, text, face: face || null });
+  const L = (name, text, face, cut) => { const o = { name, text, face: face || null }; if (cut !== undefined) o.cut = cut; return o; };
 
   const dlg = {
     opening: [
@@ -271,11 +271,11 @@ const Data = (() => {
       L('パン屋マーミ', '窯が止まった！　これじゃパンが焼けへん…じゃなくて、焼けないよ！', 'baker'),
       L('ガルド', '時計塔も、水車も、全部止まっとる。大歯車そのものが……無いんや！', 'gardo'),
       L('あおびー', 'ふあ〜…。まだ眠いのに、なにを騒いで……', 'aobee'),
-      L('？？？', 'ふ、ふっ……その大歯車、ボクがもらっていくよ？', 'warubee'),
+      L('？？？', 'ふ、ふっ……その大歯車、ボクがもらっていくよ？', 'warubee', 'roof'),
       L('あおびー', 'だれ！？　屋根の上……って、ぼくにそっくり！？', 'aobee'),
       L('わるびー', 'わるびー。それ以上、近づくな。……この歯車は、ボクに必要なものなんだ。', 'warubee'),
       L('わるびー', 'じゃあね。南の小道で、捕まえられるもんなら捕まえてみせて。', 'warubee'),
-      L('あおびー', 'あ、逃げた！　……まあ、ぼくは昼寝に戻るから、あとはみんなで——', 'aobee'),
+      L('あおびー', 'あ、逃げた！　……まあ、ぼくは昼寝に戻るから、あとはみんなで——', 'aobee', null),
       L('ガルド', 'あおびー！　お前しかおらん、追いかけてくれ！', 'gardo'),
       L('あおびー', 'えっ。そ、それは……仕様です！　村の歯車が止まる仕様だったんです！', 'aobee'),
       L('パン屋マーミ', 'お願い、あおびー！　村の命がかかってるの！', 'baker'),

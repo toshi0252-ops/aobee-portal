@@ -396,6 +396,17 @@ const Engine = (() => {
   const dlgFaceImg = document.getElementById('dlg-face-img');
   const dlgFaceCv = document.getElementById('dlg-face-canvas');
   const dlgChoices = document.getElementById('dlg-choices');
+  const cutEl = document.getElementById('cutscene');
+  const cutImg = document.getElementById('cutscene-img');
+  const CUT_SRCS = { roof: 'assets/cut-warubee-roof.png' };
+  let cutKey = null;
+  function setCutscene(key) {
+    try {
+      if (!cutEl || !cutImg) return;
+      if (key !== cutKey) { cutKey = key; if (key && CUT_SRCS[key]) cutImg.src = CUT_SRCS[key]; }
+      if (key && CUT_SRCS[key]) cutEl.classList.remove('hidden'); else cutEl.classList.add('hidden');
+    } catch (e) {}
+  }
   const Dialogue = {
     active: false, queue: [], idx: 0, chars: 0, timer: null, onDone: null, choiceCb: null, sel: 0,
     play(lines, onDone) {
@@ -405,6 +416,7 @@ const Engine = (() => {
     showLine() {
       const ln = this.queue[this.idx];
       if (!ln) return this.finish();
+      if (ln.cut !== undefined) setCutscene(ln.cut);
       dlgChoices.classList.add('hidden'); dlgChoices.innerHTML = '';
       dlgName.textContent = ln.name || '';
       this.setFace(ln.face);
@@ -482,6 +494,7 @@ const Engine = (() => {
     confirmSel() { if (this._choices) this.pick(this.sel); },
     finish() {
       this.active = false; clearInterval(this.timer);
+      setCutscene(null);
       dlgEl.classList.add('hidden');
       const cb = this.onDone, res = this._choiceResult;
       this.onDone = null; this._choiceResult = undefined;

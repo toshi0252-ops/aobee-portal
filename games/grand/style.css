@@ -15,6 +15,11 @@ body {
   touch-action: none; user-select: none; -webkit-user-select: none;
 }
 canvas#game { width: 100%; height: 100%; display: block; }
+
+/* 一枚絵カットシーン（会話の下、HUDの上） */
+#cutscene { position: absolute; inset: 0; z-index: 12; overflow: hidden; background: #101c2a; }
+#cutscene img { width: 100%; height: 100%; object-fit: cover; display: block; animation: cutZoom 9s ease-out forwards; }
+@keyframes cutZoom { from { transform: scale(1.07); } to { transform: scale(1); } }
 .hidden { display: none !important; }
 
 /* タイトル等オーバーレイ */

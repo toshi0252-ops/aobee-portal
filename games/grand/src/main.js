@@ -12,7 +12,8 @@
     'assets/chars/npc-minori.png', 'assets/chars/enemy-kuwa.png', 'assets/chars/enemy-moguru.png',
     'assets/chars/animal-cow.png', 'assets/chars/animal-sheep.png', 'assets/chars/animal-chicken.png',
     'assets/chars/npc-mio.png', 'assets/chars/npc-choro.png', 'assets/chars/enemy-akari.png', 'assets/chars/enemy-hoshigami.png',
-    'assets/warubee-front-v1.png'
+    'assets/warubee-front-v1.png',
+    'assets/cut-warubee-roof.png'
   ];
   for (const src of PRELOAD_SRCS) { const im = new Image(); im.src = src; }
 
