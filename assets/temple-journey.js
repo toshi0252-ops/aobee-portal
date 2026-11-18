@@ -4,7 +4,7 @@ var TempleJourney=(()=>{
  const chapters=()=>[null,null,TempleChapter2,TempleChapter3,TempleChapter4,TempleChapter5];
  let pending=false,mapOpen=false,trail=[],trailArea='',lastMove=0,from=[];
  function completed(){if(TempleChapter5.getState().completed)return 5;for(let n=4;n>=2;n--)if(chapters()[n].getState().reported)return n;return chapter1Story.reportSeen?1:0}
- function region(){const m=area.match(/^ch([2-5])_/);return m?Number(m[1]):1}
+ function region(){if(area.startsWith('side_'))return 0;const m=area.match(/^ch([2-5])_/);return m?Number(m[1]):1}
  function sideQuests(){refreshQuests();return questDefinitions.filter(q=>questBook.view(q.id).state!=='claimed').length}
  function contextualGoal(fallback){
   const c2=TempleChapter2.getState(),c3=TempleChapter3.getState(),c4=TempleChapter4.getState(),c5=TempleChapter5.getState(),place=templePlaces[area]||area;
@@ -34,7 +34,7 @@ var TempleJourney=(()=>{
  $('purposeButton').onclick=()=>{$('objective').hidden?showGuidance():closeGuidance()};closeGuidance();
  const oldChange=change;change=function(...args){const r=oldChange(...args);refreshGuidance();return r};
  function closeClear(){for(const id of ['chapterClear','chapter2Clear','chapter3Clear','chapter4Clear'])$(id).hidden=true;chapterClearOpen=false;clearStick();syncEdgeControls()}
- function continueStory(){
+ function continueStory(){if(typeof TempleExpansion==='object'&&TempleExpansion.here())return;
   const done=completed(),next=done+1;
   if(done<1||done>=5||chapters()[next].getState().started||$('start').style.display!=='none'||mapOpen||$('dialog').style.display==='block')return;
   if(!saveGame(true)){toast('保存できませんでした。探索に戻り、セーブを再試行してください');return}
@@ -50,7 +50,7 @@ var TempleJourney=(()=>{
  function openMap(){
   if(!s101CanInteract()||$('start').style.display!=='none')return;
   clearStick();templeAttack=null;mapOpen=true;chapterClearOpen=true;
-  $('journeyMapSummary').textContent='本編は会話の続きで次の地域へ進みます。以前の地域へ戻っても、物語と依頼の進行は残ります。';
+  $('journeyMapSummary').textContent=(typeof TempleExpansion==='object'&&TempleExpansion.here()?'現在地：'+templePlaces[area]+'。メニューの工房から再訪できます。':'')+'本編は会話の続きで次の地域へ進みます。以前の地域へ戻っても、物語と依頼の進行は残ります。';
   const unlocked=Math.min(5,completed()+1),current=region(),remaining=sideQuests();
   const errands=['','村と森の未解決の依頼：'+remaining+'件',TempleChapter2.getState().leafHelped?'苗木への水やり：完了':'苗木への水やり：あとから続けられます',TempleChapter3.getState().toolsReturned?'工具箱の返却：完了':'工具箱の返却：あとから続けられます',TempleChapter4.getState().clockFixed?'島の時計の修理：完了':'島の時計の修理：あとから続けられます',''];
   for(let n=1;n<=5;n++){
@@ -97,7 +97,7 @@ var TempleJourney=(()=>{
   trail=points.reverse();from=[trail[trail.length-2],trail[trail.length-3]];lastMove=0;
  }
  function party(){
-  if(!/^ch[2-5]_/.test(area)||!chapter1Story.reportSeen)return [];
+  if((!/^ch[2-5]_/.test(area)&&!area.startsWith('side_'))||!chapter1Story.reportSeen)return [];
   if(trailArea!==area||!trail.length||Math.abs(trail[trail.length-1].x-player.x)+Math.abs(trail[trail.length-1].y-player.y)>1)resetParty();
   const t=lastMove?Math.min(1,(performance.now()-lastMove)/130):1;
   const state=TempleChapter2.getState();

@@ -7,7 +7,7 @@ console.log=log;base.boot=originalBoot;
 const last=instances.at(-1),done=JSON.parse(last.run('JSON.stringify(snapshot())'));assert.equal(done.chapter5.completed,true);
 const key=last.run('SAVE_KEY');
 function load(data){const g=originalBoot({key,value:JSON.stringify(data)});assert.notEqual(g.run('restoreGame(readSave())'),false);return g}
-for(const place of last.run('Object.keys(templePlaces)')){
+for(const place of last.run("Object.keys(templePlaces).filter(p=>!p.startsWith('side_'))")){
  const data=structuredClone(done);data.area=place;data.player={...data.player,x:12,y:14};data.objective='未クリア時の古い案内：スイッチで合図しよう';
  const g=load(data),goal=g.el('objective').textContent;
  assert.match(goal,/クリア|済み|安定|復旧/,place+': completed guidance');assert.doesNotMatch(goal,/合図しよう|攻撃しよう|止めよう|星の鍵を取ろう|石板を踏もう/,place+': no obsolete task');

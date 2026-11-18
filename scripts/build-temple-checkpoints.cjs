@@ -17,5 +17,6 @@ try{require('../tests/temple-chapter5-flow.cjs')}finally{delete base.observe;bas
 const missing=specs.filter(([id])=>!found.has(id)).map(([id])=>id);if(missing.length)throw Error('Missing checkpoints: '+missing.join(', '));
 const extras=[];
 for(const [id,chapter,title,baseId,area,x,y]of [['discovery-forest',1,'ブーメランで風の祠へ','ch1-forest','forest',21,13],['discovery-water',2,'ブーメランで対岸の跳ね橋へ','ch2-hub','ch2_water',19,10],['discovery-harbor',3,'ブーメランで荷揚げ風車へ','ch3-boss','ch3_shore',20,13],['discovery-archive',4,'ブーメランで二つの風見栞へ','ch4-archive','ch4_archive',20,11]]){const g=oldBoot();g.run('restoreGame('+JSON.stringify(found.get(baseId).data)+')');g.run("area='forest';player.x=9;player.y=14;player.dir='up';action()");g.flush();if(!g.run('TempleAdventure.getState().boomerang'))throw Error('Discovery intro not completed');g.run('area='+JSON.stringify(area)+';player.x='+x+';player.y='+y+";player.dir='up'");extras.push({id,chapter,title,data:JSON.parse(g.run('JSON.stringify(snapshot())'))});}
-const checkpoints=[...specs.map(([id])=>found.get(id)),...extras];
+const workshop=require('../tests/temple-workshop-flow.cjs').play();
+const checkpoints=[...specs.map(([id])=>found.get(id)),...extras,...workshop.fixtures];
 fs.writeFileSync('assets/temple-checkpoints.json',JSON.stringify({version:1,source:'successful full five-chapter gameplay and completed boomerang discovery introduction',checkpoints}));console.log('Generated '+checkpoints.length+' real gameplay checkpoints');
