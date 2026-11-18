@@ -14,10 +14,6 @@
     <!-- 一枚絵カットシーン -->
     <div id="cutscene" class="hidden"><img id="cutscene-img" alt="カットシーン"></div>
 
-    <!-- タッチ操作（星の神殿形式：触った場所に出るフローティングスティック） -->
-    <div id="sticklayer"></div>
-    <div id="stick"><div id="knob"></div></div>
-    <button id="btn-b" type="button">B</button>
 
     <!-- タイトル画面 -->
     <div id="title-screen" class="overlay">
@@ -100,6 +96,10 @@
 
   <p id="foot">キーボード： 矢印/WASD=移動　Z/Enter/Space=決定　Shift=ダッシュ</p>
 </div>
+<!-- タッチ操作（画面全体が対象：ステージ外の余白でもスティックが出る。Bは画面右下の隅） -->
+<div id="sticklayer"></div>
+<div id="stick"><div id="knob"></div></div>
+<button id="btn-b" type="button">B</button>
 <script src="src/data.js"></script>
 <script src="src/engine.js"></script>
 <script src="src/battle.js"></script>

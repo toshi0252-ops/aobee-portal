@@ -370,9 +370,9 @@ const Engine = (() => {
     Input.dirX = x; Input.dirY = y;
     Input.dash = !!(keys['shift']) || stickDash;
   }
-  /* タッチ操作（星の神殿形式）: ステージのどこを触っても、その場所に半透明スティックが出る。
+  /* タッチ操作（星の神殿形式）: 画面のどこを触っても（ステージ外の余白でも）、その場所に半透明スティックが出る。
      ドラッグで移動（遊び14px／最大44px／優勢軸の4方向）、奥まで倒すとダッシュ、
-     動かさずすぐ離すタップはAボタン扱い。Bは右端の小ボタンだけ残す。 */
+     動かさずすぐ離すタップはAボタン扱い。Bは画面右下の隅に小さく残す。 */
   function bindTouch() {
     if ('ontouchstart' in window) document.body.classList.add('touch');
     const canListen = (el) => !!(el && typeof el.addEventListener === 'function');
@@ -380,26 +380,29 @@ const Engine = (() => {
       audioInit(); pressA(); setTimeout(() => { Input.aPressed = false; }, 90);
       try { window.dispatchEvent(new CustomEvent('grand-tapa')); } catch (err) {}
     };
-    const stage = document.getElementById('stage');
     const layer = document.getElementById('sticklayer');
     const stickEl = document.getElementById('stick');
     const knobEl = document.getElementById('knob');
     const DEAD = 14, REACH = 44;
     let sp = null; // { id, cx, cy, t, max } 進行中のスティック操作
+    // タイトル等の全画面メニューが開いている間はスティックを受け付けない
+    const overlayOpen = () => ['title-screen', 'howto-screen', 'clear-screen'].some((id) => {
+      const el = document.getElementById(id);
+      return el && !el.classList.contains('hidden');
+    });
     function clearStick() {
       sp = null; touchDir.x = 0; touchDir.y = 0; stickDash = false;
       if (stickEl) stickEl.style.display = 'none';
       updateDir();
     }
-    if (canListen(layer) && stage && stickEl && knobEl) {
+    if (canListen(layer) && stickEl && knobEl) {
       layer.addEventListener('pointerdown', (e) => {
-        if (sp) return;
+        if (sp || overlayOpen()) return;
         audioInit();
-        const r = stage.getBoundingClientRect();
         sp = { id: e.pointerId, cx: e.clientX, cy: e.clientY, t: performance.now(), max: 0 };
         try { layer.setPointerCapture(e.pointerId); } catch (err) {}
-        stickEl.style.left = (e.clientX - r.left) + 'px';
-        stickEl.style.top = (e.clientY - r.top) + 'px';
+        stickEl.style.left = e.clientX + 'px';
+        stickEl.style.top = e.clientY + 'px';
         knobEl.style.left = '50%'; knobEl.style.top = '50%';
         stickEl.style.display = 'block';
         e.preventDefault();
