@@ -37,7 +37,8 @@ const Engine = (() => {
   const ACTOR_ART = {
     cow:     { file: 'animal-cow.png', h: 47 },
     sheep:   { file: 'animal-sheep.png', h: 45 },
-    chicken: { file: 'animal-chicken.png', h: 33 }
+    chicken: { file: 'animal-chicken.png', h: 33 },
+    cog:     { file: 'enemy-cog.png', h: 44 }
   };
   const actorImgs = {};
   for (const k of Object.keys(ACTOR_ART)) {

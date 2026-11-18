@@ -76,6 +76,7 @@
     if (!f.boots) return '工房のガルドに話そう';
     if (S.fragments < 3 && curMap !== 'mill') return `小道で歯車の欠片を集めよう（${S.fragments}/3）`;
     if (!f.millGear) return curMap === 'mill' ? '水車小屋で小歯車を回収しよう' : '南の出口から水車小屋へ進もう';
+    if (!f.bridgeOpen && nestsCleared() < 3) return `水車のコグの巣を壊そう（${nestsCleared()}/3）`;
     if (!f.bridgeOpen) return '橋の仕掛けに小歯車をはめよう';
     if (!f.bossDone) return '橋を渡って わるびーを追い詰めよう！';
     return '村へ帰ろう';
@@ -181,6 +182,18 @@
     p.px = p.gx * Engine.TILE; p.py = p.gy * Engine.TILE;
   }
 
+  /* ---------- 第1章 肉付け: 水車のコグの巣（必須クエスト） ---------- */
+  const NESTS = [
+    { id: 'nest1', x: 10, y: 4 },
+    { id: 'nest2', x: 3, y: 7 },
+    { id: 'nest3', x: 6, y: 11 }
+  ];
+  function nestsCleared() { return NESTS.filter(n => S.flags[n.id]).length; }
+  function spawnNests() {
+    if (S.flags.bossDone) { World.actors = []; return; }
+    World.actors = NESTS.filter(n => !S.flags[n.id]).map(n => ({ id: n.id, kind: 'cog', x: n.x, y: n.y, visible: true }));
+  }
+
   function onStep(x, y, tile) {
     if (Battle.active || Dialogue.active) return;
     // 出入口
@@ -253,6 +266,18 @@
       if (!S.flags.cogDone) { startCogBattle(false); return; }
       if (!visitDone.trailCog) { startCogBattle(true); return; }
     }
+    // 第1章 肉付け: まわりコグ（小道の東エリアの番人）。再入場で復活するレベリング相手
+    if (curMap === 'trail' && x === 15 && !visitDone.mawari) {
+      startMawariBattle();
+      return;
+    }
+    // 第1章 肉付け: サブクエスト「ポコの木の剣」の落とし物（東の木の下）
+    if (curMap === 'trail' && x === 16 && y === 7 && S.flags.swordQuest && !S.flags.swordFound) {
+      S.flags.swordFound = true;
+      Snd.pickup();
+      Dialogue.play(Data.dlg.kidSwordPickup, () => { refreshHUD(); save(); });
+      return;
+    }
     // 第2章: クワコグ戦（まきばの道）。初回クリアはフラグに残しつつ、再入場で復活する
     if (curMap === 'road' && x === 9 && !visitDone.kuwaRoad) {
       startKuwaBattle('kuwaRoad');
@@ -291,6 +316,11 @@
     }
     // 第2章: 動物誘導（牧場を歩くたびに隣接判定）
     if (curMap === 'ranch') herdStep();
+    // 第1章 肉付け: 水車のコグの巣（見えるコグに触れると戦闘）。倒した巣は戻らない
+    if (curMap === 'mill') {
+      const nest = NESTS.find(n => n.x === x && n.y === y && !S.flags[n.id]);
+      if (nest) { startNestBattle(nest); return; }
+    }
     // ボスゾーン（橋の向こう、わるびーのいる広場）
     if (curMap === 'mill' && x >= 16 && !S.flags.bossDone && !S.flags.bossStarted) {
       S.flags.bossStarted = true;
@@ -331,6 +361,7 @@
     if (id === 'mill') {
       const wb = World.map.npcs.find(n => n.id === 'warubee');
       if (wb) wb.hidden = !!S.flags.bossDone;
+      spawnNests();
       if (!S.flags.millIntro) {
         S.flags.millIntro = true;
         setTimeout(() => Dialogue.play(Data.dlg.millIntro), 250);
@@ -423,7 +454,17 @@
           else Dialogue.play(Data.dlg.bakerChat[(n - 2) % Data.dlg.bakerChat.length]);
         }
       } else if (npc.id === 'kid') {
-        if (S.flags.bossDone) Dialogue.play(Data.dlg.kidBossDone);
+        if (S.flags.swordFound && !S.flags.swordDone) {
+          Dialogue.play(Data.dlg.kidQuestThanks, () => {
+            S.flags.swordDone = true; S.herbs += 1;
+            Snd.pickup(); refreshHUD(); save();
+          });
+        }
+        else if (S.flags.bossDone) Dialogue.play(Data.dlg.kidBossDone);
+        else if (S.flags.boots && !S.flags.swordQuest && !S.flags.swordDone) {
+          Dialogue.play(Data.dlg.kidQuestOffer, () => { S.flags.swordQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.swordQuest && !S.flags.swordFound) Dialogue.play(Data.dlg.kidQuestHint);
         else {
           const n = (S.talks.kid = (S.talks.kid || 0) + 1);
           if (n === 1) Dialogue.play(Data.dlg.kid);
@@ -487,6 +528,7 @@
     if (t === 'S') Dialogue.play(curMap === 'road' ? Data.dlg.roadSign : curMap === 'approach' ? Data.dlg.approachSign : curMap === 'temple' ? Data.dlg.mural3 : Data.dlg.sign);
     else if (t === 'X') {
       if (!S.flags.millGear) Dialogue.play(Data.dlg.bridgeNoGear);
+      else if (nestsCleared() < 3) Dialogue.play(Data.dlg.bridgeJammed);
       else if (!S.flags.bridgeOpen) {
         S.flags.bridgeOpen = true; Snd.gear();
         Dialogue.play(Data.dlg.bridgeOpen, () => { refreshHUD(); save(); });
@@ -515,6 +557,42 @@
     };
     if (repeat) begin();
     else Dialogue.play(Data.dlg.cogIntro, begin);
+  }
+  /* 第1章 肉付け: コグの巣の戦闘（必須クエスト）。倒すと巣が消え、3つ全部で水車が回る */
+  function startNestBattle(nest) {
+    const begin = async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.cog }],
+        intro: '巣を守る サビつきコグ が あらわれた！'
+      });
+      if (res === 'win') {
+        S.flags[nest.id] = true;
+        World.actors = World.actors.filter(a => a.id !== nest.id);
+        if (nestsCleared() >= 3) {
+          Snd.gear();
+          Dialogue.play(Data.dlg.nestAllClear, () => { refreshHUD(); save(); });
+        } else {
+          Dialogue.play([Data.L('', `コグの巣を壊した！（${nestsCleared()}/3）`)], () => { refreshHUD(); save(); });
+        }
+      } else onLose();
+      refreshHUD();
+    };
+    if (S.flags.nestIntroSeen) begin();
+    else { S.flags.nestIntroSeen = true; Dialogue.play(Data.dlg.nestIntro, begin); }
+  }
+  /* 第1章 肉付け: まわりコグ戦（小道の東エリア。再入場で復活） */
+  function startMawariBattle() {
+    Dialogue.play(Data.dlg.mawariIntro, async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.mawari }],
+        intro: 'まわりコグ が あらわれた！'
+      });
+      if (res === 'win') {
+        visitDone.mawari = true;
+        refreshHUD(); save();
+      } else onLose();
+      refreshHUD();
+    });
   }
   function startMillCogBattle() {
     Dialogue.play(Data.dlg.millCogIntro, async () => {
