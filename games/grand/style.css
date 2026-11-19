@@ -207,3 +207,7 @@ body.touch #foot { display: none; }
 .dbg-btns { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
 .dbgbtn { background: #31567a; color: #dbeafe; border: 1px solid #5b82a6; border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
 .dbgbtn:active { transform: translateY(1px); }
+
+/* フィールドメニュー */
+.menu-status { margin-bottom: 12px; color: #dfeffc; font-size: 15px; line-height: 1.6; }
+.bigbtn.slot:disabled { opacity: .45; cursor: default; }

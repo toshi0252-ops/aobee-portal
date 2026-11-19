@@ -555,6 +555,25 @@
   function onInteract() {
     if (Battle.active || Dialogue.active) return;
     const f = World.frontTile();
+    // 見える敵（コグ類）は、前に立って調べると戦闘開始。
+    // 敵のいるマスには歩いて入れないため、従来の onStep 判定だけでは一生戦えなかった
+    const actor = World.actors.find(a => a.visible && a.x === f.x && a.y === f.y);
+    if (actor) {
+      if (curMap === 'forest') {
+        if (actor.kind === 'oocog' && !S.flags.gearItem && !S.flags.gearDone) { startOocogBattle(); return; }
+        const fcog = FOREST_COGS.find(c => c.id === actor.id && !visitDone[c.id]);
+        if (fcog) { startMoriBattle(fcog); return; }
+      } else if (curMap === 'mill') {
+        const nest = NESTS.find(n => n.id === actor.id && !S.flags[n.id]);
+        if (nest) { startNestBattle(nest); return; }
+      } else if (curMap === 'urayama') {
+        const ucog = URAYAMA_COGS.find(c => c.id === actor.id && !visitDone[c.id]);
+        if (ucog) { startUkuwaBattle(ucog); return; }
+      } else if (curMap === 'approach') {
+        const ac = AKARI_SPOTS.find(c => c.id === actor.id && !visitDone[c.id]);
+        if (ac) { startAakariBattle(ac); return; }
+      }
+    }
     const npc = World.map.npcs.find(n => !n.hidden && n.x === f.x && n.y === f.y);
     if (npc) {
       S.talks = S.talks || {};
@@ -1197,6 +1216,31 @@
   }
 
   /* ---------- タイトル ---------- */
+  /* ---------- フィールドメニュー（Bボタン／Xキー） ---------- */
+  let menuOpen = false;
+  function renderMenu() {
+    $('menu-status').textContent = `第${S.chapter}章 ・ Lv${S.level} ・ HP ${S.hp}/${S.maxHp} ・ ほし草 ${S.herbs} ・ 星歯 ${S.hoshiba}/7`;
+    const hb = $('btn-menu-herb');
+    hb.textContent = `ほし草をつかう（HP 20 かいふく）`;
+    hb.disabled = S.herbs <= 0 || S.hp >= S.maxHp;
+    $('menu-note').textContent = '';
+  }
+  function openMenu() {
+    menuOpen = true;
+    World.frozen = true;
+    renderMenu();
+    $('menu-screen').classList.remove('hidden');
+  }
+  function closeMenu() {
+    menuOpen = false;
+    World.frozen = false;
+    $('menu-screen').classList.add('hidden');
+  }
+  function onMenuKey() {
+    if (!started || Battle.active || Dialogue.active) return;
+    if (menuOpen) closeMenu(); else openMenu();
+  }
+
   function beginGame(fromSave, slot) {
     currentSlot = slot == null ? 1 : slot;
     $('title-screen').classList.add('hidden');
@@ -1401,7 +1445,7 @@
     refreshHUD(); save();
   }
 
-  World.hooks = { onStep, onInteract, onMapEnter, applyTiles, hooksState, SPOTS };
+  World.hooks = { onStep, onInteract, onMapEnter, applyTiles, hooksState, SPOTS, onMenuKey };
   window.addEventListener('beforeunload', () => { if (started) { S.playMs += Date.now() - S.startedAt; S.startedAt = Date.now(); save(); } });
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -1411,6 +1455,26 @@
     $('btn-continue').addEventListener('click', () => openSlots('load'));
     for (let n = 1; n <= 3; n++) $('slot-' + n).addEventListener('click', () => pickSlot(n));
     $('btn-slot-back').addEventListener('click', () => { $('slot-screen').classList.add('hidden'); });
+    $('btn-menu-herb').addEventListener('click', () => {
+      if (S.herbs <= 0 || S.hp >= S.maxHp) return;
+      S.herbs--;
+      const heal = Math.min(20, S.maxHp - S.hp);
+      S.hp += heal;
+      Snd.pickup();
+      refreshHUD();
+      save();
+      renderMenu();
+      $('menu-note').textContent = `ほし草をつかった。HPが ${heal} かいふく！`;
+    });
+    $('btn-menu-save').addEventListener('click', () => {
+      save();
+      $('menu-note').textContent = `スロット${currentSlot === 0 ? '（デバッグ枠）' : currentSlot} にセーブしました。`;
+    });
+    $('btn-menu-title').addEventListener('click', () => {
+      save();
+      try { location.reload(); } catch (e) { /* テスト環境などでは無視 */ }
+    });
+    $('btn-menu-close').addEventListener('click', () => closeMenu());
     for (let n = 1; n <= 6; n++) $('btn-dbg-' + n).addEventListener('click', () => startDebugChapter(n));
     $('btn-howto').addEventListener('click', () => { $('howto-screen').classList.remove('hidden'); });
     $('btn-howto-back').addEventListener('click', () => { $('howto-screen').classList.add('hidden'); });

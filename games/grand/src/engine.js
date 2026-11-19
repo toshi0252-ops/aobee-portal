@@ -361,6 +361,7 @@ const Engine = (() => {
     keys[k] = true;
     if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
     if (k === 'z' || k === 'enter' || k === ' ') pressA();
+    if (k === 'x' || k === 'escape') Input.bPressed = true;
     audioInit();
     updateDir();
   });
@@ -398,7 +399,7 @@ const Engine = (() => {
     const DEAD = 14, REACH = 44;
     let sp = null; // { id, cx, cy, t, max } 進行中のスティック操作
     // タイトル等の全画面メニューが開いている間はスティックを受け付けない
-    const overlayOpen = () => ['title-screen', 'howto-screen', 'clear-screen'].some((id) => {
+    const overlayOpen = () => ['title-screen', 'howto-screen', 'clear-screen', 'slot-screen', 'menu-screen'].some((id) => {
       const el = document.getElementById(id);
       return el && !el.classList.contains('hidden');
     });
@@ -616,6 +617,10 @@ const Engine = (() => {
     },
     update(dt) {
       const p = this.player;
+      if (Input.bPressed) {
+        Input.bPressed = false;
+        if (this.hooks.onMenuKey) this.hooks.onMenuKey();
+      }
       if (Dialogue.active) {
         if (Input.consumeA()) { if (Dialogue._choices) Dialogue.confirmSel(); else Dialogue.advance(); }
         this.render(); return;
