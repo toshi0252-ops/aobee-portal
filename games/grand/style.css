@@ -211,3 +211,14 @@ body.touch #foot { display: none; }
 /* フィールドメニュー */
 .menu-status { margin-bottom: 12px; color: #dfeffc; font-size: 15px; line-height: 1.6; }
 .bigbtn.slot:disabled { opacity: .45; cursor: default; }
+
+/* 章タイトルカード */
+#chapter-card {
+  position: absolute; inset: 0; z-index: 26;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(10, 22, 38, .8); opacity: 0; transition: opacity .35s ease;
+  pointer-events: none; text-align: center; padding: 16px;
+}
+#chapter-card.show { opacity: 1; }
+#chapter-card-num { color: #8fd0ff; font-size: 15px; letter-spacing: .4em; margin-bottom: 10px; }
+#chapter-card-title { color: #ffe066; font-size: clamp(26px, 6vw, 42px); font-weight: 700; text-shadow: 0 3px 0 #b8860b; letter-spacing: .05em; }

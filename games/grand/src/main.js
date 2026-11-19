@@ -359,7 +359,7 @@
     // 第2章: ボスゾーン（風車タワー前）。拡大版第2章: 制御レバーのグリップがないとボス戦に入れない
     if (curMap === 'hill' && x === 10 && y === 3 && S.flags.warubeeSeen && !S.flags.boss2Done && !S.flags.boss2Started) {
       if (!S.flags.brakeItem) { Dialogue.play(Data.dlg.brakeNeed); return; }
-      Dialogue.play(Data.dlg.brakeLever, () => { S.flags.boss2Started = true; if (S.chapter < 4) S.chapter = 4; startMoguruBattle(); });
+      Dialogue.play(Data.dlg.brakeLever, () => { S.flags.boss2Started = true; if (S.chapter < 4) { S.chapter = 4; showChapterCard(4, () => startMoguruBattle()); } else startMoguruBattle(); });
       return;
     }
     // 拡大版第2章: 牧場の裏山（見えるクワコグ／トルネコグの巣／ジロウの鈴）
@@ -483,10 +483,12 @@
       const wb = World.map.npcs.find(n => n.id === 'warubee');
       if (wb) wb.hidden = !!S.flags.bossDone;
       spawnNests();
-      if (S.chapter < 2) S.chapter = 2; // 第2章「水車小屋」開始
+      const chapterUp = S.chapter < 2;
+      if (chapterUp) S.chapter = 2; // 第2章「水車小屋」開始
       if (!S.flags.millIntro) {
         S.flags.millIntro = true;
-        setTimeout(() => Dialogue.play(Data.dlg.millIntro), 250);
+        if (chapterUp) showChapterCard(2, () => Dialogue.play(Data.dlg.millIntro));
+        else setTimeout(() => Dialogue.play(Data.dlg.millIntro), 250);
       }
     }
     if (id === 'forest') spawnForest();
@@ -512,9 +514,11 @@
       setTimeout(() => Dialogue.play(Data.dlg.approachIntro), 250);
     }
     if (id === 'temple' && !S.flags.templeIntro) {
-      if (S.chapter < 6) S.chapter = 6; // 第6章「神殿内部」開始
+      const chapterUp = S.chapter < 6;
+      if (chapterUp) S.chapter = 6; // 第6章「神殿内部」開始
       S.flags.templeIntro = true;
-      setTimeout(() => Dialogue.play(Data.dlg.templeIntro), 250);
+      if (chapterUp) showChapterCard(6, () => Dialogue.play(Data.dlg.templeIntro));
+      else setTimeout(() => Dialogue.play(Data.dlg.templeIntro), 250);
     }
     if (id === 'clockroom') {
       // 長老とミオはボス撃破後に姿を見せる
@@ -1142,6 +1146,28 @@
     $('clear-screen').classList.remove('hidden');
   }
 
+  /* ---------- 章タイトルカード ---------- */
+  const CHAPTER_TITLES = { 1: 'はぐるま村の異変', 2: '水車小屋の対決', 3: 'まきばの集落', 4: '暴走！ 大風車', 5: '神殿門前町', 6: '星の神殿と止まった時計' };
+  let chapterCardTimer = null;
+  // 章が切り替わる瞬間にタイトルカードを出す（約1.75秒、ワールドは停止してから done へ）
+  function showChapterCard(n, done) {
+    const card = $('chapter-card');
+    if (!card || !CHAPTER_TITLES[n]) { if (done) done(); return; }
+    $('chapter-card-num').textContent = `第${n}章`;
+    $('chapter-card-title').textContent = CHAPTER_TITLES[n];
+    card.classList.remove('hidden');
+    requestAnimationFrame(() => card.classList.add('show'));
+    World.frozen = true;
+    if (chapterCardTimer) clearTimeout(chapterCardTimer);
+    chapterCardTimer = setTimeout(() => {
+      chapterCardTimer = null;
+      card.classList.remove('show');
+      card.classList.add('hidden');
+      World.frozen = false;
+      if (done) done();
+    }, 1750);
+  }
+
   /* ---------- 第3章: 開始とエンディング ---------- */
   function startChapter3() {
     S.chapter = 3;
@@ -1150,9 +1176,11 @@
     World.loadMap('village', 4, 5, true);
     World.player.dir = 'up';
     refreshHUD();
-    Dialogue.play(Data.dlg.ch3GardoNotice, () => {
-      S.flags.ch3Intro = true;
-      refreshHUD(); save();
+    showChapterCard(3, () => {
+      Dialogue.play(Data.dlg.ch3GardoNotice, () => {
+        S.flags.ch3Intro = true;
+        refreshHUD(); save();
+      });
     });
   }
   function startEnding2() {
@@ -1191,9 +1219,11 @@
     World.loadMap('village', 4, 5, true);
     World.player.dir = 'up';
     refreshHUD();
-    Dialogue.play(Data.dlg.ch5Start, () => {
-      S.flags.ch5Intro = true;
-      refreshHUD(); save();
+    showChapterCard(5, () => {
+      Dialogue.play(Data.dlg.ch5Start, () => {
+        S.flags.ch5Intro = true;
+        refreshHUD(); save();
+      });
     });
   }
   function showClear6() {
@@ -1295,13 +1325,13 @@
       // オープニング: わるびーを屋根上に表示してから会話
       World.actors = [{ id: 'warubee', kind: 'warubee', x: 16, y: 1, visible: true }];
       Snd.gear();
-      setTimeout(() => {
+      showChapterCard(1, () => {
         Dialogue.play(Data.dlg.opening, () => {
           S.flags.opening = true;
           World.actors = [];
           refreshHUD(); save();
         });
-      }, 500);
+      });
     }
   }
 
@@ -1386,22 +1416,23 @@
       refreshHUD();
       World.actors = [{ id: 'warubee', kind: 'warubee', x: 16, y: 1, visible: true }];
       Snd.gear();
-      setTimeout(() => {
+      showChapterCard(1, () => {
         Dialogue.play(Data.dlg.opening, () => { S.flags.opening = true; World.actors = []; refreshHUD(); save(); });
-      }, 500);
+      });
       return;
     }
     if (n === 2) {
       // 水車小屋に入った直後（巣・小歯車・橋はこれから）
       S = presetState(
         { chapter: 2, level: 3, exp: 75, maxHp: 56, hp: 56, herbs: 4, fragments: 4 },
-        { opening: true, boots: true, trailIntro: true, mayorMet: true, gearQuest: true, gearDone: true, herbMet: true, herbQuest: true, herbDone: true, herbCount: 3 }
+        { opening: true, boots: true, trailIntro: true, mayorMet: true, gearQuest: true, gearDone: true, herbMet: true, herbQuest: true, herbDone: true, herbCount: 3, millIntro: true }
       );
       S.picked = { 'trail:4,4': true, 'trail:2,8': true, 'trail:16,10': true, 'trail:11,11': true };
       curMap = 'mill';
       World.loadMap('mill', 2, 11, true);
       World.player.dir = 'up';
       refreshHUD(); save();
+      showChapterCard(2);
       return;
     }
     if (n === 3) {
@@ -1423,6 +1454,7 @@
       World.loadMap('hill', 10, 5, true);
       World.player.dir = 'up';
       refreshHUD(); save();
+      showChapterCard(4);
       return;
     }
     if (n === 5) {
