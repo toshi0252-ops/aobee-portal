@@ -28,6 +28,8 @@ const Engine = (() => {
     herb: { file: 'npc-herb.png', cx: 0.50, cy: 0.30, side: 0.55 },
     postman: { file: 'npc-postman.png', cx: 0.50, cy: 0.28, side: 0.50 },
     jirou: { file: 'npc-jirou.png', cx: 0.50, cy: 0.27, side: 0.50 },
+    ochiyo: { file: 'npc-ochiyo.png', cx: 0.50, cy: 0.28, side: 0.50 },
+    gen: { file: 'npc-gen.png', cx: 0.50, cy: 0.28, side: 0.50 },
     torune: { file: 'enemy-torune.png', cx: 0.58, cy: 0.30, side: 0.52 },
     yuragi: { file: 'enemy-yuragi.png', cx: 0.50, cy: 0.38, side: 0.55 }
   };

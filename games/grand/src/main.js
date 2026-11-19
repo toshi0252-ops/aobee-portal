@@ -13,6 +13,7 @@
     'assets/chars/animal-cow.png', 'assets/chars/animal-sheep.png', 'assets/chars/animal-chicken.png',
     'assets/chars/npc-mio.png', 'assets/chars/npc-choro.png', 'assets/chars/enemy-akari.png', 'assets/chars/enemy-hoshigami.png',
     'assets/chars/npc-jirou.png', 'assets/chars/enemy-torune.png', 'assets/chars/enemy-yuragi.png',
+    'assets/chars/npc-ochiyo.png', 'assets/chars/npc-gen.png',
     'assets/warubee-front-v1.png',
     'assets/cut-warubee-roof.png'
   ];
@@ -383,6 +384,13 @@
         Dialogue.play([Data.L('', `星灯りの雫を拾った！（${S.flags.dropCount}/4）`)], () => { refreshHUD(); save(); });
         return;
       }
+      // 拡大版第5章分: サブクエスト「ゲンさんの御朱印帳」（参道の上の方の光るスポット）
+      if (x === 16 && y === 4 && S.flags.goshuinQuest && !S.flags.goshuinItem && !S.flags.goshuinDone) {
+        S.flags.goshuinItem = true;
+        Snd.pickup();
+        Dialogue.play(Data.dlg.goshuinFound, () => { refreshHUD(); save(); });
+        return;
+      }
     }
     // 拡大版第3章: 油蔵の祠の中ボス「ゆらぎコグ」（雫の4つ目）
     if (curMap === 'oilshed' && x === 9 && y === 3 && S.flags.oilQuest && !S.flags.oilItem && !S.flags.oilDone) {
@@ -532,6 +540,10 @@
     'road:3,1': 'spotRoadTree', 'road:4,1': 'spotRoadTree', 'road:15,1': 'spotRoadTree', 'road:16,1': 'spotRoadTree',
     'ranch:2,3': 'spotRanchHouse', 'ranch:3,3': 'spotRanchHouse', 'ranch:4,3': 'spotRanchHouse', 'ranch:15,8': 'spotPen',
     'approach:5,1': 'spotOldTree', 'approach:6,1': 'spotOldTree', 'approach:15,1': 'spotOldTree', 'approach:16,1': 'spotOldTree',
+    'monzen:4,2': 'spotPhoto', 'monzen:3,2': 'spotPhoto', 'monzen:5,2': 'spotPhoto',
+    'monzen:9,2': 'spotMonzenShop', 'monzen:10,2': 'spotMonzenShop', 'monzen:11,2': 'spotMonzenShop',
+    'monzen:3,10': 'spotMonzenInn', 'monzen:4,10': 'spotMonzenInn', 'monzen:5,10': 'spotMonzenInn',
+    'monzen:7,12': 'spotMonzenSign',
     'temple:9,3': 'spotPillar', 'temple:10,3': 'spotPillar', 'temple:9,4': 'spotPillar', 'temple:10,4': 'spotPillar',
     'clockroom:3,4': 'spotCarving', 'clockroom:3,5': 'spotCarving', 'clockroom:16,4': 'spotCarving', 'clockroom:16,5': 'spotCarving'
   };
@@ -683,6 +695,27 @@
         else {
           const n = (S.talks.jirou = (S.talks.jirou || 0) + 1);
           Dialogue.play(Data.dlg.jirouChat[(n - 1) % Data.dlg.jirouChat.length]);
+        }
+      }
+      else if (npc.id === 'ochiyo') {
+        if (!S.flags.ochiyoMet) {
+          Dialogue.play(Data.dlg.ochiyoFirst, () => { S.flags.ochiyoMet = true; refreshHUD(); save(); });
+        } else {
+          const n = (S.talks.ochiyo = (S.talks.ochiyo || 0) + 1);
+          Dialogue.play(Data.dlg.ochiyoChat[(n - 1) % Data.dlg.ochiyoChat.length]);
+        }
+      }
+      else if (npc.id === 'gen') {
+        if (S.flags.goshuinItem) {
+          Dialogue.play(Data.dlg.genThanks, () => { S.flags.goshuinItem = false; S.flags.goshuinDone = true; S.herbs += 1; Snd.pickup(); refreshHUD(); save(); });
+        }
+        else if (!S.flags.genMet) {
+          Dialogue.play(Data.dlg.genFirst, () => { S.flags.genMet = true; S.flags.goshuinQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.goshuinQuest && !S.flags.goshuinDone) Dialogue.play(Data.dlg.genHint);
+        else {
+          const n = (S.talks.gen = (S.talks.gen || 0) + 1);
+          Dialogue.play(Data.dlg.genChat[(n - 1) % Data.dlg.genChat.length]);
         }
       }
       else if (npc.id === 'mio') {
