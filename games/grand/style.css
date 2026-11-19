@@ -183,3 +183,12 @@ body.touch #foot { display: none; }
 @media (orientation: landscape) and (max-height: 540px) {
   #wrap { width: min(96vw, calc((100vh - 34px) * 1.4286), 680px); width: min(96vw, calc((100dvh - 34px) * 1.4286), 680px); }
 }
+
+/* セーブスロット選択・デバッグ開始 */
+.slot-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.bigbtn.slot { text-align: left; font-size: 15px; }
+.dbg-row { margin-top: 14px; text-align: center; }
+.dbg-label { font-size: 12px; opacity: .75; }
+.dbg-btns { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
+.dbgbtn { background: #31567a; color: #dbeafe; border: 1px solid #5b82a6; border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
+.dbgbtn:active { transform: translateY(1px); }

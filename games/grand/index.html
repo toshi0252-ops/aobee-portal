@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>あおびーと失われた歯車 第1章・第2章・第3章（試作）</title>
+<title>あおびーと失われた歯車 第1章〜第6章（試作）</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,13 +21,38 @@
         <p class="eyebrow">AOBEE GRAND RPG · 試作版</p>
         <img class="title-art" src="assets/title-art.png" alt="はぐるま村と大歯車、あおびーとわるびーのイラスト">
         <h1>あおびーと<br>失われた歯車</h1>
-        <p class="subtitle">第1章「止まった村と歯車泥棒」／第2章「暴走！ まきばの大風車」／第3章「星の神殿と止まった時計」</p>
+        <p class="subtitle">第1章「はぐるま村の異変」／第2章「水車小屋の対決」／第3章「まきばの集落」／第4章「暴走！ 大風車」／第5章「神殿門前町」／第6章「星の神殿と止まった時計」</p>
         <div class="title-btns">
           <button id="btn-new" class="bigbtn">はじめから</button>
           <button id="btn-continue" class="bigbtn">つづきから</button>
           <button id="btn-howto" class="bigbtn sub">あそびかた</button>
         </div>
-        <p class="title-note">※試作版です。セーブはこの端末のブラウザに保存されます。</p>
+        <div class="dbg-row">
+          <span class="dbg-label">デバッグ（章の途中から）</span>
+          <div class="dbg-btns">
+            <button id="btn-dbg-1" class="dbgbtn">第1章</button>
+            <button id="btn-dbg-2" class="dbgbtn">第2章</button>
+            <button id="btn-dbg-3" class="dbgbtn">第3章</button>
+            <button id="btn-dbg-4" class="dbgbtn">第4章</button>
+            <button id="btn-dbg-5" class="dbgbtn">第5章</button>
+            <button id="btn-dbg-6" class="dbgbtn">第6章</button>
+          </div>
+        </div>
+        <p class="title-note">※試作版です。セーブはこの端末のブラウザに、3スロット＋デバッグ枠で保存されます。</p>
+      </div>
+    </div>
+
+    <!-- セーブスロット選択 -->
+    <div id="slot-screen" class="overlay hidden">
+      <div class="panel">
+        <h2 id="slot-title">セーブスロット</h2>
+        <div class="slot-btns">
+          <button id="slot-1" class="bigbtn slot">スロット1</button>
+          <button id="slot-2" class="bigbtn slot">スロット2</button>
+          <button id="slot-3" class="bigbtn slot">スロット3</button>
+        </div>
+        <p id="slot-note" class="title-note"></p>
+        <button id="btn-slot-back" class="bigbtn sub">もどる</button>
       </div>
     </div>
 
@@ -41,8 +66,8 @@
           <li>ダッシュ： Shift を押しながら移動 / スマホはスティックを奥まで倒す（工房でブーツをもらってから）</li>
           <li>戦闘： 「こうげき」「歯車チャージ（1ターン溜めて大ダメージ＋歯車はずし）」「ほし草（回復）」の3つだけ。コマンドは ↑↓＋Z/Enter でも、1/2/3キーでも、スマホのスティック＋タップでも選べる</li>
           <li>強がりゲージ： たまるとピンチで1回だけHP1で踏みとどまる</li>
-          <li>第2章： 動物は近づくと反対へ逃げる。柵エリアへ追い込もう。装甲の硬い敵は、歯車チャージで歯車を外して止める</li>
-          <li>第3章： 神殿は暗闇。燭台は壁画の順番に灯そう（間違えると消える）。ボスは明暗で弱点が変わる</li>
+          <li>第3・4章： 動物は近づくと反対へ逃げる。柵エリアへ追い込もう。装甲の硬い敵は、歯車チャージで歯車を外して止める</li>
+          <li>第6章： 神殿は暗闇。燭台は壁画の順番に灯そう（間違えると消える）。ボスは明暗で弱点が変わる</li>
           <li>負けても大丈夫。工房に戻るだけ（ほんの少しだけ記録が残る）</li>
           <li>セーブ： マップが変わるたびに自動</li>
         </ul>
@@ -73,14 +98,14 @@
       </div>
     </div>
 
-    <!-- クリア画面（第1章・第2章で共用。文面はJSで差し替える） -->
+    <!-- クリア画面（第2章・第4章・第6章で共用。文面はJSで差し替える） -->
     <div id="clear-screen" class="overlay hidden">
       <div class="panel">
-        <h2 id="clear-title">第1章 クリア！</h2>
+        <h2 id="clear-title">第2章 クリア！</h2>
         <div id="clear-stats"></div>
-        <p class="clear-next" id="clear-next">大歯車は戻った。でも、歯が1枚欠けたまま…。<br>わるびーは何を隠しているのか——第2章へつづく。</p>
-        <button id="btn-to-ch2" class="bigbtn">第2章へすすむ</button>
-        <button id="btn-to-ch3" class="bigbtn" style="display:none">第3章へすすむ</button>
+        <p class="clear-next" id="clear-next">大歯車は戻った。でも、歯が1枚欠けたまま…。<br>わるびーは何を隠しているのか——第3章へつづく。</p>
+        <button id="btn-to-ch3" class="bigbtn">第3章へすすむ</button>
+        <button id="btn-to-ch5" class="bigbtn" style="display:none">第5章へすすむ</button>
         <a id="clear-link" class="bigbtn sub" href="../aobee_farm_v48_soil_water.html?v=ui50" target="_blank" rel="noopener" style="display:none">元ネタの牧場ゲームで遊ぶ ↗</a>
         <button id="btn-clear-back" class="bigbtn">タイトルへ</button>
       </div>
