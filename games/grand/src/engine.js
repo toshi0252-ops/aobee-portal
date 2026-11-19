@@ -1,0 +1,966 @@
+'use strict';
+/* 軽量2Dエンジン: 描画・移動・会話・入力・簡易サウンド
+   あおびーはアトラス（4列×2行）を使用。★左右反転は絶対にしない（公式デザインが左右非対称のため） */
+const Engine = (() => {
+  const TILE = 32, COLS = 20, ROWS = 14;
+  const cv = document.getElementById('game');
+  const ctx = cv.getContext('2d');
+
+  /* ---------- 画像 ---------- */
+  const atlas = new Image();
+  let atlasOK = false;
+  atlas.onload = () => { atlasOK = true; };
+  atlas.src = '../../assets/characters/aobee-atlas-v1.png';
+  const warubeeImg = new Image();
+  let warubeeOK = false;
+  warubeeImg.onload = () => { warubeeOK = true; };
+  warubeeImg.src = 'assets/warubee-front-v1.png';
+
+  /* NPCイラスト（cx/cy=顔中心の割合, side=顔切り出しの一辺の割合 ※高さ基準） */
+  const NPC_FACE = {
+    gardo: { file: 'npc-gardo.png', cx: 0.51, cy: 0.29, side: 0.58 },
+    baker: { file: 'npc-mami.png', cx: 0.50, cy: 0.27, side: 0.47 },
+    kid:   { file: 'npc-poco.png', cx: 0.38, cy: 0.36, side: 0.62 },
+    minori: { file: 'npc-minori.png', cx: 0.50, cy: 0.28, side: 0.45 },
+    mio: { file: 'npc-mio.png', cx: 0.50, cy: 0.28, side: 0.50 },
+    choro: { file: 'npc-choro.png', cx: 0.50, cy: 0.30, side: 0.55 },
+    mayor: { file: 'npc-mayor.png', cx: 0.50, cy: 0.30, side: 0.58 },
+    herb: { file: 'npc-herb.png', cx: 0.50, cy: 0.30, side: 0.55 },
+    postman: { file: 'npc-postman.png', cx: 0.50, cy: 0.28, side: 0.50 },
+    jirou: { file: 'npc-jirou.png', cx: 0.50, cy: 0.27, side: 0.50 },
+    ochiyo: { file: 'npc-ochiyo.png', cx: 0.50, cy: 0.28, side: 0.50 },
+    gen: { file: 'npc-gen.png', cx: 0.50, cy: 0.28, side: 0.50 },
+    torune: { file: 'enemy-torune.png', cx: 0.58, cy: 0.30, side: 0.52 },
+    yuragi: { file: 'enemy-yuragi.png', cx: 0.50, cy: 0.38, side: 0.55 }
+  };
+  const npcImgs = {};
+  for (const k of Object.keys(NPC_FACE)) {
+    const im = new Image();
+    const rec = { img: im, ok: false };
+    im.onload = () => { rec.ok = true; };
+    im.src = 'assets/chars/' + NPC_FACE[k].file;
+    npcImgs[k] = rec;
+  }
+  /* マップアクター用イラスト（動物など。h=表示高さpx） */
+  const ACTOR_ART = {
+    cow:     { file: 'animal-cow.png', h: 47 },
+    sheep:   { file: 'animal-sheep.png', h: 45 },
+    chicken: { file: 'animal-chicken.png', h: 33 },
+    cog:     { file: 'enemy-cog.png', h: 44 },
+    oocog:   { file: 'enemy-guardian.png', h: 58 },
+    kuwa:    { file: 'enemy-kuwa.png', h: 44 },
+    akari:   { file: 'enemy-akari.png', h: 44 }
+  };
+  const actorImgs = {};
+  for (const k of Object.keys(ACTOR_ART)) {
+    const im = new Image();
+    const rec = { img: im, ok: false };
+    im.onload = () => { rec.ok = true; };
+    im.src = 'assets/chars/' + ACTOR_ART[k].file;
+    actorImgs[k] = rec;
+  }
+  function drawActorImage(kind, cx, groundY, h) {
+    const rec = actorImgs[kind];
+    if (!rec || !rec.ok) return false;
+    const w = h * rec.img.naturalWidth / rec.img.naturalHeight;
+    ctx.drawImage(rec.img, cx - w / 2, groundY - h, w, h);
+    return true;
+  }
+  /* 動物の簡易フォールバック描画 */
+  function drawAnimalFallback(kind, cx, cy, s) {
+    const u = s / 44;
+    ctx.save(); ctx.translate(cx, cy);
+    if (kind === 'cow') {
+      ctx.fillStyle = '#f5f0e6'; ctx.beginPath(); ctx.ellipse(0, 4 * u, 15 * u, 11 * u, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#a9743f'; ctx.beginPath(); ctx.ellipse(-7 * u, 1 * u, 5 * u, 4 * u, 0.4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f5f0e6'; ctx.beginPath(); ctx.arc(10 * u, -5 * u, 8 * u, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f2a7b8'; ctx.beginPath(); ctx.ellipse(13 * u, -3 * u, 3.4 * u, 2.6 * u, 0, 0, Math.PI * 2); ctx.fill();
+    } else if (kind === 'sheep') {
+      ctx.fillStyle = '#f7f5ef';
+      for (const [ox, oy, r] of [[-8, 2, 7], [0, -3, 9], [8, 2, 7], [0, 6, 9], [-5, 9, 6], [6, 9, 6]]) { ctx.beginPath(); ctx.arc(ox * u, oy * u, r * u, 0, Math.PI * 2); ctx.fill(); }
+      ctx.fillStyle = '#4a4448'; ctx.beginPath(); ctx.ellipse(9 * u, -2 * u, 5 * u, 4.4 * u, 0, 0, Math.PI * 2); ctx.fill();
+    } else { // chicken
+      ctx.fillStyle = '#fbfaf5'; ctx.beginPath(); ctx.ellipse(0, 3 * u, 10 * u, 10 * u, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#e8433f'; ctx.beginPath(); ctx.arc(0, -11 * u, 3.6 * u, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f5b921'; ctx.beginPath(); ctx.moveTo(8 * u, -2 * u); ctx.lineTo(13 * u, 0); ctx.lineTo(8 * u, 2.5 * u); ctx.closePath(); ctx.fill();
+    }
+    ctx.fillStyle = '#222';
+    ctx.beginPath(); ctx.arc(kind === 'chicken' ? 3 * u : 8 * u, kind === 'chicken' ? -4 * u : -6 * u, 1.4 * u, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  /* 接地影（半透明の楕円グラデーション） */
+  function groundShadow(c2, cx, cy, w) {
+    c2.save();
+    const g = c2.createRadialGradient(cx, cy, 1, cx, cy, w / 2);
+    g.addColorStop(0, 'rgba(18,38,20,0.38)');
+    g.addColorStop(0.7, 'rgba(18,38,20,0.18)');
+    g.addColorStop(1, 'rgba(18,38,20,0)');
+    c2.fillStyle = g;
+    c2.beginPath(); c2.ellipse(cx, cy, w / 2, Math.max(3, w / 6), 0, 0, Math.PI * 2); c2.fill();
+    c2.restore();
+  }
+  /* フィールド用NPCイラスト描画（アスペクト維持・足元=groundY）。描けたら true */
+  function drawNpcImage(kind, cx, groundY, h) {
+    const rec = npcImgs[kind];
+    if (!rec || !rec.ok) return false;
+    const w = h * rec.img.naturalWidth / rec.img.naturalHeight;
+    ctx.drawImage(rec.img, cx - w / 2, groundY - h, w, h);
+    return true;
+  }
+  /* タイル質感用の決定的ハッシュ（座標から安定したバラつきを出す） */
+  function hash2(x, y) { let h = (x * 374761393 + y * 668265263) ^ 0x5bf03635; h = Math.imul(h ^ (h >> 13), 1274126177); return (h ^ (h >> 16)) >>> 0; }
+
+  /* アトラスセル: 上段 0=正面 1=背面 2=左向き 3=右向き / 下段 0=喜ぶ 1=手を伸ばす 2=左へ走る 3=右へ走る */
+  function aobeeCell(dir, moving) {
+    if (moving && dir === 'left') return [2, 1];
+    if (moving && dir === 'right') return [3, 1];
+    if (dir === 'down') return [0, 0];
+    if (dir === 'up') return [1, 0];
+    if (dir === 'left') return [2, 0];
+    return [3, 0];
+  }
+  function drawAobee(x, y, size, dir, moving, joy) {
+    if (atlasOK) {
+      const cw = atlas.naturalWidth / 4, ch = atlas.naturalHeight / 2;
+      let cell = joy ? [0, 1] : aobeeCell(dir, moving);
+      ctx.drawImage(atlas, cell[0] * cw, cell[1] * ch, cw, ch, x - size / 2, y - size, size, size);
+    } else {
+      drawAobeeFallback(x, y, size, false);
+    }
+  }
+  function drawAobeeTo(c2, x, y, size, warubee) {
+    if (!warubee && atlasOK) {
+      const cw = atlas.naturalWidth / 4, ch = atlas.naturalHeight / 2;
+      c2.drawImage(atlas, 0, 0, cw, ch, x - size / 2, y - size / 2, size, size);
+    } else if (warubee && warubeeOK) {
+      c2.drawImage(warubeeImg, x - size / 2, y - size / 2, size, size);
+    } else {
+      drawCritter(c2, x, y, size, warubee);
+    }
+  }
+  /* フォールバック兼用の簡易キャラ描画（公式配色） */
+  function gearPath(c2, x, y, r, teeth, color) {
+    c2.save(); c2.translate(x, y); c2.fillStyle = color;
+    for (let i = 0; i < teeth; i++) {
+      c2.save(); c2.rotate((Math.PI * 2 * i) / teeth);
+      c2.fillRect(-r * 0.22, -r * 1.25, r * 0.44, r * 0.5); c2.restore();
+    }
+    c2.beginPath(); c2.arc(0, 0, r, 0, Math.PI * 2); c2.fill();
+    c2.globalCompositeOperation = 'destination-out';
+    c2.beginPath(); c2.arc(0, 0, r * 0.42, 0, Math.PI * 2); c2.fill();
+    c2.restore(); c2.globalCompositeOperation = 'source-over';
+  }
+  function starPath(c2, x, y, r, color, chip) {
+    c2.save(); c2.translate(x, y); c2.fillStyle = color; c2.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const a = -Math.PI / 2 + (i * Math.PI * 2) / 5, a2 = a + Math.PI / 5;
+      c2.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      c2.lineTo(Math.cos(a2) * r * 0.45, Math.sin(a2) * r * 0.45);
+    }
+    c2.closePath(); c2.fill();
+    if (chip) { c2.globalCompositeOperation = 'destination-out'; c2.beginPath(); c2.arc(r * 0.55, -r * 0.5, r * 0.38, 0, Math.PI * 2); c2.fill(); c2.globalCompositeOperation = 'source-over'; }
+    c2.restore();
+  }
+  function drawCritter(c2, cx, cy, s, warubee) {
+    const P = warubee
+      ? { body: '#343a42', ear: '#23272d', earTip: '#e84393', belly: '#4a5158', star: '#e84393', gearEye: '#c0c6cc', bow: '#e84393', bowGear: '#c0c6cc', tail: '#8e2a5c', cheek: '#7a4457' }
+      : { body: '#56b7e8', ear: '#1d4e79', earTip: '#1d4e79', belly: '#ffffff', star: '#ffd21f', gearEye: '#f59e0b', bow: '#2470c2', bowGear: '#ffd21f', tail: '#2b6cb0', cheek: '#ffb3c1' };
+    const u = s / 44;
+    c2.save(); c2.translate(cx, cy);
+    gearPath(c2, 15 * u, 10 * u, 6.5 * u, 8, P.tail); // 歯車形の尻尾
+    c2.fillStyle = P.ear; // 垂れ耳
+    c2.beginPath(); c2.ellipse(-14 * u, -6 * u, 5.5 * u, 11 * u, 0.25, 0, Math.PI * 2); c2.fill();
+    c2.beginPath(); c2.ellipse(14 * u, -6 * u, 5.5 * u, 11 * u, -0.25, 0, Math.PI * 2); c2.fill();
+    c2.fillStyle = P.earTip;
+    c2.beginPath(); c2.ellipse(-16.5 * u, 3 * u, 3.4 * u, 4.5 * u, 0.25, 0, Math.PI * 2); c2.fill();
+    c2.beginPath(); c2.ellipse(16.5 * u, 3 * u, 3.4 * u, 4.5 * u, -0.25, 0, Math.PI * 2); c2.fill();
+    c2.fillStyle = P.body; // 体
+    c2.beginPath(); c2.ellipse(0, 2 * u, 16 * u, 15 * u, 0, 0, Math.PI * 2); c2.fill();
+    c2.fillStyle = P.belly; // お腹・口元
+    c2.beginPath(); c2.ellipse(0, 8 * u, 9 * u, 7 * u, 0, 0, Math.PI * 2); c2.fill();
+    c2.beginPath(); c2.ellipse(0, 1 * u, 8 * u, 5.5 * u, 0, 0, Math.PI * 2); c2.fill();
+    c2.fillStyle = P.cheek; // 頬
+    c2.beginPath(); c2.arc(-10.5 * u, 2 * u, 3 * u, 0, Math.PI * 2); c2.fill();
+    c2.beginPath(); c2.arc(10.5 * u, 2 * u, 3 * u, 0, Math.PI * 2); c2.fill();
+    starPath(c2, -5.5 * u, -3.5 * u, 3.6 * u, warubee ? '#ff7ac0' : '#173a5e', false); // 星の目
+    if (warubee) { c2.fillStyle = '#fff'; c2.beginPath(); c2.arc(-5.5 * u, -3.5 * u, 1.2 * u, 0, Math.PI * 2); c2.fill(); }
+    gearPath(c2, 6 * u, -3.5 * u, 2.6 * u, 8, P.gearEye); // 歯車の目
+    if (warubee) { c2.fillStyle = '#fff'; c2.beginPath(); c2.moveTo(2.5 * u, 5 * u); c2.lineTo(5.5 * u, 5 * u); c2.lineTo(4 * u, 8.5 * u); c2.closePath(); c2.fill(); } // 牙
+    starPath(c2, 0, -16.5 * u, 6 * u, P.star, warubee); // 頭に直接の星（わるびーは欠け）
+    c2.fillStyle = P.bow; // 蝶ネクタイ
+    c2.beginPath(); c2.moveTo(0, 13.5 * u); c2.lineTo(-7 * u, 10.5 * u); c2.lineTo(-7 * u, 16.5 * u); c2.closePath(); c2.fill();
+    c2.beginPath(); c2.moveTo(0, 13.5 * u); c2.lineTo(7 * u, 10.5 * u); c2.lineTo(7 * u, 16.5 * u); c2.closePath(); c2.fill();
+    gearPath(c2, 0, 13.5 * u, 2.6 * u, 8, P.bowGear);
+    c2.restore();
+  }
+  function drawAobeeFallback(x, y, size) { drawCritter(ctx, x, y - size / 2, size, false); }
+
+  /* NPC簡易描画 */
+  function drawNPC(c2, cx, cy, s, kind) {
+    const u = s / 44;
+    c2.save(); c2.translate(cx, cy);
+    const skin = '#f6cfa5';
+    const clothes = { gardo: '#8a5a2b', baker: '#f2f2f2', kid: '#58b368', minori: '#83986a', mio: '#efe9dc', choro: '#5a4a7a' }[kind] || '#888';
+    c2.fillStyle = clothes;
+    c2.beginPath(); c2.ellipse(0, 8 * u, 11 * u, 10 * u, 0, 0, Math.PI * 2); c2.fill();
+    c2.fillStyle = skin;
+    c2.beginPath(); c2.arc(0, -6 * u, 9 * u, 0, Math.PI * 2); c2.fill();
+    if (kind === 'gardo') {
+      c2.fillStyle = '#5d3c17'; c2.fillRect(-10 * u, -15 * u, 20 * u, 5 * u); // 帽子
+      c2.fillStyle = '#ddd'; c2.beginPath(); c2.ellipse(0, 0, 6 * u, 4.5 * u, 0, 0, Math.PI * 2); c2.fill(); // ひげ
+      gearPath(c2, 12 * u, 6 * u, 4 * u, 8, '#c49a12');
+    } else if (kind === 'baker') {
+      c2.fillStyle = '#fff'; c2.beginPath(); c2.ellipse(0, -14 * u, 9 * u, 5 * u, 0, 0, Math.PI * 2); c2.fill();
+      c2.fillStyle = '#c0392b'; c2.fillRect(-9 * u, -10 * u, 18 * u, 3 * u);
+    } else if (kind === 'kid') {
+      c2.fillStyle = '#ffd21f'; c2.beginPath(); c2.arc(0, -13 * u, 5 * u, 0, Math.PI * 2); c2.fill();
+    } else if (kind === 'minori') {
+      c2.fillStyle = '#e3c878'; // 麦わら帽子
+      c2.beginPath(); c2.ellipse(0, -12 * u, 12.5 * u, 4.5 * u, 0, 0, Math.PI * 2); c2.fill();
+      c2.beginPath(); c2.ellipse(0, -15.5 * u, 7 * u, 4 * u, 0, 0, Math.PI * 2); c2.fill();
+    } else if (kind === 'mio') {
+      c2.fillStyle = '#4a3b30'; // ロングヘア（両サイド）
+      c2.fillRect(-11 * u, -12 * u, 4.5 * u, 20 * u); c2.fillRect(6.5 * u, -12 * u, 4.5 * u, 20 * u);
+      c2.fillStyle = '#d23b3b'; // 赤いリボン
+      c2.beginPath(); c2.moveTo(0, -15 * u); c2.lineTo(-6 * u, -18 * u); c2.lineTo(-5 * u, -11.5 * u); c2.closePath(); c2.fill();
+      c2.beginPath(); c2.moveTo(0, -15 * u); c2.lineTo(6 * u, -18 * u); c2.lineTo(5 * u, -11.5 * u); c2.closePath(); c2.fill();
+      c2.fillStyle = '#d23b3b'; c2.fillRect(-11 * u, 4 * u, 22 * u, 2.6 * u); // 緋の帯
+      starPath(c2, 0, 9 * u, 3.4 * u, '#ffd21f', false); // 星の留め具
+    } else if (kind === 'choro') {
+      c2.fillStyle = '#e8e8e8'; // 白いひげ
+      c2.beginPath(); c2.ellipse(0, 1 * u, 6.5 * u, 5.5 * u, 0, 0, Math.PI * 2); c2.fill();
+      c2.fillStyle = '#c9c9c9'; // 眉
+      c2.fillRect(-7 * u, -10.5 * u, 5 * u, 1.8 * u); c2.fillRect(2 * u, -10.5 * u, 5 * u, 1.8 * u);
+      gearPath(c2, 13 * u, 4 * u, 4 * u, 8, '#c49a12'); // 杖の歯車
+    }
+    c2.fillStyle = '#222';
+    c2.beginPath(); c2.arc(-3.5 * u, -6 * u, 1.3 * u, 0, Math.PI * 2); c2.fill();
+    c2.beginPath(); c2.arc(3.5 * u, -6 * u, 1.3 * u, 0, Math.PI * 2); c2.fill();
+    c2.restore();
+  }
+  /* 敵描画（コグ＝錆びた歯車モンスター） */
+  function drawCog(c2, cx, cy, s) {
+    const u = s / 60;
+    c2.save(); c2.translate(cx, cy);
+    gearPath(c2, 0, 0, 20 * u, 10, '#a35a24');
+    gearPath(c2, 0, 0, 14 * u, 8, '#c97e35');
+    c2.fillStyle = '#7a3f14'; c2.beginPath(); c2.arc(0, 0, 9 * u, 0, Math.PI * 2); c2.fill();
+    c2.fillStyle = '#ffe066'; c2.beginPath(); c2.arc(-3 * u, -2 * u, 3 * u, 0, Math.PI * 2); c2.fill();
+    c2.fillStyle = '#f33'; c2.beginPath(); c2.arc(-3 * u, -2 * u, 1.4 * u, 0, Math.PI * 2); c2.fill();
+    c2.fillStyle = '#5d3c17';
+    c2.save(); c2.rotate(0.6); c2.fillRect(10 * u, -24 * u, 5 * u, 10 * u); c2.restore();
+    c2.restore();
+  }
+  function drawKarakuri(c2, cx, cy, s) {
+    const u = s / 60;
+    c2.save(); c2.translate(cx, cy);
+    c2.fillStyle = '#b0854f'; c2.fillRect(-13 * u, -6 * u, 26 * u, 30 * u); // 木の胴
+    c2.strokeStyle = '#7a5a30'; c2.lineWidth = 2; c2.strokeRect(-13 * u, -6 * u, 26 * u, 30 * u);
+    gearPath(c2, 0, -16 * u, 11 * u, 9, '#8a929c'); // 頭の歯車
+    c2.fillStyle = '#ffe066'; c2.beginPath(); c2.arc(-4 * u, 4 * u, 2.4 * u, 0, Math.PI * 2); c2.fill();
+    c2.beginPath(); c2.arc(4 * u, 4 * u, 2.4 * u, 0, Math.PI * 2); c2.fill();
+    c2.fillStyle = '#7a5a30'; c2.fillRect(-16 * u, 0, 5 * u, 18 * u); c2.fillRect(11 * u, 0, 5 * u, 18 * u); // 腕
+    c2.restore();
+  }
+
+  /* ---------- サウンド（WebAudio・初回操作後に初期化） ---------- */
+  let AC = null;
+  function audioInit() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === 'suspended') AC.resume(); bgmKick(); }
+  function beep(freq, dur, type, vol) {
+    if (!AC) return;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'square'; o.frequency.value = freq;
+    g.gain.value = vol || 0.05;
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + dur);
+  }
+  /* ---------- BGM（WebAudio簡易シーケンサ・外部音源なし） ---------- */
+  const BGM_VOL = 0.07; // マスター音量（効果音より小さめ）
+  const mf = (m) => 440 * Math.pow(2, (m - 69) / 12); // MIDIノート番号→周波数
+  // mel/bass は8分音符グリッドのMIDIノート列（0=休符）、各32ステップ（8小節）のループ
+  const BGM_TRACKS = {
+    field: { step: 0.30, wave: 'triangle', melVol: 0.55, bassVol: 0.9, // 穏やかな村: Cメジャーペンタ、コード C-F-C-G
+      mel:  [72, 0, 76, 0, 79, 0, 76, 0, 74, 0, 72, 0, 69, 0, 71, 0, 72, 0, 76, 0, 81, 0, 79, 0, 76, 0, 74, 0, 72, 0, 0, 0],
+      bass: [48, 0, 0, 0, 0, 0, 0, 0, 53, 0, 0, 0, 0, 0, 0, 0, 48, 0, 0, 0, 0, 0, 0, 0, 55, 0, 0, 0, 0, 0, 0, 0] },
+    battle: { step: 0.24, wave: 'square', melVol: 0.38, bassVol: 0.9, // 少し緊張感: Aマイナー、コード Am-F-G-Am
+      mel:  [69, 0, 72, 0, 69, 0, 67, 0, 69, 0, 74, 0, 72, 0, 69, 0, 65, 0, 69, 0, 65, 0, 64, 0, 67, 0, 71, 0, 69, 0, 0, 0],
+      bass: [45, 0, 0, 0, 45, 0, 0, 0, 41, 0, 0, 0, 41, 0, 0, 0, 43, 0, 0, 0, 43, 0, 0, 0, 45, 0, 0, 0, 47, 0, 0, 0] },
+    boss: { step: 0.20, wave: 'sawtooth', melVol: 0.30, bassVol: 0.95, // 速め・重め: Dマイナー、8分パルスのベース
+      mel:  [62, 0, 62, 65, 0, 62, 0, 60, 0, 62, 0, 58, 0, 61, 0, 62, 0, 62, 65, 0, 69, 0, 67, 0, 65, 0, 64, 0, 62, 0, 0, 0],
+      bass: [38, 0, 38, 0, 38, 0, 45, 0, 36, 0, 36, 0, 36, 0, 43, 0, 38, 0, 38, 0, 38, 0, 45, 0, 41, 0, 41, 0, 43, 0, 45, 0] }
+  };
+  let bgmName = null, bgmTimer = null, bgmStepIdx = 0, bgmNextTime = 0, bgmGainNode = null;
+  let bgmIsMuted = false;
+  try { bgmIsMuted = localStorage.getItem('aobeeGrandBgm') === 'off'; } catch (e) { /* 読めない環境ではON扱い */ }
+  function bgmTone(freq, t, dur, type, vol) {
+    if (!AC || !bgmGainNode) return;
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0011, vol), t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(bgmGainNode);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  function bgmTick() { // ルックアヘッド方式: 0.22秒先まで予約してループ
+    if (!AC || !bgmName) return;
+    const tr = BGM_TRACKS[bgmName]; if (!tr) return;
+    while (bgmNextTime < AC.currentTime + 0.22) {
+      const i = bgmStepIdx % tr.mel.length;
+      if (tr.mel[i]) bgmTone(mf(tr.mel[i]), bgmNextTime, tr.step * 0.92, tr.wave, tr.melVol);
+      if (tr.bass[i]) bgmTone(mf(tr.bass[i]), bgmNextTime, tr.step * 1.9, 'sine', tr.bassVol);
+      bgmNextTime += tr.step; bgmStepIdx++;
+    }
+  }
+  function bgmKick() { // AudioContext準備後にシーケンサを（再）起動。曲名は保持されるのでジェスチャ前に指定しても鳴り出す
+    if (!AC || !bgmName || bgmTimer) return;
+    if (!bgmGainNode) {
+      bgmGainNode = AC.createGain();
+      bgmGainNode.gain.value = bgmIsMuted ? 0 : BGM_VOL;
+      bgmGainNode.connect(AC.destination);
+    }
+    bgmStepIdx = 0; bgmNextTime = AC.currentTime + 0.06;
+    bgmTimer = setInterval(bgmTick, 40);
+  }
+  function bgmSet(name) {
+    if (name === bgmName) { bgmKick(); return; }
+    bgmName = name;
+    if (bgmTimer) { clearInterval(bgmTimer); bgmTimer = null; }
+    if (name) bgmKick();
+  }
+
+  const Snd = {
+    step: () => {}, ok: () => beep(660, 0.07, 'square', 0.04),
+    pickup: () => { beep(880, 0.08, 'square', 0.05); setTimeout(() => beep(1320, 0.1, 'square', 0.05), 70); },
+    hit: () => beep(140, 0.15, 'sawtooth', 0.07),
+    hurt: () => beep(220, 0.18, 'sawtooth', 0.06),
+    win: () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 0.12, 'square', 0.05), i * 110)); },
+    gear: () => { beep(196, 0.3, 'triangle', 0.08); setTimeout(() => beep(98, 0.4, 'triangle', 0.08), 200); },
+    /* BGM: bgm('field'|'battle'|'boss') で開始/切替、bgm(null) で停止。ミュートはBGMのみ（効果音は鳴る） */
+    bgm: (name) => bgmSet(name || null),
+    bgmMuted: () => bgmIsMuted,
+    setBgmMuted: (m) => {
+      bgmIsMuted = !!m;
+      try { localStorage.setItem('aobeeGrandBgm', bgmIsMuted ? 'off' : 'on'); } catch (e) { /* 保存不可環境では無視 */ }
+      if (bgmGainNode) bgmGainNode.gain.value = bgmIsMuted ? 0 : BGM_VOL;
+    }
+  };
+
+  /* ---------- 入力 ---------- */
+  const keys = {};
+  const Input = {
+    dirX: 0, dirY: 0, aPressed: false, bPressed: false, dash: false,
+    _aEdge: false,
+    consumeA() { const v = this._aEdge; this._aEdge = false; return v; }
+  };
+  const DIRV = { down: [0, 1], up: [0, -1], left: [-1, 0], right: [1, 0] };
+  function pressA() { if (!Input.aPressed) Input._aEdge = true; Input.aPressed = true; }
+  window.addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase(); // 大文字WASD・Shift・矢印・Enterをすべて小文字キー名に統一
+    keys[k] = true;
+    if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
+    if (k === 'z' || k === 'enter' || k === ' ') pressA();
+    if (k === 'x' || k === 'escape') Input.bPressed = true;
+    audioInit();
+    updateDir();
+  });
+  window.addEventListener('keyup', (e) => {
+    const k = e.key.toLowerCase();
+    keys[k] = false;
+    if (k === 'z' || k === 'enter' || k === ' ') Input.aPressed = false;
+    updateDir();
+  });
+  const touchDir = { x: 0, y: 0 };
+  let stickDash = false; // スティックを奥まで倒している間はダッシュ
+  function updateDir() {
+    let x = 0, y = 0;
+    if (keys['arrowleft'] || keys['a']) x = -1;
+    else if (keys['arrowright'] || keys['d']) x = 1;
+    if (keys['arrowup'] || keys['w']) y = -1;
+    else if (keys['arrowdown'] || keys['s']) y = 1;
+    if (x === 0 && y === 0) { x = touchDir.x; y = touchDir.y; }
+    Input.dirX = x; Input.dirY = y;
+    Input.dash = !!(keys['shift']) || stickDash;
+  }
+  /* タッチ操作（星の神殿形式）: 画面のどこを触っても（ステージ外の余白でも）、その場所に半透明スティックが出る。
+     ドラッグで移動（遊び14px／最大44px／優勢軸の4方向）、奥まで倒すとダッシュ、
+     動かさずすぐ離すタップはAボタン扱い。Bは画面右下の隅に小さく残す。 */
+  function bindTouch() {
+    if ('ontouchstart' in window) document.body.classList.add('touch');
+    const canListen = (el) => !!(el && typeof el.addEventListener === 'function');
+    const tapA = () => {
+      audioInit(); pressA(); setTimeout(() => { Input.aPressed = false; }, 90);
+      try { window.dispatchEvent(new CustomEvent('grand-tapa')); } catch (err) {}
+    };
+    const layer = document.getElementById('sticklayer');
+    const stickEl = document.getElementById('stick');
+    const knobEl = document.getElementById('knob');
+    const DEAD = 14, REACH = 44;
+    let sp = null; // { id, cx, cy, t, max } 進行中のスティック操作
+    // タイトル等の全画面メニューが開いている間はスティックを受け付けない
+    const overlayOpen = () => ['title-screen', 'howto-screen', 'clear-screen', 'slot-screen', 'menu-screen'].some((id) => {
+      const el = document.getElementById(id);
+      return el && !el.classList.contains('hidden');
+    });
+    function clearStick() {
+      sp = null; touchDir.x = 0; touchDir.y = 0; stickDash = false;
+      if (stickEl) stickEl.style.display = 'none';
+      updateDir();
+    }
+    if (canListen(layer) && stickEl && knobEl) {
+      layer.addEventListener('pointerdown', (e) => {
+        if (sp || overlayOpen()) return;
+        audioInit();
+        sp = { id: e.pointerId, cx: e.clientX, cy: e.clientY, t: performance.now(), max: 0 };
+        try { layer.setPointerCapture(e.pointerId); } catch (err) {}
+        stickEl.style.left = e.clientX + 'px';
+        stickEl.style.top = e.clientY + 'px';
+        knobEl.style.left = '50%'; knobEl.style.top = '50%';
+        stickEl.style.display = 'block';
+        e.preventDefault();
+      });
+      layer.addEventListener('pointermove', (e) => {
+        if (!sp || e.pointerId !== sp.id) return;
+        const dx = e.clientX - sp.cx, dy = e.clientY - sp.cy;
+        const dist = Math.hypot(dx, dy);
+        if (dist > sp.max) sp.max = dist;
+        const sc = dist > 0 ? Math.min(dist, REACH) / dist : 0;
+        knobEl.style.left = (52 + dx * sc) + 'px';
+        knobEl.style.top = (52 + dy * sc) + 'px';
+        let nx = 0, ny = 0;
+        if (dist >= DEAD) { if (Math.abs(dx) > Math.abs(dy)) nx = Math.sign(dx); else ny = Math.sign(dy); }
+        if ((nx !== touchDir.x || ny !== touchDir.y) && (nx !== 0 || ny !== 0)) {
+          try { window.dispatchEvent(new CustomEvent('grand-stickdir', { detail: { x: nx, y: ny } })); } catch (err) {}
+        }
+        touchDir.x = nx; touchDir.y = ny;
+        stickDash = dist >= REACH;
+        updateDir();
+        e.preventDefault();
+      });
+      const endStick = (e) => {
+        if (!sp || e.pointerId !== sp.id) return;
+        const wasTap = performance.now() - sp.t < 350 && sp.max < DEAD;
+        clearStick();
+        if (wasTap) tapA();
+      };
+      layer.addEventListener('pointerup', endStick);
+      layer.addEventListener('pointercancel', endStick);
+      window.addEventListener('blur', () => { if (sp) clearStick(); });
+    }
+    // 会話ボックス上のタップでも決定（選択肢ボタン自体は除く）
+    if (canListen(dlgEl)) {
+      dlgEl.addEventListener('pointerdown', (e) => {
+        if (e.target && e.target.closest && e.target.closest('button')) return;
+        tapA();
+      });
+    }
+    const bb = document.getElementById('btn-b');
+    if (canListen(bb)) {
+      bb.addEventListener('pointerdown', (e) => { e.preventDefault(); audioInit(); Input.bPressed = true; bb.classList.add('on'); });
+      const bOff = () => { Input.bPressed = false; bb.classList.remove('on'); };
+      bb.addEventListener('pointerup', bOff);
+      bb.addEventListener('pointercancel', bOff);
+      bb.addEventListener('pointerleave', bOff);
+    }
+  }
+
+  /* ---------- 会話 ---------- */
+  const dlgEl = document.getElementById('dlg');
+  const dlgName = document.getElementById('dlg-name');
+  const dlgText = document.getElementById('dlg-text');
+  const dlgFaceImg = document.getElementById('dlg-face-img');
+  const dlgFaceCv = document.getElementById('dlg-face-canvas');
+  const dlgChoices = document.getElementById('dlg-choices');
+  const cutEl = document.getElementById('cutscene');
+  const cutImg = document.getElementById('cutscene-img');
+  const CUT_SRCS = { roof: 'assets/cut-warubee-roof.png' };
+  let cutKey = null;
+  function setCutscene(key) {
+    try {
+      if (!cutEl || !cutImg) return;
+      if (key !== cutKey) { cutKey = key; if (key && CUT_SRCS[key]) cutImg.src = CUT_SRCS[key]; }
+      if (key && CUT_SRCS[key]) cutEl.classList.remove('hidden'); else cutEl.classList.add('hidden');
+    } catch (e) {}
+  }
+  const Dialogue = {
+    active: false, queue: [], idx: 0, chars: 0, timer: null, onDone: null, choiceCb: null, sel: 0,
+    play(lines, onDone) {
+      this.queue = lines.slice(); this.idx = 0; this.onDone = onDone || null;
+      this.active = true; dlgEl.classList.remove('hidden'); this.showLine();
+    },
+    showLine() {
+      const ln = this.queue[this.idx];
+      if (!ln) return this.finish();
+      if (ln.cut !== undefined) setCutscene(ln.cut);
+      dlgChoices.classList.add('hidden'); dlgChoices.innerHTML = '';
+      dlgName.textContent = ln.name || '';
+      this.setFace(ln.face);
+      const full = ln.text; this.chars = 0;
+      dlgText.textContent = '';
+      clearInterval(this.timer);
+      this.timer = setInterval(() => {
+        this.chars++;
+        dlgText.textContent = full.slice(0, this.chars);
+        if (this.chars >= full.length) clearInterval(this.timer);
+      }, 24);
+      this._full = full;
+    },
+    setFace(face) {
+      dlgFaceImg.style.display = 'none'; dlgFaceCv.style.display = 'none';
+      if (!face) return;
+      if (face === 'warubee' && warubeeOK) { dlgFaceImg.src = warubeeImg.src; dlgFaceImg.style.display = 'block'; return; }
+      const nrec = npcImgs[face];
+      if (nrec && nrec.ok) { // NPCはイラストの顔部分を切り出して表示
+        const c2 = dlgFaceCv.getContext('2d');
+        c2.clearRect(0, 0, 96, 96);
+        dlgFaceCv.style.display = 'block';
+        const F = NPC_FACE[face], W = nrec.img.naturalWidth, H = nrec.img.naturalHeight;
+        const sp = F.side * H;
+        const sx = Math.min(Math.max(F.cx * W - sp / 2, 0), Math.max(0, W - sp));
+        const sy = Math.min(Math.max(F.cy * H - sp / 2, 0), Math.max(0, H - sp));
+        c2.drawImage(nrec.img, sx, sy, sp, sp, 0, 0, 96, 96);
+        return;
+      }
+      const c2 = dlgFaceCv.getContext('2d');
+      c2.clearRect(0, 0, 96, 96);
+      dlgFaceCv.style.display = 'block';
+      if (face === 'aobee') drawAobeeTo(c2, 48, 48, 88, false);
+      else if (face === 'warubee') drawAobeeTo(c2, 48, 48, 88, true);
+      else drawNPC(c2, 48, 52, 84, face);
+    },
+    advance() {
+      if (!this.active) return false;
+      if (this._choices) return true; // 選択中は進めない
+      const ln = this.queue[this.idx];
+      if (this.chars < (this._full || '').length) {
+        clearInterval(this.timer); this.chars = this._full.length; dlgText.textContent = this._full; return true;
+      }
+      if (ln && ln.choice) { this.showChoices(ln.choice); return true; }
+      this.idx++;
+      if (this.idx >= this.queue.length) this.finish(); else this.showLine();
+      return true;
+    },
+    showChoices(choices) {
+      this.sel = 0;
+      dlgChoices.innerHTML = '';
+      choices.forEach((c, i) => {
+        const b = document.createElement('button');
+        b.textContent = (i === 0 ? '▶ ' : '　') + c.label;
+        b.addEventListener('click', (e) => { e.stopPropagation(); this.pick(i); });
+        dlgChoices.appendChild(b);
+      });
+      dlgChoices.classList.remove('hidden');
+      this._choices = choices;
+    },
+    moveSel(d) {
+      if (!this._choices) return;
+      this.sel = (this.sel + d + this._choices.length) % this._choices.length;
+      [...dlgChoices.children].forEach((b, i) => { b.textContent = (i === this.sel ? '▶ ' : '　') + this._choices[i].label; });
+    },
+    pick(i) {
+      const c = this._choices[i];
+      this._choices = null;
+      dlgChoices.classList.add('hidden'); dlgChoices.innerHTML = '';
+      Snd.ok();
+      const rest = c.then || [];
+      if (rest.length) { this.queue = rest.slice(); this.idx = 0; this._choiceResult = i; this.showLine(); }
+      else { this._choiceResult = i; this.finish(); }
+    },
+    confirmSel() { if (this._choices) this.pick(this.sel); },
+    finish() {
+      this.active = false; clearInterval(this.timer);
+      setCutscene(null);
+      dlgEl.classList.add('hidden');
+      const cb = this.onDone, res = this._choiceResult;
+      this.onDone = null; this._choiceResult = undefined;
+      if (cb) cb(res);
+    }
+  };
+  dlgEl.addEventListener('click', () => { audioInit(); Dialogue.advance(); });
+
+  /* ---------- ワールド ---------- */
+  const World = {
+    mapId: null, map: null, hooks: {},
+    player: { gx: 10, gy: 11, px: 10 * TILE, py: 11 * TILE, dir: 'down', moving: false, joyT: 0 },
+    actors: [], fade: 0, fadeCb: null,
+    tileAt(gx, gy) {
+      if (!this.map || gy < 0 || gy >= ROWS || gx < 0 || gx >= COLS) return '#';
+      return this.map.grid[gy][gx];
+    },
+    setTile(gx, gy, ch) {
+      const row = this.map.grid[gy];
+      this.map.grid[gy] = row.substring(0, gx) + ch + row.substring(gx + 1);
+    },
+    solid(gx, gy) {
+      const t = this.tileAt(gx, gy);
+      if (t === '#' || t === 'T' || t === 'H' || t === '~' || t === 'S' || t === 'N' || t === 'W' || t === 'C' || t === 'L') return true;
+      if (t === 'X' && !(this.hooks.hooksState && this.hooks.hooksState().bridgeOpen)) return true;
+      if (this.map.npcs.some(n => !n.hidden && n.x === gx && n.y === gy)) return true;
+      if (this.actors.some(a => a.visible && a.x === gx && a.y === gy)) return true;
+      return false;
+    },
+    loadMap(id, tx, ty, instant) {
+      const doLoad = () => {
+        this.mapId = id;
+        this.map = JSON.parse(JSON.stringify(Data.maps[id]));
+        // 収集済みタイルの復元はフック側の状態で行う
+        if (this.hooks.applyTiles) this.hooks.applyTiles(this);
+        this.player.gx = tx; this.player.gy = ty;
+        this.player.px = tx * TILE; this.player.py = ty * TILE;
+        this.actors = [];
+        if (this.hooks.onMapEnter) this.hooks.onMapEnter(id);
+      };
+      if (instant) { doLoad(); return; }
+      this.fade = 1; this._fadeIn = false;
+      setTimeout(() => { doLoad(); this.fade = 0; }, 180);
+    },
+    update(dt) {
+      const p = this.player;
+      if (Input.bPressed) {
+        Input.bPressed = false;
+        if (this.hooks.onMenuKey) this.hooks.onMenuKey();
+      }
+      if (Dialogue.active) {
+        if (Input.consumeA()) { if (Dialogue._choices) Dialogue.confirmSel(); else Dialogue.advance(); }
+        this.render(); return;
+      }
+      if (this.frozen) { this.render(); return; }
+      if (typeof Battle !== 'undefined' && Battle.active) { this.render(); return; }
+      const targetX = p.gx * TILE, targetY = p.gy * TILE;
+      const dx = targetX - p.px, dy = targetY - p.py;
+      if (dx !== 0 || dy !== 0) {
+        const sp = (Input.dash && this.hooks.hooksState && this.hooks.hooksState().boots ? 340 : 190) * dt;
+        const dist = Math.hypot(dx, dy);
+        if (dist <= sp) { p.px = targetX; p.py = targetY; }
+        else { p.px += (dx / dist) * sp; p.py += (dy / dist) * sp; }
+        p.moving = true;
+      } else {
+        p.moving = false;
+        let mx = Input.dirX, my = Input.dirY;
+        if (mx !== 0) my = 0;
+        if (mx !== 0 || my !== 0) {
+          p.dir = mx < 0 ? 'left' : mx > 0 ? 'right' : my < 0 ? 'up' : 'down';
+          const nx = p.gx + mx, ny = p.gy + my;
+          if (!this.solid(nx, ny)) {
+            p.gx = nx; p.gy = ny;
+            if (this.hooks.onStep) this.hooks.onStep(nx, ny, this.tileAt(nx, ny));
+          }
+        }
+      }
+      if (Input.consumeA()) {
+        if (Dialogue.active) Dialogue.advance();
+        else if (this.hooks.onInteract) this.hooks.onInteract();
+      }
+      this.render();
+    },
+    frontTile() {
+      const v = DIRV[this.player.dir];
+      return { x: this.player.gx + v[0], y: this.player.gy + v[1] };
+    },
+    render() {
+      const m = this.map; if (!m) return;
+      for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+        const t = (m.grid[y] || '')[x] || '.', px = x * TILE, py = y * TILE;
+        const h1 = hash2(x, y);
+        // 草地: 差を抑えた2色＋座標依存の微細ドット/草葉で質感を出す
+        ctx.fillStyle = (x + y) % 2 ? '#7cb95e' : '#84bf64';
+        ctx.fillRect(px, py, TILE, TILE);
+        ctx.fillStyle = 'rgba(255,255,220,0.10)';
+        ctx.fillRect(px + 2 + (h1 % 24), py + 2 + ((h1 >> 3) % 24), 2, 2);
+        ctx.fillRect(px + 3 + ((h1 >> 9) % 22), py + 4 + ((h1 >> 12) % 22), 2, 2);
+        ctx.fillStyle = 'rgba(30,80,30,0.13)';
+        ctx.fillRect(px + 3 + ((h1 >> 5) % 22), py + 4 + ((h1 >> 7) % 22), 3, 2);
+        ctx.strokeStyle = 'rgba(43,100,40,0.55)'; ctx.lineWidth = 1.4;
+        const gxx = px + 5 + ((h1 >> 15) % 18), gyy = py + 21 + ((h1 >> 18) % 7);
+        ctx.beginPath(); ctx.moveTo(gxx, gyy + 4); ctx.lineTo(gxx, gyy); ctx.moveTo(gxx + 3, gyy + 5); ctx.lineTo(gxx + 3, gyy + 2); ctx.stroke();
+        if (t === ',' ) { // 道: 砂色グラデーション＋小石と花
+          const pg = ctx.createLinearGradient(px, py, px, py + TILE);
+          pg.addColorStop(0, '#d3bd68'); pg.addColorStop(1, '#c0a954');
+          ctx.fillStyle = pg; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = 'rgba(120,95,40,0.25)';
+          ctx.fillRect(px + 2 + ((h1 >> 4) % 24), py + 2 + ((h1 >> 6) % 24), 3, 2);
+          ctx.fillStyle = '#e88bb0'; ctx.fillRect(px + 6, py + 8, 4, 4); ctx.fillRect(px + 20, py + 20, 4, 4);
+          ctx.fillStyle = '#fff'; ctx.fillRect(px + 7, py + 9, 2, 2); ctx.fillRect(px + 21, py + 21, 2, 2);
+        }
+        if (t === 'T' || t === '#') { // 木: 接地影＋幹＋輪郭とハイライトつき樹冠
+          groundShadow(ctx, px + 16, py + 29, 24);
+          ctx.fillStyle = '#6d4c2f'; ctx.fillRect(px + 13, py + 20, 6, 11);
+          ctx.fillStyle = '#8a6238'; ctx.fillRect(px + 13, py + 20, 2.5, 11);
+          const cg = ctx.createRadialGradient(px + 12, py + 10, 3, px + 16, py + 14, 15);
+          cg.addColorStop(0, '#6fae4e'); cg.addColorStop(0.65, '#4d7d3a'); cg.addColorStop(1, '#3a612b');
+          ctx.fillStyle = cg;
+          ctx.beginPath(); ctx.arc(px + 16, py + 14, 13, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(28,58,24,0.55)'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(px + 16, py + 14, 13, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = 'rgba(255,255,230,0.20)';
+          ctx.beginPath(); ctx.arc(px + 11, py + 9, 4.5, 0, Math.PI * 2); ctx.fill();
+        }
+        if (t === 'H') { // 家: 壁グラデーション＋屋根とその落とす影
+          const wg = ctx.createLinearGradient(px, py + 8, px, py + 32);
+          wg.addColorStop(0, '#f4ead2'); wg.addColorStop(1, '#dccca4');
+          ctx.fillStyle = wg; ctx.fillRect(px, py + 8, TILE, 24);
+          ctx.fillStyle = 'rgba(122,92,50,0.30)'; ctx.fillRect(px, py + 29, TILE, 3);
+          ctx.fillStyle = '#b0512f'; ctx.beginPath(); ctx.moveTo(px - 2, py + 10); ctx.lineTo(px + 16, py - 2); ctx.lineTo(px + 34, py + 10); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = 'rgba(255,255,255,0.16)'; ctx.beginPath(); ctx.moveTo(px - 2, py + 10); ctx.lineTo(px + 16, py - 2); ctx.lineTo(px + 16, py + 10); ctx.closePath(); ctx.fill();
+          ctx.fillStyle = 'rgba(60,30,10,0.20)'; ctx.fillRect(px, py + 10, TILE, 3);
+        }
+        if (t === '~') { // 水: 明るいグラデーション＋ゆらぐ波紋とキラキラ
+          const wag = ctx.createLinearGradient(px, py, px, py + TILE);
+          wag.addColorStop(0, '#57b6ec'); wag.addColorStop(1, '#2f7fc4');
+          ctx.fillStyle = wag; ctx.fillRect(px, py, TILE, TILE);
+          const tw = Math.round(Math.sin(performance.now() / 600 + x * 1.7 + y * 2.3) * 2);
+          ctx.fillStyle = 'rgba(255,255,255,0.5)';
+          ctx.fillRect(px + 4 + tw, py + 8, 12, 2.5); ctx.fillRect(px + 16 - tw, py + 22, 12, 2.5);
+          ctx.fillStyle = 'rgba(255,255,255,0.85)';
+          ctx.fillRect(px + 8 + (h1 % 14), py + 15 + ((h1 >> 4) % 8), 2, 2);
+        }
+        if (t === '=') { ctx.fillStyle = '#a9805a'; ctx.fillRect(px, py + 4, TILE, 24); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fillRect(px, py + 4, TILE, 3); ctx.fillStyle = '#8a653f'; ctx.fillRect(px, py + 10, TILE, 3); ctx.fillRect(px, py + 22, TILE, 3); }
+        if (t === 'X') {
+          ctx.fillStyle = '#a9805a'; ctx.fillRect(px, py + 4, TILE, 24); ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fillRect(px, py + 4, TILE, 3);
+          const open = this.hooks.hooksState && this.hooks.hooksState().bridgeOpen;
+          if (!open) gearPath(ctx, px + 16, py + 16, 7, 8, '#8a929c');
+        }
+        if (t === 'S') { ctx.fillStyle = '#8a653f'; ctx.fillRect(px + 13, py + 10, 6, 18); ctx.fillStyle = '#e8dcc3'; ctx.fillRect(px + 5, py + 2, 22, 13); }
+        if (t === 'N') { // 柵: 支柱＋横木2本
+          ctx.fillStyle = '#8a653f'; ctx.fillRect(px, py + 12, TILE, 5); ctx.fillRect(px, py + 22, TILE, 5);
+          ctx.fillStyle = 'rgba(255,255,255,0.16)'; ctx.fillRect(px, py + 12, TILE, 2);
+          ctx.fillStyle = '#a9805a'; ctx.fillRect(px + 3, py + 6, 6, 24); ctx.fillRect(px + 23, py + 6, 6, 24);
+          ctx.fillStyle = 'rgba(60,30,10,0.25)'; ctx.fillRect(px + 3, py + 27, 6, 3); ctx.fillRect(px + 23, py + 27, 6, 3);
+        }
+        if (t === 'R') { // ほし草: 星の実をつけた草
+          ctx.strokeStyle = '#2f7d32'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(px + 16, py + 30); ctx.lineTo(px + 16, py + 18);
+          ctx.moveTo(px + 16, py + 24); ctx.lineTo(px + 10, py + 17);
+          ctx.moveTo(px + 16, py + 24); ctx.lineTo(px + 22, py + 17); ctx.stroke();
+          starPath(ctx, px + 16, py + 12, 5.5, '#ffd21f', false);
+          ctx.fillStyle = 'rgba(255,240,170,0.85)'; ctx.fillRect(px + 8, py + 6, 2, 2); ctx.fillRect(px + 23, py + 16, 2, 2);
+        }
+        if (t === 'F') { ctx.save(); ctx.translate(px + 16, py + 16); ctx.rotate(performance.now() / 900); gearPath(ctx, 0, 0, 7, 8, '#ffd21f'); ctx.restore(); }
+        if (t === 'G') { ctx.save(); ctx.translate(px + 16, py + 16); ctx.rotate(-performance.now() / 1200); gearPath(ctx, 0, 0, 9, 9, '#c0c6cc'); ctx.restore(); }
+        if (t === 'D') { // 出入口: 道と同じ砂色グラデーション
+          const dg = ctx.createLinearGradient(px, py, px, py + TILE);
+          dg.addColorStop(0, '#d3bd68'); dg.addColorStop(1, '#bfa855');
+          ctx.fillStyle = dg; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = '#b39d45'; ctx.fillRect(px + 3, py + 6, 4, 4); ctx.fillRect(px + 24, py + 20, 4, 4);
+        }
+        if (t === '_') { // 石床（神殿内）: 青灰の石畳＋目地
+          ctx.fillStyle = (x + y) % 2 ? '#5d6577' : '#646d80';
+          ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = 'rgba(20,24,34,0.35)'; ctx.fillRect(px, py + 30, TILE, 2); ctx.fillRect(px + 30, py, 2, TILE);
+          ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fillRect(px, py, TILE, 2);
+        }
+        if (t === 'W') { // 石壁（神殿）: 積み石＋上部の星の刻印
+          ctx.fillStyle = '#454e61'; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = '#525c72'; ctx.fillRect(px + 1, py + 1, TILE - 2, 13);
+          ctx.fillStyle = '#3a4152'; ctx.fillRect(px + 1, py + 16, TILE - 2, 15);
+          ctx.fillStyle = 'rgba(15,18,26,0.5)'; ctx.fillRect(px, py + 15, TILE, 1.6); ctx.fillRect(px + 15, py, 1.6, 15); ctx.fillRect(px + 7, py + 16, 1.6, 15);
+          ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fillRect(px, py, TILE, 2);
+          if ((x * 7 + y * 13) % 5 === 0) starPath(ctx, px + 16, py + 16, 4.5, 'rgba(255,210,31,0.35)', false);
+        }
+        if (t === 'C' || t === 'L') { // 燭台: 石床の上に台＋ロウソク（Lは点灯中: 炎とほのかな halo）
+          ctx.fillStyle = (x + y) % 2 ? '#5d6577' : '#646d80'; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = 'rgba(20,24,34,0.35)'; ctx.fillRect(px, py + 30, TILE, 2);
+          if (t === 'L') {
+            const fl = 1 + Math.sin(performance.now() / 130 + x * 3.1 + y * 1.7) * 0.12;
+            const hg = ctx.createRadialGradient(px + 16, py + 13, 2, px + 16, py + 13, 26 * fl);
+            hg.addColorStop(0, 'rgba(255,214,90,0.40)'); hg.addColorStop(1, 'rgba(255,214,90,0)');
+            ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(px + 16, py + 13, 26 * fl, 0, Math.PI * 2); ctx.fill();
+          }
+          ctx.fillStyle = '#6b7280'; ctx.fillRect(px + 10, py + 24, 12, 4); // 台座
+          ctx.fillStyle = '#8a929c'; ctx.fillRect(px + 14.5, py + 17, 3, 8); // 支柱
+          ctx.fillStyle = '#f2ede0'; ctx.fillRect(px + 12.5, py + 8, 7, 10); // ロウソク
+          if (t === 'L') {
+            const fl2 = Math.sin(performance.now() / 110 + x * 2.3) * 1.2;
+            ctx.fillStyle = '#ffb340';
+            ctx.beginPath(); ctx.ellipse(px + 16 + fl2 * 0.4, py + 4.5, 2.6, 4.2 + fl2 * 0.5, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fff3c4'; ctx.beginPath(); ctx.ellipse(px + 16, py + 5.5, 1.2, 2.1, 0, 0, Math.PI * 2); ctx.fill();
+          } else {
+            ctx.fillStyle = '#3c3c3c'; ctx.fillRect(px + 15.2, py + 5, 1.6, 3.4); // 芯（未点火）
+          }
+        }
+      }
+      // 出口サイン（行き先ラベル＋矢印）
+      if (m.exits) {
+        // 画面上部のHUD（HTMLオーバーレイ）に北出口のラベルが隠れないよう、HUD下端のキャンバス座標を求める
+        let topInset = 0;
+        try {
+          const hudEl = document.getElementById('hud');
+          if (hudEl && typeof hudEl.getBoundingClientRect === 'function' && typeof cv.getBoundingClientRect === 'function') {
+            const hr = hudEl.getBoundingClientRect(), cr = cv.getBoundingClientRect();
+            if (cr.height > 0) topInset = Math.max(0, (hr.bottom - cr.top) * (cv.height / cr.height)) + 6;
+          }
+        } catch (e) { topInset = 0; }
+        const groups = {};
+        for (const ex of m.exits) { if (!ex.label) continue; const k = ex.to + '|' + ex.label; (groups[k] = groups[k] || []).push(ex); }
+        for (const k of Object.keys(groups)) {
+          const arr = groups[k];
+          const cxRaw = (arr.reduce((s, e) => s + e.x, 0) / arr.length) * TILE + 16;
+          const ey = arr[0].y;
+          const atBottom = ey >= ROWS - 2, atTop = ey <= 1;
+          const minX = Math.min(...arr.map(e => e.x)), maxX = Math.max(...arr.map(e => e.x));
+          const atLeft = maxX <= 0, atRight = minX >= COLS - 1;
+          const cy = (arr.reduce((s, e) => s + e.y, 0) / arr.length) * TILE + 16;
+          const bob = Math.round(Math.sin(performance.now() / 350) * 2);
+          const ly = atTop ? Math.max((ey + 1) * TILE + 10, topInset + 9) : ey * TILE - 12;
+          ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          const w = ctx.measureText(arr[0].label).width + 14;
+          const cx = Math.min(Math.max(cxRaw, w / 2 + 4), COLS * TILE - w / 2 - 4); // 左右端でも切れないようクランプ
+          ctx.fillStyle = 'rgba(23,45,59,0.88)';
+          ctx.beginPath(); ctx.roundRect(cx - w / 2, ly - 9, w, 18, 9); ctx.fill();
+          ctx.fillStyle = '#ffd21f'; ctx.fillText(arr[0].label, cx, ly + 1);
+          ctx.fillStyle = '#ffd21f';
+          ctx.beginPath();
+          if (atBottom) { ctx.moveTo(cx - 6, ey * TILE - 24 + bob); ctx.lineTo(cx + 6, ey * TILE - 24 + bob); ctx.lineTo(cx, ey * TILE - 16 + bob); }
+          else if (atTop) { ctx.moveTo(cx - 6, ly + 12 + bob); ctx.lineTo(cx + 6, ly + 12 + bob); ctx.lineTo(cx, ly + 4 + bob); }
+          else if (atLeft) { ctx.moveTo(TILE + 14 - bob, cy - 6); ctx.lineTo(TILE + 14 - bob, cy + 6); ctx.lineTo(TILE + 4 - bob, cy); }
+          else if (atRight) { ctx.moveTo(COLS * TILE - TILE - 14 + bob, cy - 6); ctx.lineTo(COLS * TILE - TILE - 14 + bob, cy + 6); ctx.lineTo(COLS * TILE - TILE - 4 + bob, cy); }
+          ctx.closePath(); ctx.fill();
+        }
+      }
+      // 風車の丘: ボス発生マス（10,3）の目印（発生条件を満たした時だけ、上下に揺れる「！」看板）
+      if (this.mapId === 'hill') {
+        const st2 = this.hooks.hooksState ? this.hooks.hooksState() : {};
+        if (st2.boss2Ready) {
+          const bx = 10 * TILE + 16, by = 3 * TILE;
+          const bob2 = Math.round(Math.sin(performance.now() / 350) * 2);
+          ctx.fillStyle = 'rgba(23,45,59,0.88)';
+          ctx.beginPath(); ctx.roundRect(bx - 11, by - 26 + bob2, 22, 20, 6); ctx.fill();
+          ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#ffd21f'; ctx.fillText('！', bx, by - 15 + bob2);
+          ctx.strokeStyle = 'rgba(255,210,31,0.75)'; ctx.lineWidth = 1.6;
+          ctx.beginPath(); ctx.roundRect(bx - 15, by + 2, 30, 30, 6); ctx.stroke();
+        }
+      }
+      // 村の大歯車タワー
+      if (this.mapId === 'village') {
+        ctx.fillStyle = '#8a929c'; ctx.fillRect(9 * TILE + 12, 0, 8, 30); ctx.fillRect(10 * TILE + 12, 0, 8, 30);
+        const st = this.hooks.hooksState ? this.hooks.hooksState() : {};
+        if (st.gearRestored) { ctx.save(); ctx.translate(10 * TILE, 16); ctx.rotate(performance.now() / 3000); gearPath(ctx, 0, 0, 15, 10, '#c49a12'); ctx.restore(); }
+        else { ctx.fillStyle = '#6b7280'; ctx.fillRect(9 * TILE + 26, 10, 28, 5); }
+      }
+      // 星時計の間: 北壁の大星時計（クリア後はゆっくり回り、針も動く）
+      if (this.mapId === 'clockroom') {
+        const stc = this.hooks.hooksState ? this.hooks.hooksState() : {};
+        const kx = 10 * TILE + 16, ky = 1 * TILE + 14;
+        ctx.save();
+        ctx.translate(kx, ky);
+        if (stc.clockRestored) { ctx.save(); ctx.rotate(performance.now() / 6000); gearPath(ctx, 0, 0, 47, 12, '#8a6d1f'); ctx.restore(); }
+        else gearPath(ctx, 0, 0, 47, 12, '#6e6420');
+        const cg2 = ctx.createRadialGradient(-8, -10, 4, 0, 0, 40);
+        cg2.addColorStop(0, '#2c3e63'); cg2.addColorStop(1, '#141d33');
+        ctx.fillStyle = cg2; ctx.beginPath(); ctx.arc(0, 0, 39, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#c49a12'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 39, 0, Math.PI * 2); ctx.stroke();
+        for (let i = 0; i < 12; i++) { // 時刻の星マーカー
+          const a = i * Math.PI / 6;
+          starPath(ctx, Math.cos(a) * 31, Math.sin(a) * 31, 3.2, i % 3 === 0 ? '#ffd21f' : 'rgba(255,210,31,0.55)', false);
+        }
+        // 針: 復活後は実時間でゆっくり進む。停止中は 11:55 で止まったまま
+        const baseA = stc.clockRestored ? performance.now() / 20000 : -Math.PI / 2 - 0.14;
+        ctx.strokeStyle = '#e8dcc3'; ctx.lineWidth = 3.4; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(baseA) * 21, Math.sin(baseA) * 21); ctx.stroke();
+        ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(baseA * 3 + 1.2) * 29, Math.sin(baseA * 3 + 1.2) * 29); ctx.stroke();
+        starPath(ctx, 0, 0, 5.5, '#ffd21f', false);
+        ctx.restore();
+        if (!stc.clockRestored) { // 停止中は欠けた歯の位置に空きスロットを見せる
+          ctx.fillStyle = 'rgba(10,12,20,0.85)';
+          ctx.beginPath(); ctx.arc(kx + 30, ky - 30, 6, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = 'rgba(255,210,31,0.6)'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(kx + 30, ky - 30, 6, 0, Math.PI * 2); ctx.stroke();
+        }
+      }
+      // NPC（接地影つき。NPCはイラスト優先、読込失敗時のみコード描画）
+      for (const n of m.npcs) {
+        if (n.hidden) continue;
+        const ncx = n.x * TILE + 16;
+        if (n.kind === 'warubee') {
+          groundShadow(ctx, ncx, n.y * TILE + 31, 26);
+          if (warubeeOK) ctx.drawImage(warubeeImg, n.x * TILE - 6, n.y * TILE - 14, 44, 44);
+          else drawCritter(ctx, ncx, n.y * TILE + 16, 40, true);
+        } else {
+          groundShadow(ctx, ncx, n.y * TILE + 33, 26);
+          if (!drawNpcImage(n.kind, ncx, n.y * TILE + 33, 44)) drawNPC(ctx, ncx, n.y * TILE + 18, 40, n.kind);
+        }
+      }
+      // 風車の丘の大風車（暴走中は速く、ボス停止後はゆっくり回る）
+      if (this.mapId === 'hill') {
+        const st = this.hooks.hooksState ? this.hooks.hooksState() : {};
+        const wx = 10 * TILE + 16, wy = 1 * TILE + 18;
+        const ang = performance.now() / (st.windmillFast ? 90 : 1400);
+        ctx.save(); ctx.translate(wx, wy); ctx.rotate(ang);
+        ctx.fillStyle = '#e8dcc3'; ctx.strokeStyle = '#8a653f'; ctx.lineWidth = 1.5;
+        for (let i = 0; i < 4; i++) {
+          ctx.save(); ctx.rotate(i * Math.PI / 2);
+          ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(46, -11); ctx.lineTo(46, 3); ctx.lineTo(0, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.restore();
+        }
+        ctx.restore();
+        gearPath(ctx, wx, wy, 8, 8, '#c49a12');
+      }
+      // イベントアクター
+      for (const a of this.actors) {
+        if (!a.visible) continue;
+        if (a.kind === 'warubee') {
+          groundShadow(ctx, a.x * TILE + 16, a.y * TILE + 27, 30);
+          if (warubeeOK) ctx.drawImage(warubeeImg, a.x * TILE - 10, a.y * TILE - 26, 52, 52);
+          else drawCritter(ctx, a.x * TILE + 16, a.y * TILE + 8, 48, true);
+        } else if (ACTOR_ART[a.kind]) { // 動物（第2章・誘導ギミック）
+          const art = ACTOR_ART[a.kind];
+          groundShadow(ctx, a.x * TILE + 16, a.y * TILE + 31, a.kind === 'chicken' ? 20 : 27);
+          if (!drawActorImage(a.kind, a.x * TILE + 16, a.y * TILE + 33, art.h)) drawAnimalFallback(a.kind, a.x * TILE + 16, a.y * TILE + 17, art.h);
+          if (a.captured) { // 捕獲済みは星マークで固定表示を分かりやすく
+            ctx.fillStyle = '#ffd21f'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('★', a.x * TILE + 16, a.y * TILE - art.h + 26);
+          }
+        }
+      }
+      // プレイヤー（接地影つき）
+      const p = this.player;
+      const joy = p.joyT > performance.now();
+      groundShadow(ctx, p.px + 16, p.py + 33, 26);
+      drawAobee(p.px + 16, p.py + 34, 42, p.dir, p.moving, joy);
+      // 暗闇マップ（星の神殿）: 暗幕に灯りの穴を開けて重ねる。ボス撃破後は神殿に灯りが戻る
+      if (m.dark) {
+        const std = this.hooks.hooksState ? this.hooks.hooksState() : {};
+        if (!std.templeLit) {
+          if (!this._darkCv) { this._darkCv = document.createElement('canvas'); this._darkCv.width = COLS * TILE; this._darkCv.height = ROWS * TILE; }
+          const dc = this._darkCv.getContext('2d');
+          dc.globalCompositeOperation = 'source-over';
+          dc.clearRect(0, 0, COLS * TILE, ROWS * TILE);
+          dc.fillStyle = 'rgba(5,8,20,0.90)';
+          dc.fillRect(0, 0, COLS * TILE, ROWS * TILE);
+          dc.globalCompositeOperation = 'destination-out';
+          const hole = (hx, hy, r) => {
+            const g = dc.createRadialGradient(hx, hy, r * 0.25, hx, hy, r);
+            g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.75, 'rgba(0,0,0,0.92)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+            dc.fillStyle = g; dc.beginPath(); dc.arc(hx, hy, r, 0, Math.PI * 2); dc.fill();
+          };
+          hole(p.px + 16, p.py + 18, 82); // 星灯りのお守り（プレイヤー周辺）
+          for (const l of (std.darkLights || [])) hole(l.x * TILE + 16, l.y * TILE + 16, 64); // 点灯した燭台
+          ctx.drawImage(this._darkCv, 0, 0);
+        }
+      }
+      if (this.fade) { ctx.fillStyle = `rgba(0,0,0,${this.fade})`; ctx.fillRect(0, 0, COLS * TILE, ROWS * TILE); }
+    }
+  };
+
+  let last = 0;
+  function loop(ts) {
+    const dt = Math.min(0.05, (ts - last) / 1000 || 0.016);
+    last = ts;
+    if (World.map) World.update(dt);
+    requestAnimationFrame(loop);
+  }
+  function start() { bindTouch(); window.addEventListener('pointerdown', audioInit); requestAnimationFrame(loop); }
+  // 会話中の方向キー選択
+  window.addEventListener('keydown', (e) => {
+    if (Dialogue.active && Dialogue._choices) {
+      if (e.key === 'ArrowUp') { Dialogue.moveSel(-1); e.preventDefault(); }
+      if (e.key === 'ArrowDown') { Dialogue.moveSel(1); e.preventDefault(); }
+      if (e.key === 'z' || e.key === 'Enter' || e.key === ' ') { Dialogue.confirmSel(); e.preventDefault(); }
+    }
+  });
+
+  return { World, Dialogue, Input, Snd, drawAobeeTo, drawCritter, drawNPC, drawCog, drawKarakuri, start, TILE };
+})();
+if (typeof module !== 'undefined' && module.exports) module.exports = Engine;
