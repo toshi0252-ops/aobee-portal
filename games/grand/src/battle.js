@@ -36,6 +36,8 @@ oocog: { src: 'assets/chars/enemy-guardian.png', h: 200, shadow: 135 },
 millCog: { src: 'assets/chars/enemy-guardian.png', h: 190, shadow: 130 },
 karakuri: { src: 'assets/chars/enemy-karakuri.png', h: 210, shadow: 120 },
 kuwa: { src: 'assets/chars/enemy-kuwa.png', h: 150, shadow: 110 },
+torune: { src: 'assets/chars/enemy-torune.png', h: 185, shadow: 130 },
+yuragi: { src: 'assets/chars/enemy-yuragi.png', h: 175, shadow: 120 },
 moguru: { src: 'assets/chars/enemy-moguru.png', h: 215, shadow: 160 },
 akari: { src: 'assets/chars/enemy-akari.png', h: 150, shadow: 110 },
 hoshigami: { src: 'assets/chars/enemy-hoshigami.png', h: 220, shadow: 155 }

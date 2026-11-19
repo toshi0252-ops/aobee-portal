@@ -26,7 +26,10 @@ const Engine = (() => {
     choro: { file: 'npc-choro.png', cx: 0.50, cy: 0.30, side: 0.55 },
     mayor: { file: 'npc-mayor.png', cx: 0.50, cy: 0.30, side: 0.58 },
     herb: { file: 'npc-herb.png', cx: 0.50, cy: 0.30, side: 0.55 },
-    postman: { file: 'npc-postman.png', cx: 0.50, cy: 0.28, side: 0.50 }
+    postman: { file: 'npc-postman.png', cx: 0.50, cy: 0.28, side: 0.50 },
+    jirou: { file: 'npc-jirou.png', cx: 0.50, cy: 0.27, side: 0.50 },
+    torune: { file: 'enemy-torune.png', cx: 0.58, cy: 0.30, side: 0.52 },
+    yuragi: { file: 'enemy-yuragi.png', cx: 0.50, cy: 0.38, side: 0.55 }
   };
   const npcImgs = {};
   for (const k of Object.keys(NPC_FACE)) {
@@ -42,7 +45,9 @@ const Engine = (() => {
     sheep:   { file: 'animal-sheep.png', h: 45 },
     chicken: { file: 'animal-chicken.png', h: 33 },
     cog:     { file: 'enemy-cog.png', h: 44 },
-    oocog:   { file: 'enemy-guardian.png', h: 58 }
+    oocog:   { file: 'enemy-guardian.png', h: 58 },
+    kuwa:    { file: 'enemy-kuwa.png', h: 44 },
+    akari:   { file: 'enemy-akari.png', h: 44 }
   };
   const actorImgs = {};
   for (const k of Object.keys(ACTOR_ART)) {

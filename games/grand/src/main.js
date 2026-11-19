@@ -12,6 +12,7 @@
     'assets/chars/npc-minori.png', 'assets/chars/enemy-kuwa.png', 'assets/chars/enemy-moguru.png',
     'assets/chars/animal-cow.png', 'assets/chars/animal-sheep.png', 'assets/chars/animal-chicken.png',
     'assets/chars/npc-mio.png', 'assets/chars/npc-choro.png', 'assets/chars/enemy-akari.png', 'assets/chars/enemy-hoshigami.png',
+    'assets/chars/npc-jirou.png', 'assets/chars/enemy-torune.png', 'assets/chars/enemy-yuragi.png',
     'assets/warubee-front-v1.png',
     'assets/cut-warubee-roof.png'
   ];
@@ -58,6 +59,12 @@
     if (S.chapter >= 3) {
       if (!f.ch3Intro) return 'ガルドの話を聞こう';
       if (!f.mioMet) return '参道を登って、神殿の守り人ミオに会おう';
+      if (!f.oilDone) {
+        const dn = (f.dropCount || 0) + (f.oilItem ? 1 : 0);
+        if (f.oilItem) return '星灯りの雫をミオに届けよう';
+        if (f.oilQuest) return `星灯りの雫を集めよう（${dn}/4）`;
+        return 'ミオにもう一度 話しかけよう';
+      }
       if ((f.litCandles || []).length < 5) return `神殿の燭台を順に灯そう（${(f.litCandles || []).length}/5）`;
       if (!f.warubeeSeen3) return '星時計の間へ進もう';
       if (!f.boss3Done) return 'ホシガミさまを止めよう！';
@@ -67,6 +74,8 @@
       if (!f.ch2Intro) return 'ガルドの話を聞こう';
       if (!f.minoriMet) return '西の道を抜けて、星のしずく牧場へ行こう';
       if (!f.herdDone) return `逃げた動物を柵エリアに戻そう（${S.animalsCaught}/5）`;
+      if (!f.brakeQuest && !f.brakeItem) return '牧場のみのりさんに話そう';
+      if (!f.brakeItem) return '牧場の裏山でブレーキグリップを取り戻そう';
       if (!f.warubeeSeen) return '風車の丘へ 上ってみよう';
       if (!f.boss2Done) return '風車タワーのモーぐるマシンを止めよう！';
       if (!f.cleared2) return '牧場のみのりさんに報告しよう';
@@ -154,6 +163,8 @@
   }
   /* ---------- 第3章: 燭台の順序点灯 ---------- */
   function tryLightCandle(x, y) {
+    // 拡大版第3章: 星灯りのオイルがないと燭台は灯せない
+    if (!S.flags.oilDone) { Dialogue.play(Data.dlg.candleNeedOil); return; }
     const defs = (Data.maps.temple && Data.maps.temple.candles) || [];
     const def = defs.find(c => c.x === x && c.y === y);
     if (!def) return;
@@ -206,6 +217,31 @@
     { id: 'fcog3', x: 9, y: 9 }
   ];
   const HERB_SPOTS = [ { x: 4, y: 2 }, { x: 17, y: 3 }, { x: 10, y: 10 } ];
+
+  /* ---------- 拡大版第2章: 牧場の裏山（見えるクワコグ・中ボス・鈴） ---------- */
+  const URAYAMA_COGS = [
+    { id: 'ukuwa1', x: 5, y: 8 },
+    { id: 'ukuwa2', x: 13, y: 4 },
+    { id: 'ukuwa3', x: 10, y: 10 }
+  ];
+  function spawnUrayama() {
+    World.actors = URAYAMA_COGS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'kuwa', x: c.x, y: c.y, visible: true }));
+  }
+
+  /* ---------- 拡大版第3章: 参道の見えるあかりコグ＋星灯りの雫スポット ---------- */
+  const AKARI_SPOTS = [
+    { id: 'aakari1', x: 4, y: 4 },
+    { id: 'aakari2', x: 16, y: 9 },
+    { id: 'aakari3', x: 7, y: 11 }
+  ];
+  const DROP_SPOTS = [
+    { key: 'drop1', x: 3, y: 8 },
+    { key: 'drop2', x: 17, y: 4 },
+    { key: 'drop3', x: 12, y: 10 }
+  ];
+  function spawnApproach() {
+    World.actors = AKARI_SPOTS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'akari', x: c.x, y: c.y, visible: true }));
+  }
   function spawnForest() {
     World.actors = FOREST_COGS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'cog', x: c.x, y: c.y, visible: true }));
     if (!S.flags.gearItem && !S.flags.gearDone) World.actors.push({ id: 'oocog', kind: 'oocog', x: 15, y: 3, visible: true });
@@ -317,10 +353,47 @@
       startWarubeeSpot();
       return;
     }
-    // 第2章: ボスゾーン（風車タワー前）
+    // 第2章: ボスゾーン（風車タワー前）。拡大版第2章: 制御レバーのグリップがないとボス戦に入れない
     if (curMap === 'hill' && x === 10 && y === 3 && S.flags.warubeeSeen && !S.flags.boss2Done && !S.flags.boss2Started) {
-      S.flags.boss2Started = true;
-      startMoguruBattle();
+      if (!S.flags.brakeItem) { Dialogue.play(Data.dlg.brakeNeed); return; }
+      Dialogue.play(Data.dlg.brakeLever, () => { S.flags.boss2Started = true; startMoguruBattle(); });
+      return;
+    }
+    // 拡大版第2章: 牧場の裏山（見えるクワコグ／トルネコグの巣／ジロウの鈴）
+    if (curMap === 'urayama') {
+      const ucog = URAYAMA_COGS.find(c => c.x === x && c.y === y && !visitDone[c.id]);
+      if (ucog) { startUkuwaBattle(ucog); return; }
+      if (x === 4 && y === 3 && !S.flags.brakeItem) { startToruneBattle(); return; }
+      if (x === 16 && y === 11 && S.flags.bellQuest && !S.flags.bellItem && !S.flags.bellDone) {
+        S.flags.bellItem = true;
+        Snd.pickup();
+        Dialogue.play(Data.dlg.bellFound, () => { refreshHUD(); save(); });
+        return;
+      }
+    }
+    // 拡大版第3章: 参道の見えるあかりコグ＋星灯りの雫スポット
+    if (curMap === 'approach') {
+      const ac = AKARI_SPOTS.find(c => c.x === x && c.y === y && !visitDone[c.id]);
+      if (ac) { startAakariBattle(ac); return; }
+      const dp = DROP_SPOTS.find(d => d.x === x && d.y === y);
+      if (dp && S.flags.oilQuest && !S.flags[dp.key]) {
+        S.flags[dp.key] = true;
+        S.flags.dropCount = (S.flags.dropCount || 0) + 1;
+        Snd.pickup();
+        Dialogue.play([Data.L('', `星灯りの雫を拾った！（${S.flags.dropCount}/4）`)], () => { refreshHUD(); save(); });
+        return;
+      }
+    }
+    // 拡大版第3章: 油蔵の祠の中ボス「ゆらぎコグ」（雫の4つ目）
+    if (curMap === 'oilshed' && x === 9 && y === 3 && S.flags.oilQuest && !S.flags.oilItem && !S.flags.oilDone) {
+      startYuragiBattle();
+      return;
+    }
+    // 拡大版第3章: サブクエスト「ミオのお守り」（神殿の暗闇・南東の隅）
+    if (curMap === 'temple' && x === 17 && y === 11 && S.flags.charmQuest && !S.flags.charmItem && !S.flags.charmDone) {
+      S.flags.charmItem = true;
+      Snd.pickup();
+      Dialogue.play(Data.dlg.charmFound, () => { refreshHUD(); save(); });
       return;
     }
     // 第3章: あかりコグ戦（神殿内部の2か所）。再入場で復活する
@@ -406,6 +479,8 @@
       }
     }
     if (id === 'forest') spawnForest();
+    if (id === 'urayama') spawnUrayama();
+    if (id === 'approach') spawnApproach();
     if (id === 'road' && !S.flags.roadIntro) {
       S.flags.roadIntro = true;
       setTimeout(() => Dialogue.play(Data.dlg.roadIntro), 250);
@@ -536,6 +611,13 @@
           withHeal(Data.dlg.herbThanks, () => { S.flags.herbDone = true; S.herbs += 2; Snd.pickup(); refreshHUD(); save(); });
         }
         else if (S.flags.herbQuest && !S.flags.herbDone) withHeal(Data.dlg.herbHint);
+        else if (S.flags.milkItem) {
+          withHeal(Data.dlg.herbMilkThanks, () => { S.flags.milkItem = false; S.flags.milkDone = true; S.herbs += 2; Snd.pickup(); refreshHUD(); save(); });
+        }
+        else if (S.chapter >= 2 && S.flags.herbDone && !S.flags.milkQuest && !S.flags.milkDone) {
+          withHeal(Data.dlg.herbMilkOffer, () => { S.flags.milkQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.milkQuest && !S.flags.milkDone) withHeal(Data.dlg.herbMilkHint);
         else {
           const n = (S.talks.herb = (S.talks.herb || 0) + 1);
           withHeal(Data.dlg.herbChat[(n - 1) % Data.dlg.herbChat.length]);
@@ -578,7 +660,29 @@
             withTea(Data.dlg.minoriFirst, () => { S.flags.minoriMet = true; refreshHUD(); save(); });
           } else if (!S.flags.herdDone) {
             withTea(Data.dlg.minoriHerd[Math.min(S.animalsCaught, 4)]);
+          } else if (S.flags.brakeItem && !S.flags.brakeQuest) {
+            withTea(Data.dlg.minoriBrakeEarly, () => { S.flags.brakeQuest = true; refreshHUD(); save(); });
+          } else if (!S.flags.brakeQuest) {
+            withTea(Data.dlg.minoriBrake, () => { S.flags.brakeQuest = true; refreshHUD(); save(); });
+          } else if (S.flags.milkQuest && !S.flags.milkItem && !S.flags.milkDone) {
+            withTea(Data.dlg.minoriMilk, () => { S.flags.milkItem = true; refreshHUD(); save(); });
           } else withTea(Data.dlg.minoriAfter);
+        }
+      }
+      else if (npc.id === 'jirou') {
+        if (S.flags.bellItem) {
+          Dialogue.play(Data.dlg.jirouBellThanks, () => { S.flags.bellItem = false; S.flags.bellDone = true; S.herbs += 1; Snd.pickup(); refreshHUD(); save(); });
+        }
+        else if (!S.flags.jirouMet) {
+          Dialogue.play(Data.dlg.jirouFirst, () => { S.flags.jirouMet = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.brakeQuest && !S.flags.bellQuest && !S.flags.bellDone) {
+          Dialogue.play(Data.dlg.jirouBellOffer, () => { S.flags.bellQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.bellQuest && !S.flags.bellDone) Dialogue.play(Data.dlg.jirouBellHint);
+        else {
+          const n = (S.talks.jirou = (S.talks.jirou || 0) + 1);
+          Dialogue.play(Data.dlg.jirouChat[(n - 1) % Data.dlg.jirouChat.length]);
         }
       }
       else if (npc.id === 'mio') {
@@ -587,9 +691,26 @@
           Dialogue.play(Data.dlg.mioFirst, () => { S.flags.mioMet = true; S.hp = S.maxHp; refreshHUD(); save(); });
         } else {
           S.hp = S.maxHp;
-          const n = (S.talks.mio = (S.talks.mio || 0) + 1);
-          const tail = n === 1 ? Data.dlg.mioAfter : Data.dlg.mioChat[(n - 2) % Data.dlg.mioChat.length];
-          Dialogue.play(Data.dlg.mioHeal.concat(tail), () => { refreshHUD(); save(); });
+          const withHeal = (lines, cb) => Dialogue.play(Data.dlg.mioHeal.concat(lines), () => { refreshHUD(); save(); if (cb) cb(); });
+          if (S.flags.oilItem && !S.flags.oilDone) {
+            withHeal(Data.dlg.mioOilThanks, () => { S.flags.oilItem = false; S.flags.oilDone = true; refreshHUD(); save(); });
+          }
+          else if (S.flags.charmItem) {
+            withHeal(Data.dlg.mioCharmThanks, () => { S.flags.charmItem = false; S.flags.charmDone = true; S.herbs += 2; Snd.pickup(); refreshHUD(); save(); });
+          }
+          else if (!S.flags.oilQuest && !S.flags.oilDone) {
+            withHeal(Data.dlg.mioOil, () => { S.flags.oilQuest = true; refreshHUD(); save(); });
+          }
+          else if (S.flags.oilQuest && !S.flags.oilDone) withHeal(Data.dlg.mioOilHint);
+          else if (!S.flags.charmQuest && !S.flags.charmDone) {
+            withHeal(Data.dlg.mioCharmOffer, () => { S.flags.charmQuest = true; refreshHUD(); save(); });
+          }
+          else if (S.flags.charmQuest && !S.flags.charmDone) withHeal(Data.dlg.mioCharmHint);
+          else {
+            const n = (S.talks.mio = (S.talks.mio || 0) + 1);
+            const tail = n === 1 ? Data.dlg.mioAfter : Data.dlg.mioChat[(n - 2) % Data.dlg.mioChat.length];
+            withHeal(tail);
+          }
         }
       }
       else if (npc.id === 'mio2') {
@@ -713,6 +834,66 @@
         World.actors = World.actors.filter(a => a.id !== 'oocog');
         Snd.pickup();
         Dialogue.play(Data.dlg.gearGet, () => { refreshHUD(); save(); });
+      } else onLose();
+      refreshHUD();
+    });
+  }
+  /* 拡大版第2章: 裏山の見えるクワコグ戦（再入場で復活するレベリング相手） */
+  async function startUkuwaBattle(cog) {
+    const res = await Battle.start({
+      state: S, enemies: [{ ...Data.enemies.kuwa }],
+      intro: 'クワコグ が あらわれた！'
+    });
+    if (res === 'win') {
+      visitDone[cog.id] = true;
+      World.actors = World.actors.filter(a => a.id !== cog.id);
+      refreshHUD(); save();
+    } else onLose();
+    refreshHUD();
+  }
+  /* 拡大版第2章: 中ボス「トルネコグ」戦（裏山の巣。勝つとブレーキグリップ） */
+  function startToruneBattle() {
+    Dialogue.play(Data.dlg.toruneIntro, async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.torune }],
+        intro: 'トルネコグ が 宝物を守っている！'
+      });
+      if (res === 'win') {
+        S.flags.brakeItem = true;
+        Snd.pickup();
+        Dialogue.play(Data.dlg.brakeGet, () => { refreshHUD(); save(); });
+      } else onLose();
+      refreshHUD();
+    });
+  }
+  /* 拡大版第3章: 参道の見えるあかりコグ戦（再入場で復活するレベリング相手） */
+  async function startAakariBattle(cog) {
+    const res = await Battle.start({
+      state: S, enemies: [{ ...Data.enemies.akari }],
+      intro: 'あかりコグ が あらわれた！'
+    });
+    if (res === 'win') {
+      visitDone[cog.id] = true;
+      World.actors = World.actors.filter(a => a.id !== cog.id);
+      refreshHUD(); save();
+    } else onLose();
+    refreshHUD();
+  }
+  /* 拡大版第3章: 中ボス「ゆらぎコグ」戦（油蔵の祠。勝つと星灯りの雫4つ目） */
+  function startYuragiBattle() {
+    Dialogue.play(Data.dlg.yuragiIntro, async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.yuragi }],
+        intro: 'ゆらぎコグ が ゆらめいている！',
+        hint: [
+          'ゆらぎコグは、明るいときは歯車が弱点、暗いときは ふつうのこうげきが弱点だ。',
+          'ホシガミさまと同じ仕組み。明暗が切り替わるタイミングを見極めよう。'
+        ]
+      });
+      if (res === 'win') {
+        S.flags.oilItem = true;
+        Snd.pickup();
+        Dialogue.play(Data.dlg.oilGet, () => { refreshHUD(); save(); });
       } else onLose();
       refreshHUD();
     });
