@@ -16,6 +16,7 @@
     'assets/chars/npc-mio.png', 'assets/chars/npc-choro.png', 'assets/chars/enemy-akari.png', 'assets/chars/enemy-hoshigami.png',
     'assets/chars/npc-jirou.png', 'assets/chars/enemy-torune.png', 'assets/chars/enemy-yuragi.png',
     'assets/chars/npc-ochiyo.png', 'assets/chars/npc-gen.png',
+    'assets/chars/npc-genzou.png', 'assets/chars/npc-kaito.png', 'assets/chars/npc-tome.png', 'assets/chars/enemy-kani.png',
     'assets/warubee-front-v1.png',
     'assets/cut-warubee-roof.png'
   ];
@@ -59,6 +60,16 @@
   /* ---------- HUD ---------- */
   function objective() {
     const f = S.flags;
+    if (S.chapter >= 7) {
+      if (!f.ch7Intro) return '港町に着いた';
+      if (!f.trialQuest) return '桟橋の渡し守・源造に会おう（町の南から桟橋へ）';
+      if (!f.fishDone) return `桟橋で小魚を釣ろう（${f.fishCount || 0}/3）`;
+      if (!f.rumorGenzou) return '源造に釣果を見せよう';
+      if (!f.hutChecked) return '灯台守の小屋を調べよう（通りの西の建物）';
+      if (!f.rumorTome || !f.rumorKaito) return '港の噂を集めよう（とめ・海斗）';
+      if (!f.climaxDone) return '源造に報告しよう';
+      return '第8章へつづく';
+    }
     if (S.chapter >= 5) {
       if (!f.ch5Intro) return 'ガルドの話を聞こう';
       if (!f.mioMet) return '参道を登って、神殿の守り人ミオに会おう';
@@ -242,6 +253,19 @@
     { key: 'drop2', x: 17, y: 4 },
     { key: 'drop3', x: 12, y: 10 }
   ];
+  /* ---------- 第7章: 桟橋の見えるカニコグ ---------- */
+  const KANI_SPOTS = [
+    { id: 'kani1', x: 15, y: 7 },
+    { id: 'kani2', x: 17, y: 7 },
+    { id: 'kani3', x: 9, y: 9 }
+  ];
+  function spawnPier() {
+    World.actors = KANI_SPOTS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'kani', x: c.x, y: c.y, visible: true }));
+  }
+  function spawnMinato() {
+    // 壊れた自動魚獲り機の残骸（調べると spotWreck）
+    World.actors = [{ id: 'wreck', kind: 'cog', x: 15, y: 11, visible: true }];
+  }
   function spawnApproach() {
     World.actors = AKARI_SPOTS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'akari', x: c.x, y: c.y, visible: true }));
   }
@@ -421,6 +445,18 @@
       startHoshigamiBattle();
       return;
     }
+    // 第7章: 海斗の流木集め（港町と桟橋の浜に3本）
+    if ((curMap === 'minato' || curMap === 'pier') && S.flags.rodQuest && !S.flags.driftDone) {
+      const isDrift = (curMap === 'minato' && x === 17 && y === 12) || (curMap === 'pier' && ((x === 2 && y === 2) || (x === 18 && y === 2)));
+      const dkey = 'drift:' + curMap + ':' + x + ',' + y;
+      if (isDrift && !S.flags[dkey]) {
+        S.flags[dkey] = true;
+        S.flags.driftCount = (S.flags.driftCount || 0) + 1;
+        Snd.pickup();
+        Dialogue.play([Data.L('', `流木を拾った！（${S.flags.driftCount}/3）`)], () => { refreshHUD(); save(); });
+        return;
+      }
+    }
     // 拡大版第1章: 村はずれの森（見えるコグに触れると戦闘／祠前で中ボス／光る草で薬草集め）
     if (curMap === 'forest') {
       const fcog = FOREST_COGS.find(c => c.x === x && c.y === y && !visitDone[c.id]);
@@ -494,6 +530,8 @@
     if (id === 'forest') spawnForest();
     if (id === 'urayama') spawnUrayama();
     if (id === 'approach') spawnApproach();
+    if (id === 'minato') spawnMinato();
+    if (id === 'pier') spawnPier();
     if (id === 'road' && !S.flags.roadIntro) {
       S.flags.roadIntro = true;
       setTimeout(() => Dialogue.play(Data.dlg.roadIntro), 250);
@@ -552,6 +590,8 @@
     'monzen:9,2': 'spotMonzenShop', 'monzen:10,2': 'spotMonzenShop', 'monzen:11,2': 'spotMonzenShop',
     'monzen:3,10': 'spotMonzenInn', 'monzen:4,10': 'spotMonzenInn', 'monzen:5,10': 'spotMonzenInn',
     'monzen:7,12': 'spotMonzenSign',
+    'minato:7,2': 'spotMarket', 'minato:8,2': 'spotMarket', 'minato:9,2': 'spotMarket',
+    'pier:18,1': 'spotPierSign',
     'temple:9,3': 'spotPillar', 'temple:10,3': 'spotPillar', 'temple:9,4': 'spotPillar', 'temple:10,4': 'spotPillar',
     'clockroom:3,4': 'spotCarving', 'clockroom:3,5': 'spotCarving', 'clockroom:16,4': 'spotCarving', 'clockroom:16,5': 'spotCarving'
   };
@@ -576,6 +616,11 @@
       } else if (curMap === 'approach') {
         const ac = AKARI_SPOTS.find(c => c.id === actor.id && !visitDone[c.id]);
         if (ac) { startAakariBattle(ac); return; }
+      } else if (curMap === 'pier') {
+        const kc = KANI_SPOTS.find(c => c.id === actor.id && !visitDone[c.id]);
+        if (kc) { startKaniBattle(kc); return; }
+      } else if (curMap === 'minato') {
+        if (actor.id === 'wreck') { Dialogue.play(Data.dlg.spotWreck); return; }
       }
     }
     const npc = World.map.npcs.find(n => !n.hidden && n.x === f.x && n.y === f.y);
@@ -745,6 +790,46 @@
           Dialogue.play(Data.dlg.genChat[(n - 1) % Data.dlg.genChat.length]);
         }
       }
+      else if (npc.id === 'tome') {
+        if (!S.flags.tomeMet) {
+          Dialogue.play(Data.dlg.tomeFirst, () => { S.flags.tomeMet = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.fishDone && !S.flags.rumorTome) {
+          Dialogue.play(Data.dlg.tomeRumor, () => { S.flags.rumorTome = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.rumorTome) Dialogue.play(Data.dlg.tomeAfter);
+        else Dialogue.play(Data.dlg.tomeChat);
+      }
+      else if (npc.id === 'kaito') {
+        if (!S.flags.kaitoMet) {
+          Dialogue.play(Data.dlg.kaitoFirst, () => { S.flags.kaitoMet = true; S.flags.rodQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.rodQuest && !S.flags.driftDone && (S.flags.driftCount || 0) >= 3) {
+          Dialogue.play(Data.dlg.kaitoRodDone, () => { S.flags.driftDone = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.fishDone && !S.flags.rumorKaito) {
+          Dialogue.play(Data.dlg.kaitoRumor, () => { S.flags.rumorKaito = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.driftDone) Dialogue.play(Data.dlg.kaitoAfter);
+        else Dialogue.play(Data.dlg.kaitoChat);
+      }
+      else if (npc.id === 'genzou') {
+        const f7 = S.flags;
+        if (f7.climaxDone) Dialogue.play(Data.dlg.genzouAfter);
+        else if (!f7.trialQuest) {
+          Dialogue.play(Data.dlg.genzouFirst, () => { f7.trialQuest = true; refreshHUD(); save(); });
+        }
+        else if (!f7.fishDone) {
+          Dialogue.play([Data.L('源造', `小魚を3匹だ。いま ${f7.fishCount || 0} 匹。桟橋の上で、海に向かって糸を垂らすんだ。`, 'genzou')]);
+        }
+        else if (!f7.rumorGenzou) {
+          Dialogue.play(Data.dlg.genzouRumor, () => { f7.rumorGenzou = true; refreshHUD(); save(); });
+        }
+        else if (f7.hutChecked && f7.rumorTome && f7.rumorKaito) {
+          Dialogue.play(Data.dlg.genzouClimax, () => { f7.climaxDone = true; f7.ch7Done = true; refreshHUD(); save(); showClear7(); });
+        }
+        else Dialogue.play(Data.dlg.genzouHint);
+      }
       else if (npc.id === 'mio') {
         // ミオは参道の回復スポット（話すたびに全回復）。初回は出会いイベント
         if (!S.flags.mioMet) {
@@ -787,6 +872,13 @@
       }
       return;
     }
+    // 第7章: 灯台守の小屋（通りの西の建物の正面）
+    if (curMap === 'minato' && f.y === 11 && f.x >= 2 && f.x <= 4) {
+      if (!S.flags.trialQuest) Dialogue.play([Data.L('', '灯台守の小屋だ。……扉の鍵が、無理やり壊されている。')]);
+      else if (!S.flags.hutChecked) Dialogue.play(Data.dlg.hutTrace, () => { S.flags.hutChecked = true; refreshHUD(); save(); });
+      else Dialogue.play(Data.dlg.hutAfter);
+      return;
+    }
     // 調べるスポット（家具・大木・石柱・時計など）
     const spotKey = curMap + ':' + f.x + ',' + f.y;
     if (curMap === 'hill' && f.y === 2 && f.x >= 9 && f.x <= 11) { Dialogue.play(S.flags.cleared4 ? Data.dlg.spotWindmillAfter : Data.dlg.spotWindmill); return; }
@@ -797,6 +889,13 @@
     if (t === 'C') { tryLightCandle(f.x, f.y); return; }
     if (t === 'L') { Dialogue.play([Data.L('', 'もう灯っている。')]); return; }
     if (t === 'S') Dialogue.play(curMap === 'road' ? Data.dlg.roadSign : curMap === 'approach' ? Data.dlg.approachSign : curMap === 'temple' ? Data.dlg.mural3 : Data.dlg.sign);
+    else if (t === '~' && curMap === 'pier') {
+      if (!S.flags.trialQuest) {
+        Dialogue.play([Data.L('あおびー', '釣り竿がないな。まずは桟橋の源造に話しかけよう。', 'aobee')]);
+      } else {
+        Fishing.start(onFishResult);
+      }
+    }
     else if (t === 'X') {
       if (!S.flags.millGear) Dialogue.play(Data.dlg.bridgeNoGear);
       else if (nestsCleared() < 3) Dialogue.play(Data.dlg.bridgeJammed);
@@ -926,6 +1025,73 @@
       refreshHUD();
     });
   }
+  /* 第7章: 桟橋の見えるカニコグ戦（再入場で復活するレベリング相手） */
+  async function startKaniBattle(cog) {
+    const res = await Battle.start({
+      state: S, enemies: [{ ...Data.enemies.kani }],
+      intro: 'カニコグ が あらわれた！'
+    });
+    if (res === 'win') {
+      visitDone[cog.id] = true;
+      World.actors = World.actors.filter(a => a.id !== cog.id);
+      refreshHUD(); save();
+    } else onLose();
+    refreshHUD();
+  }
+
+  /* 第7章: 釣り軽量版（タイミングバー。ゾーンで止めると釣れる） */
+  const Fishing = {
+    active: false, pos: 0, dir: 1, zoneStart: 55, zoneW: 18, timer: null, onDone: null,
+    start(onDone) {
+      if (this.active) return;
+      this.active = true; this.onDone = onDone || null;
+      this.pos = 0; this.dir = 1;
+      this.zoneStart = 45 + Math.floor(Math.random() * 35); // 45〜79%
+      const zone = $('fish-zone'), marker = $('fish-marker');
+      zone.style.left = this.zoneStart + '%'; zone.style.width = this.zoneW + '%';
+      marker.style.left = '0%';
+      $('fish-msg').textContent = 'マーカーが金色のゾーンに入ったら「ここだ！」';
+      World.frozen = true;
+      $('fish-screen').classList.remove('hidden');
+      this.timer = setInterval(() => {
+        this.pos += this.dir * 2.2;
+        if (this.pos >= 100) { this.pos = 100; this.dir = -1; }
+        if (this.pos <= 0) { this.pos = 0; this.dir = 1; }
+        marker.style.left = this.pos + '%';
+      }, 30);
+    },
+    stop() {
+      if (!this.active) return;
+      this.active = false;
+      if (this.timer) clearInterval(this.timer);
+      this.timer = null;
+      $('fish-screen').classList.add('hidden');
+      World.frozen = false;
+      const okF = this.pos >= this.zoneStart && this.pos <= this.zoneStart + this.zoneW;
+      const cb = this.onDone; this.onDone = null;
+      if (cb) cb(okF);
+    }
+  };
+  window.__grandFishing = Fishing; // 状態遷移テスト用ハンドル
+  function onFishResult(okF) {
+    if (okF) {
+      Snd.pickup();
+      if (!S.flags.fishDone) {
+        S.flags.fishCount = (S.flags.fishCount || 0) + 1;
+        const lines = [Data.L('', `小魚を釣り上げた！（${S.flags.fishCount}/3）`)];
+        if (S.flags.fishCount >= 3) {
+          S.flags.fishDone = true;
+          lines.push(Data.L('あおびー', '3匹目！　これで源造に見せられる。', 'aobee'));
+        }
+        Dialogue.play(lines, () => { refreshHUD(); save(); });
+      } else {
+        Dialogue.play([Data.L('', '小魚を釣り上げた！　……試練の分は、もう十分釣った。')]);
+      }
+    } else {
+      Dialogue.play([Data.L('', '魚は逃げてしまった……。マーカーを金色のゾーンで止めよう。')]);
+    }
+  }
+
   /* 拡大版第3章: 参道の見えるあかりコグ戦（再入場で復活するレベリング相手） */
   async function startAakariBattle(cog) {
     const res = await Battle.start({
@@ -1142,12 +1308,13 @@
     $('clear-next').innerHTML = '大歯車は戻った。でも、歯が1枚欠けたまま…。<br>わるびーは何を隠しているのか——第3章へつづく。';
     $('btn-to-ch3').style.display = '';
     $('btn-to-ch5').style.display = 'none';
+    $('btn-to-ch7').style.display = 'none';
     $('clear-link').style.display = 'none';
     $('clear-screen').classList.remove('hidden');
   }
 
   /* ---------- 章タイトルカード ---------- */
-  const CHAPTER_TITLES = { 1: 'はぐるま村の異変', 2: '水車小屋の対決', 3: 'まきばの集落', 4: '暴走！ 大風車', 5: '神殿門前町', 6: '星の神殿と止まった時計' };
+  const CHAPTER_TITLES = { 1: 'はぐるま村の異変', 2: '水車小屋の対決', 3: 'まきばの集落', 4: '暴走！ 大風車', 5: '神殿門前町', 6: '星の神殿と止まった時計', 7: '港町と灯台守' };
   let chapterCardTimer = null;
   // 章が切り替わる瞬間にタイトルカードを出す（約1.75秒、ワールドは停止してから done へ）
   function showChapterCard(n, done) {
@@ -1207,6 +1374,7 @@
     $('clear-next').innerHTML = '風車は元通り。でも、神殿の星時計も止まったらしい——。<br>星歯の謎を追って、第5章へつづく。';
     $('btn-to-ch3').style.display = 'none';
     $('btn-to-ch5').style.display = '';
+    $('btn-to-ch7').style.display = 'none';
     $('clear-link').style.display = '';
     $('clear-screen').classList.remove('hidden');
   }
@@ -1238,9 +1406,45 @@
     $('clear-next').innerHTML = '星時計は動き出した。星歯は7枚、わるびーの目的は「空に浮かぶ塔」——。<br>次は港町。灯台の歯車が止まったらしい。第7章へつづく。';
     $('btn-to-ch3').style.display = 'none';
     $('btn-to-ch5').style.display = 'none';
+    $('btn-to-ch7').style.display = '';
     const link = $('clear-link');
     link.href = '../aobee_star_temple_portal.html';
     link.textContent = '元ネタの「星の神殿」で遊ぶ ↗';
+    link.style.display = '';
+    $('clear-screen').classList.remove('hidden');
+  }
+
+  /* ---------- 第7章: 開始 ---------- */
+  function startChapter7() {
+    S.chapter = 7;
+    S.flags.ch7Started = true;
+    curMap = 'minato';
+    World.loadMap('minato', 10, 12, true);
+    World.player.dir = 'up';
+    refreshHUD();
+    showChapterCard(7, () => {
+      Dialogue.play(Data.dlg.ch7Start, () => {
+        S.flags.ch7Intro = true;
+        refreshHUD(); save();
+      });
+    });
+  }
+  function showClear7() {
+    const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
+    $('clear-title').textContent = '第7章 クリア！';
+    $('clear-stats').innerHTML =
+      `プレイ時間（累計）： ${mins}分${secs}秒<br>` +
+      `星歯： ${S.hoshiba}/7<br>` +
+      `釣った小魚： ${S.flags.fishCount || 0}匹<br>` +
+      `強がりで踏みとどまった回数： ${S.stats.gutsSaves}回<br>` +
+      `たおれた回数： ${S.losses}回`;
+    $('clear-next').innerHTML = '港の主が姿を現した。わるびーの挑戦状も届いた——。<br>灯台での決戦は、第8章「灯台と大ダコ騒動」へつづく。';
+    $('btn-to-ch3').style.display = 'none';
+    $('btn-to-ch5').style.display = 'none';
+    $('btn-to-ch7').style.display = 'none';
+    const link = $('clear-link');
+    link.href = '../aobee_pico_fishing_v68_portal.html';
+    link.textContent = '元ネタの「あおびーの釣り」で遊ぶ ↗';
     link.style.display = '';
     $('clear-screen').classList.remove('hidden');
   }
@@ -1293,6 +1497,16 @@
       if (S.flags.cleared4 && (S.chapter || 1) < 5) {
         // 第4章クリア画面で閉じたセーブは第5章の冒頭から開始
         startChapter5();
+        return;
+      }
+      if (S.flags.cleared6 && (S.chapter || 1) < 7) {
+        // 第6章クリア画面で閉じたセーブは第7章の冒頭から開始
+        startChapter7();
+        return;
+      }
+      if (S.chapter >= 7 && !S.flags.ch7Intro) {
+        // 第7章の到着会話の途中で閉じた場合の救済: もう一度流す
+        startChapter7();
         return;
       }
       if (S.chapter >= 5 && !S.flags.ch5Intro) {
@@ -1391,6 +1605,11 @@
     herdDone: true, brakeQuest: true, brakeItem: true, hillIntro: true, warubeeSeen: true,
     boss2Done: true, cleared4: true
   };
+  const TEMPLE_DONE_FLAGS = {
+    ch5Started: true, ch5Intro: true, approachIntro: true, templeIntro: true, mioMet: true,
+    oilQuest: true, oilDone: true, dropCount: 3, warubeeSeen5: true, boss3Done: true, cleared6: true,
+    litCandles: ['3,3', '16,3', '3,10', '16,10', '10,6']
+  };
   const ALL_ANIMALS = ['cow1', 'cow2', 'sheep1', 'sheep2', 'chicken1'];
   function presetState(over, flags) {
     const st = freshState();
@@ -1466,6 +1685,16 @@
       save();
       return;
     }
+    if (n === 7) {
+      // 第7章: 港町に着いた直後（試練はこれから）
+      S = presetState(
+        { chapter: 7, level: 5, exp: 230, maxHp: 72, hp: 72, herbs: 6, fragments: 4, hoshiba: 2, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
+        { ...CH1_DONE_FLAGS, ...RANCH_DONE_FLAGS, ...TEMPLE_DONE_FLAGS }
+      );
+      startChapter7();
+      save();
+      return;
+    }
     // 第6章: 神殿に入った直後（燭台はこれから）
     S = presetState(
       { chapter: 6, level: 5, exp: 230, maxHp: 72, hp: 72, herbs: 6, fragments: 4, hoshiba: 1, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
@@ -1507,7 +1736,7 @@
       try { location.reload(); } catch (e) { /* テスト環境などでは無視 */ }
     });
     $('btn-menu-close').addEventListener('click', () => closeMenu());
-    for (let n = 1; n <= 6; n++) $('btn-dbg-' + n).addEventListener('click', () => startDebugChapter(n));
+    for (let n = 1; n <= 7; n++) $('btn-dbg-' + n).addEventListener('click', () => startDebugChapter(n));
     $('btn-howto').addEventListener('click', () => { $('howto-screen').classList.remove('hidden'); });
     $('btn-howto-back').addEventListener('click', () => { $('howto-screen').classList.add('hidden'); });
     $('btn-clear-back').addEventListener('click', () => location.reload());
@@ -1519,6 +1748,12 @@
       $('clear-screen').classList.add('hidden');
       startChapter5();
     });
+    $('btn-to-ch7').addEventListener('click', () => {
+      $('clear-screen').classList.add('hidden');
+      startChapter7();
+    });
+    $('btn-fish-stop').addEventListener('click', () => Fishing.stop());
+    window.addEventListener('grand-tapa', () => { if (Fishing.active) Fishing.stop(); });
     // BGMミュート切替（状態は Snd 側で localStorage に保存される）
     const bgmBtn = $('btn-bgm');
     const paintBgm = () => bgmBtn.classList.toggle('off', Snd.bgmMuted());

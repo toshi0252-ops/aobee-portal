@@ -30,6 +30,9 @@ const Engine = (() => {
     jirou: { file: 'npc-jirou.png', cx: 0.50, cy: 0.27, side: 0.50 },
     ochiyo: { file: 'npc-ochiyo.png', cx: 0.50, cy: 0.28, side: 0.50 },
     gen: { file: 'npc-gen.png', cx: 0.50, cy: 0.28, side: 0.50 },
+    genzou: { file: 'npc-genzou.png', cx: 0.50, cy: 0.24, side: 0.50 },
+    kaito: { file: 'npc-kaito.png', cx: 0.50, cy: 0.26, side: 0.50 },
+    tome: { file: 'npc-tome.png', cx: 0.50, cy: 0.26, side: 0.50 },
     torune: { file: 'enemy-torune.png', cx: 0.58, cy: 0.30, side: 0.52 },
     yuragi: { file: 'enemy-yuragi.png', cx: 0.50, cy: 0.38, side: 0.55 }
   };
@@ -49,7 +52,8 @@ const Engine = (() => {
     cog:     { file: 'enemy-cog.png', h: 44 },
     oocog:   { file: 'enemy-guardian.png', h: 58 },
     kuwa:    { file: 'enemy-kuwa.png', h: 44 },
-    akari:   { file: 'enemy-akari.png', h: 44 }
+    akari:   { file: 'enemy-akari.png', h: 44 },
+    kani:    { file: 'enemy-kani.png', h: 46 }
   };
   const actorImgs = {};
   for (const k of Object.keys(ACTOR_ART)) {

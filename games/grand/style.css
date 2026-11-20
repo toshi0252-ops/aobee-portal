@@ -222,3 +222,31 @@ body.touch #foot { display: none; }
 #chapter-card.show { opacity: 1; }
 #chapter-card-num { color: #8fd0ff; font-size: 15px; letter-spacing: .4em; margin-bottom: 10px; }
 #chapter-card-title { color: #ffe066; font-size: clamp(26px, 6vw, 42px); font-weight: 700; text-shadow: 0 3px 0 #b8860b; letter-spacing: .05em; }
+
+/* 釣り（第7章・軽量版） */
+#fish-track {
+  position: relative;
+  height: 34px;
+  margin: 18px 4px 10px;
+  border: 2px solid var(--ink, #23406b);
+  border-radius: 17px;
+  background: linear-gradient(180deg, #7ec8e3, #3d7ca8);
+  overflow: hidden;
+}
+#fish-zone {
+  position: absolute;
+  top: 0; bottom: 0;
+  background: rgba(255, 201, 60, .85);
+  border-left: 2px solid #a86e00;
+  border-right: 2px solid #a86e00;
+}
+#fish-marker {
+  position: absolute;
+  top: -2px; bottom: -2px;
+  width: 6px;
+  margin-left: -3px;
+  background: #fff;
+  border: 1px solid #23406b;
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(0,0,0,.45);
+}
