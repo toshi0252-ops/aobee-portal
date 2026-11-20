@@ -312,7 +312,7 @@ const Data = (() => {
       name: '港町', grid: MINATO,
       npcs: [
         { id: 'tome', name: '魚市場のとめ', x: 9, y: 3, kind: 'tome' },
-        { id: 'kaito', name: '漁師の海斗', x: 5, y: 9, kind: 'kaito' }
+        { id: 'kaito', name: '漁師の海斗', x: 5, y: 8, kind: 'kaito' }
       ],
       exits: [
         { x: 9, y: 13, to: 'pier', tx: 10, ty: 1, label: '桟橋へ' },
