@@ -128,7 +128,7 @@ canvas#game { width: 100%; height: 100%; display: block; }
 #clear-screen h2 { font-size: 26px; }
 
 /* HUD */
-#hud { position: absolute; top: 8px; left: 8px; z-index: 10; pointer-events: none; }
+#hud { margin: 0 0 6px 2px; pointer-events: none; }
 #hud-obj {
   display: inline-block; background: rgba(12,24,38,.85); border: 1.5px solid #ffd94d; color: #ffe9a8;
   border-radius: 8px; padding: 5px 10px; font-size: 13px; font-weight: 700;
@@ -224,15 +224,26 @@ body.touch #foot { display: none; }
 #chapter-card-title { color: #ffe066; font-size: clamp(26px, 6vw, 42px); font-weight: 700; text-shadow: 0 3px 0 #b8860b; letter-spacing: .05em; }
 
 /* 釣り（第7章・軽量版） */
-#fish-art {
-  display: block; width: 100%; max-width: 520px; height: auto;
-  border-radius: 12px; margin: 0 auto 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+#fish-screen { padding: 0; }
+.fish-panel {
+  width: 100%; height: 100%; max-width: none; max-height: none;
+  border: none; border-radius: 0; background: none; padding: 0;
+  display: flex; flex-direction: column; overflow: hidden;
 }
+#fish-art {
+  flex: 1 1 auto; min-height: 0; width: 100%;
+  object-fit: cover; object-position: 32% 38%; display: block;
+}
+.fish-controls {
+  flex: 0 0 auto; padding: 10px 16px 14px;
+  background: linear-gradient(180deg, rgba(10,22,36,.85), rgba(10,22,36,.95));
+}
+.fish-controls .bigbtn { display: block; margin: 10px auto 0; }
+#fish-msg { text-align: center; }
 #fish-track {
   position: relative;
   height: 34px;
-  margin: 18px 4px 10px;
+  margin: 2px 4px 8px;
   border: 2px solid var(--ink, #23406b);
   border-radius: 17px;
   background: linear-gradient(180deg, #7ec8e3, #3d7ca8);

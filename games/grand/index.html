@@ -8,6 +8,12 @@
 </head>
 <body>
 <div id="wrap">
+  <!-- HUD（マップに被らないようステージの上に配置） -->
+  <div id="hud" class="hidden">
+    <div id="hud-obj"></div>
+    <button id="btn-bgm" type="button" title="BGMのON/OFF">♪</button>
+    <div id="hud-sub"></div>
+  </div>
   <div id="stage">
     <canvas id="game" width="640" height="448"></canvas>
 
@@ -138,24 +144,19 @@
 
     <!-- 釣り（第7章・軽量版） -->
     <div id="fish-screen" class="overlay hidden">
-      <div class="panel">
-        <h2>つり</h2>
+      <div class="panel fish-panel">
         <img id="fish-art" src="assets/fish-scene.jpg" alt="桟橋で釣りをするあおびー">
-        <div id="fish-track">
-          <div id="fish-zone"></div>
-          <div id="fish-marker"></div>
+        <div class="fish-controls">
+          <div id="fish-track">
+            <div id="fish-zone"></div>
+            <div id="fish-marker"></div>
+          </div>
+          <p id="fish-msg" class="title-note">マーカーが金色のゾーンに入ったら「ここだ！」</p>
+          <button id="btn-fish-stop" class="bigbtn" type="button">ここだ！</button>
         </div>
-        <p id="fish-msg" class="title-note">マーカーが金色のゾーンに入ったら「ここだ！」</p>
-        <button id="btn-fish-stop" class="bigbtn" type="button">ここだ！</button>
       </div>
     </div>
 
-    <!-- HUD -->
-    <div id="hud" class="hidden">
-      <div id="hud-obj"></div>
-      <button id="btn-bgm" type="button" title="BGMのON/OFF">♪</button>
-      <div id="hud-sub"></div>
-    </div>
   </div>
 
   <p id="foot">キーボード： 矢印/WASD=移動　Z/Enter/Space=決定　Shift=ダッシュ</p>
