@@ -30,6 +30,9 @@ const Engine = (() => {
     jirou: { file: 'npc-jirou.png', cx: 0.50, cy: 0.27, side: 0.50 },
     ochiyo: { file: 'npc-ochiyo.png', cx: 0.50, cy: 0.28, side: 0.50 },
     gen: { file: 'npc-gen.png', cx: 0.50, cy: 0.28, side: 0.50 },
+    genzou: { file: 'npc-genzou.png', cx: 0.50, cy: 0.24, side: 0.50 },
+    kaito: { file: 'npc-kaito.png', cx: 0.50, cy: 0.26, side: 0.50 },
+    tome: { file: 'npc-tome.png', cx: 0.50, cy: 0.26, side: 0.50 },
     torune: { file: 'enemy-torune.png', cx: 0.58, cy: 0.30, side: 0.52 },
     yuragi: { file: 'enemy-yuragi.png', cx: 0.50, cy: 0.38, side: 0.55 }
   };
@@ -49,7 +52,8 @@ const Engine = (() => {
     cog:     { file: 'enemy-cog.png', h: 44 },
     oocog:   { file: 'enemy-guardian.png', h: 58 },
     kuwa:    { file: 'enemy-kuwa.png', h: 44 },
-    akari:   { file: 'enemy-akari.png', h: 44 }
+    akari:   { file: 'enemy-akari.png', h: 44 },
+    kani:    { file: 'enemy-kani.png', h: 46 }
   };
   const actorImgs = {};
   for (const k of Object.keys(ACTOR_ART)) {
@@ -594,7 +598,7 @@ const Engine = (() => {
     },
     solid(gx, gy) {
       const t = this.tileAt(gx, gy);
-      if (t === '#' || t === 'T' || t === 'H' || t === '~' || t === 'S' || t === 'N' || t === 'W' || t === 'C' || t === 'L') return true;
+      if (t === '#' || t === 'T' || t === 'H' || t === 'U' || t === '~' || t === 'S' || t === 'N' || t === 'W' || t === 'C' || t === 'L') return true;
       if (t === 'X' && !(this.hooks.hooksState && this.hooks.hooksState().bridgeOpen)) return true;
       if (this.map.npcs.some(n => !n.hidden && n.x === gx && n.y === gy)) return true;
       if (this.actors.some(a => a.visible && a.x === gx && a.y === gy)) return true;
@@ -696,14 +700,51 @@ const Engine = (() => {
           ctx.fillStyle = 'rgba(255,255,230,0.20)';
           ctx.beginPath(); ctx.arc(px + 11, py + 9, 4.5, 0, Math.PI * 2); ctx.fill();
         }
-        if (t === 'H') { // 家: 壁グラデーション＋屋根とその落とす影
-          const wg = ctx.createLinearGradient(px, py + 8, px, py + 32);
-          wg.addColorStop(0, '#f4ead2'); wg.addColorStop(1, '#dccca4');
-          ctx.fillStyle = wg; ctx.fillRect(px, py + 8, TILE, 24);
-          ctx.fillStyle = 'rgba(122,92,50,0.30)'; ctx.fillRect(px, py + 29, TILE, 3);
-          ctx.fillStyle = '#b0512f'; ctx.beginPath(); ctx.moveTo(px - 2, py + 10); ctx.lineTo(px + 16, py - 2); ctx.lineTo(px + 34, py + 10); ctx.closePath(); ctx.fill();
-          ctx.fillStyle = 'rgba(255,255,255,0.16)'; ctx.beginPath(); ctx.moveTo(px - 2, py + 10); ctx.lineTo(px + 16, py - 2); ctx.lineTo(px + 16, py + 10); ctx.closePath(); ctx.fill();
-          ctx.fillStyle = 'rgba(60,30,10,0.20)'; ctx.fillRect(px, py + 10, TILE, 3);
+        if (t === 'H' || t === 'U') { // 家／灯台守の小屋(U): 壁＋屋根帯＋ドア・窓を並びで合成（Uは青い屋根＋ランタンで目立たせる）
+          const hut = t === 'U';
+          const topRow = this.tileAt(x, y - 1) !== t, bottomRow = this.tileAt(x, y + 1) !== t;
+          let lx = x; while (this.tileAt(lx - 1, y) === t) lx--;
+          let rx = x; while (this.tileAt(rx + 1, y) === t) rx++;
+          const isDoorCol = x === Math.floor((lx + rx) / 2);
+          const wg = ctx.createLinearGradient(px, py, px, py + 32);
+          if (hut) { wg.addColorStop(0, '#e9eff4'); wg.addColorStop(1, '#bccbd7'); }
+          else { wg.addColorStop(0, '#f4ead2'); wg.addColorStop(1, '#dccca4'); }
+          ctx.fillStyle = wg; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = 'rgba(90,70,40,0.10)'; ctx.fillRect(px, py, 1.5, TILE);
+          if (bottomRow) { ctx.fillStyle = 'rgba(90,64,32,0.35)'; ctx.fillRect(px, py + 29, TILE, 3); }
+          if (topRow) { // 屋根帯: 建物の幅で1本につながる
+            ctx.fillStyle = hut ? '#2e4a6b' : '#b0512f';
+            ctx.fillRect(px - 1, py + 1, TILE + 2, 12);
+            ctx.fillStyle = 'rgba(255,255,255,0.20)'; ctx.fillRect(px - 1, py + 1, TILE + 2, 3);
+            ctx.fillStyle = 'rgba(40,20,8,0.35)'; ctx.fillRect(px - 1, py + 11, TILE + 2, 2.5);
+            ctx.fillStyle = 'rgba(60,30,10,0.16)'; ctx.fillRect(px, py + 13.5, TILE, 3);
+            if (isDoorCol && !bottomRow) { // 中央上の丸窓
+              ctx.fillStyle = '#8a653f'; ctx.beginPath(); ctx.arc(px + 16, py + 23, 6, 0, Math.PI * 2); ctx.fill();
+              ctx.fillStyle = '#bfe3f2'; ctx.beginPath(); ctx.arc(px + 16, py + 23, 4.4, 0, Math.PI * 2); ctx.fill();
+            }
+          }
+          if (bottomRow) {
+            if (isDoorCol) { // ドア
+              ctx.fillStyle = hut ? '#3c5a7a' : '#7a4a26';
+              ctx.fillRect(px + 10, py + 11, 12, 21);
+              ctx.beginPath(); ctx.arc(px + 16, py + 11, 6, Math.PI, 0); ctx.fill();
+              ctx.fillStyle = 'rgba(255,255,255,0.14)'; ctx.fillRect(px + 10, py + 11, 3, 21);
+              ctx.fillStyle = '#ffd21f'; ctx.fillRect(px + 19, py + 21, 2.4, 2.4);
+            } else { // 窓
+              ctx.fillStyle = '#8a653f'; ctx.fillRect(px + 10, py + 12, 12, 12);
+              ctx.fillStyle = '#bfe3f2'; ctx.fillRect(px + 11.5, py + 13.5, 9, 9);
+              ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fillRect(px + 15.2, py + 13.5, 1.6, 9); ctx.fillRect(px + 11.5, py + 17.2, 9, 1.6);
+            }
+          }
+          if (hut && bottomRow && x === rx) { // 小屋の右端にランタン（灯台守の目印、ゆらめく明かり）
+            const fl = 1 + Math.sin(performance.now() / 150 + x * 2.7) * 0.15;
+            const hg = ctx.createRadialGradient(px + 26, py + 15, 1, px + 26, py + 15, 13 * fl);
+            hg.addColorStop(0, 'rgba(255,214,90,0.55)'); hg.addColorStop(1, 'rgba(255,214,90,0)');
+            ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(px + 26, py + 15, 13 * fl, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#5a4632'; ctx.fillRect(px + 25, py + 6, 2, 4);
+            ctx.fillStyle = '#ffb340'; ctx.fillRect(px + 23.5, py + 10, 5, 7);
+            ctx.fillStyle = '#5a4632'; ctx.fillRect(px + 23.5, py + 17, 5, 1.8);
+          }
         }
         if (t === '~') { // 水: 明るいグラデーション＋ゆらぐ波紋とキラキラ
           const wag = ctx.createLinearGradient(px, py, px, py + TILE);

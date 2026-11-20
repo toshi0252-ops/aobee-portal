@@ -40,6 +40,7 @@ torune: { src: 'assets/chars/enemy-torune.png', h: 185, shadow: 130 },
 yuragi: { src: 'assets/chars/enemy-yuragi.png', h: 175, shadow: 120 },
 moguru: { src: 'assets/chars/enemy-moguru.png', h: 215, shadow: 160 },
 akari: { src: 'assets/chars/enemy-akari.png', h: 150, shadow: 110 },
+kani: { src: 'assets/chars/enemy-kani.png', h: 150, shadow: 115 },
 hoshigami: { src: 'assets/chars/enemy-hoshigami.png', h: 220, shadow: 155 }
 };
 function cogFallback(art) {
