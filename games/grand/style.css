@@ -224,6 +224,11 @@ body.touch #foot { display: none; }
 #chapter-card-title { color: #ffe066; font-size: clamp(26px, 6vw, 42px); font-weight: 700; text-shadow: 0 3px 0 #b8860b; letter-spacing: .05em; }
 
 /* 釣り（第7章・軽量版） */
+#fish-art {
+  display: block; width: 100%; max-width: 520px; height: auto;
+  border-radius: 12px; margin: 0 auto 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+}
 #fish-track {
   position: relative;
   height: 34px;

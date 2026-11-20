@@ -16,7 +16,7 @@
     'assets/chars/npc-mio.png', 'assets/chars/npc-choro.png', 'assets/chars/enemy-akari.png', 'assets/chars/enemy-hoshigami.png',
     'assets/chars/npc-jirou.png', 'assets/chars/enemy-torune.png', 'assets/chars/enemy-yuragi.png',
     'assets/chars/npc-ochiyo.png', 'assets/chars/npc-gen.png',
-    'assets/chars/npc-genzou.png', 'assets/chars/npc-kaito.png', 'assets/chars/npc-tome.png', 'assets/chars/enemy-kani.png',
+    'assets/chars/npc-genzou.png', 'assets/chars/npc-kaito.png', 'assets/chars/npc-tome.png', 'assets/chars/enemy-kani.png', 'assets/fish-scene.jpg',
     'assets/warubee-front-v1.png',
     'assets/cut-warubee-roof.png'
   ];
@@ -65,7 +65,7 @@
       if (!f.trialQuest) return '桟橋の渡し守・源造に会おう（町の南から桟橋へ）';
       if (!f.fishDone) return `桟橋で小魚を釣ろう（${f.fishCount || 0}/3）`;
       if (!f.rumorGenzou) return '源造に釣果を見せよう';
-      if (!f.hutChecked) return '灯台守の小屋を調べよう（通りの西の建物）';
+      if (!f.hutChecked) return '灯台守の小屋を調べよう（西のはずれ・青い屋根の小屋）';
       if (!f.rumorTome || !f.rumorKaito) return '港の噂を集めよう（とめ・海斗）';
       if (!f.climaxDone) return '源造に報告しよう';
       return '第8章へつづく';
@@ -873,7 +873,7 @@
       return;
     }
     // 第7章: 灯台守の小屋（通りの西の建物の正面）
-    if (curMap === 'minato' && f.y === 11 && f.x >= 2 && f.x <= 4) {
+    if (curMap === 'minato' && World.tileAt(f.x, f.y) === 'U') {
       if (!S.flags.trialQuest) Dialogue.play([Data.L('', '灯台守の小屋だ。……扉の鍵が、無理やり壊されている。')]);
       else if (!S.flags.hutChecked) Dialogue.play(Data.dlg.hutTrace, () => { S.flags.hutChecked = true; refreshHUD(); save(); });
       else Dialogue.play(Data.dlg.hutAfter);
