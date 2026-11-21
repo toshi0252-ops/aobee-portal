@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>あおびーと失われた歯車 第1章〜第8章（試作）</title>
+<title>あおびーと失われた歯車 全14章（完結）</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -32,7 +32,7 @@
         <p class="eyebrow">AOBEE GRAND RPG · 試作版</p>
         <img class="title-art" src="assets/title-art.png" alt="はぐるま村と大歯車、あおびーとわるびーのイラスト">
         <h1>あおびーと<br>失われた歯車</h1>
-        <p class="subtitle">第1章「はぐるま村の異変」／第2章「水車小屋の対決」／第3章「まきばの集落」／第4章「暴走！ 大風車」／第5章「神殿門前町」／第6章「星の神殿と止まった時計」／第7章「港町と灯台守」／第8章「灯台と大ダコ騒動」</p>
+        <p class="subtitle">第1章「はぐるま村の異変」／第2章「水車小屋の対決」／第3章「まきばの集落」／第4章「暴走！ 大風車」／第5章「神殿門前町」／第6章「星の神殿と止まった時計」／第7章「港町と灯台守」／第8章「灯台と大ダコ騒動」／第9章「サーキットの町」／第10章「歯車サーキットの挑戦状」／第11章「空の島の集落」／第12章「空の島と、わるびーの手紙」／第13章「タワーの麓の町」／第14章「歯車タワー決戦」</p>
         <div class="title-btns">
           <button id="btn-new" class="bigbtn">はじめから</button>
           <button id="btn-continue" class="bigbtn">つづきから</button>
@@ -49,6 +49,12 @@
             <button id="btn-dbg-6" class="dbgbtn">第6章</button>
             <button id="btn-dbg-7" class="dbgbtn">第7章</button>
             <button id="btn-dbg-8" class="dbgbtn">第8章</button>
+            <button id="btn-dbg-9" class="dbgbtn">第9章</button>
+            <button id="btn-dbg-10" class="dbgbtn">第10章</button>
+            <button id="btn-dbg-11" class="dbgbtn">第11章</button>
+            <button id="btn-dbg-12" class="dbgbtn">第12章</button>
+            <button id="btn-dbg-13" class="dbgbtn">第13章</button>
+            <button id="btn-dbg-14" class="dbgbtn">第14章</button>
           </div>
         </div>
         <p class="title-note">※試作版です。セーブはこの端末のブラウザに、3スロット＋デバッグ枠で保存されます。</p>
@@ -139,8 +145,43 @@
         <button id="btn-to-ch5" class="bigbtn" style="display:none">第5章へすすむ</button>
         <button id="btn-to-ch7" class="bigbtn" style="display:none">第7章へすすむ</button>
         <button id="btn-to-ch8" class="bigbtn" style="display:none">第8章へすすむ</button>
+        <button id="btn-to-ch9" class="bigbtn" style="display:none">第9章へすすむ</button>
+        <button id="btn-to-ch10" class="bigbtn" style="display:none">第10章へすすむ</button>
+        <button id="btn-to-ch11" class="bigbtn" style="display:none">第11章へすすむ</button>
+        <button id="btn-to-ch12" class="bigbtn" style="display:none">第12章へすすむ</button>
+        <button id="btn-to-ch13" class="bigbtn" style="display:none">第13章へすすむ</button>
+        <button id="btn-to-ch14" class="bigbtn" style="display:none">第14章へすすむ</button>
         <a id="clear-link" class="bigbtn sub" href="../aobee_farm_v48_soil_water.html?v=ui50" target="_blank" rel="noopener" style="display:none">元ネタの牧場ゲームで遊ぶ ↗</a>
         <button id="btn-clear-back" class="bigbtn">タイトルへ</button>
+      </div>
+    </div>
+
+    <!-- レース（第9・10章・軽量版） -->
+    <div id="race-screen" class="overlay hidden">
+      <div class="panel fish-panel">
+        <img id="race-art" src="assets/race-scene.jpg" alt="サーキットを走るあおびー">
+        <div class="fish-controls">
+          <div id="race-track">
+            <div id="race-zone"></div>
+            <div id="race-marker"></div>
+          </div>
+          <p id="race-msg" class="title-note">コーナーに合わせて「ここだ！」</p>
+          <p id="race-info" class="title-note"></p>
+          <button id="btn-race-stop" class="bigbtn" type="button">ここだ！</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 星集め（第11章・軽量版） -->
+    <div id="hoshi-screen" class="overlay hidden">
+      <div class="panel fish-panel">
+        <img id="hoshi-art" src="assets/hoshi-scene.jpg" alt="空の島で星屑を集めるあおびー">
+        <div id="hoshi-field"></div>
+        <div class="fish-controls">
+          <p id="hoshi-msg" class="title-note">降ってくる星屑をタイミングよくキャッチ！</p>
+          <p id="hoshi-info" class="title-note"></p>
+          <button id="btn-hoshi-catch" class="bigbtn" type="button">キャッチ！</button>
+        </div>
       </div>
     </div>
 
