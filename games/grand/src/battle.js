@@ -42,7 +42,11 @@ moguru: { src: 'assets/chars/enemy-moguru.png', h: 215, shadow: 160 },
 akari: { src: 'assets/chars/enemy-akari.png', h: 150, shadow: 110 },
 kani: { src: 'assets/chars/enemy-kani.png', h: 150, shadow: 115 },
 tako: { src: 'assets/chars/enemy-tako.png', h: 215, shadow: 160 },
-hoshigami: { src: 'assets/chars/enemy-hoshigami.png', h: 220, shadow: 155 }
+hoshigami: { src: 'assets/chars/enemy-hoshigami.png', h: 220, shadow: 155 },
+machine: { src: 'assets/chars/enemy-warubee-machine.png', h: 205, shadow: 170 },
+machine2: { src: 'assets/chars/enemy-warubee-machine.png', h: 215, shadow: 175 },
+puppet2: { src: 'assets/chars/enemy-karakuri.png', h: 205, shadow: 150 },
+warubee: { src: 'assets/chars/enemy-warubee.png', h: 200, shadow: 130 }
 };
 function cogFallback(art) {
 const c = document.createElement('canvas'); c.width = art.h; c.height = art.h;
@@ -187,16 +191,24 @@ log('強がりゲージ全開！　あおびーは歯を食いしばって踏み
 await wait(1300); renderStatus();
 return false;
 }
+if (B.state.flags && B.state.flags.hoshiShizuku > 0 && (B.state.chapter || 1) >= 14) {
+B.state.flags.hoshiShizuku--;
+B.state.hp = Math.ceil(B.state.maxHp * 0.6); B.state.stats.shizukuUsed = (B.state.stats.shizukuUsed || 0) + 1;
+Engine.Snd.win();
+log('ほし雫が光った！　ハル婆とミオの調合薬が、あおびーを包み込む！（HPかいふく）');
+await wait(1300); renderStatus();
+return false;
+}
 B.state.hp = 0; renderStatus();
 await logSeq(['あおびーは たおれた……'], 1100);
 end('lose', resolve || B._resolve);
 return true;
 }
 /* 勝利時の精算: 雑魚ドロップ（ほし草30%）＋経験値付与＋レベルアップ（最大HP+8/レベル・全回復） */
-const EXP_THRESHOLDS = [0, 30, 75, 140, 230, 350, 500, 690]; // 添字+1 = レベル（上限8。第8章で拡張）
+const EXP_THRESHOLDS = [0, 30, 75, 140, 230, 350, 500, 690, 900, 1150, 1450, 1800, 2200, 2650, 3150]; // 添字+1 = レベル（上限はフラグで段階拡張: 8→12→15）
 async function settleVictory() {
 const s = B.state;
-const droppable = B.enemies.some(e => !e.gears && e.kind !== 'boss' && e.kind !== 'hoshigami' && e.kind !== 'tako'); // ボス・歯車制ボスはドロップなし
+const droppable = B.enemies.some(e => !e.gears && e.kind !== 'boss' && e.kind !== 'hoshigami' && e.kind !== 'tako' && e.kind !== 'machine' && e.kind !== 'machine2' && e.kind !== 'puppet2' && e.kind !== 'warubee'); // ボス・歯車制ボスはドロップなし
 if (droppable && Math.random() < 0.3) {
 s.herbs++;
 Engine.Snd.pickup();
@@ -208,7 +220,8 @@ const gain = B.enemies.reduce((sum, e) => sum + (e.exp || 0), 0);
 if (gain > 0 && typeof s.exp === 'number') {
 s.exp += gain;
 let lv = 1;
-EXP_THRESHOLDS.forEach((t, i) => { if (s.exp >= t) lv = i + 1; });
+const capLv = s.flags && s.flags.capLv15 ? 15 : s.flags && s.flags.capLv12 ? 12 : 8;
+EXP_THRESHOLDS.forEach((t, i) => { if (s.exp >= t && i + 1 <= capLv) lv = i + 1; });
 if (lv > (s.level || 1)) {
 s.level = lv;
 s.maxHp = 40 + (lv - 1) * 8;
@@ -243,6 +256,15 @@ await wait(950);
 }
 
 async function enemyTurn(resolve) {
+// リンの応援（第9章サブ達成時）: ピンチで1回だけ回復してくれる
+if (B.state.flags && B.state.flags.rinSupport && !B.supportUsed && B.state.hp > 0 && B.state.hp <= B.state.maxHp * 0.4) {
+B.supportUsed = true;
+const heal = Math.min(30, B.state.maxHp - B.state.hp); B.state.hp += heal;
+Engine.Snd.pickup();
+log(`ピットからリンの声！「あおびー、がんばれー！」　応援でHPが ${heal} 回復！`);
+renderStatus();
+await wait(1100);
+}
 for (const e of B.enemies) {
 if (e.hp <= 0 ||!B) continue;
 await enemyAttack(e);
@@ -303,6 +325,18 @@ refreshEnemyHP();
 await wait(1150);
 }
 }
+// わるびーマシン／からくり人形・改: 2ターンごとに弱点（歯車⇔通常）が入れ替わる
+const mc = B.enemies.find(e => e.kind === 'machine' || e.kind === 'machine2' || e.kind === 'puppet2');
+if (mc && mc.hp > 0 && B) {
+B.phaseRound++;
+if (B.phaseRound % 2 === 0) {
+mc.weakMode = mc.weakMode === 'gear' ? 'normal' : 'gear';
+Engine.Snd.gear();
+log(`${mc.name} の歯車が組み替わった！　弱点は「${mc.weakMode === 'gear' ? '歯車アタック' : '通常こうげき'}」だ！` + (B.state.flags && B.state.flags.supWeak ? '（ボルトとガルドの見立て通り！）' : ''));
+refreshEnemyHP();
+await wait(1150);
+}
+}
 return true;
 }
 
@@ -352,7 +386,7 @@ await wait(1000);
 const lvBonus = (s.level || 1) - 1; // レベル攻撃ボーナス: 通常 +(Lv-1)×2 / チャージ +(Lv-1)×3
 let dmg = B.charged? rnd(16, 22) + lvBonus * 3: rnd(7, 10) + lvBonus * 2;
 let note = '';
-if (target.kind === 'boss' || target.kind === 'hoshigami') {
+if (target.kind === 'boss' || target.kind === 'hoshigami' || target.kind === 'machine' || target.kind === 'machine2' || target.kind === 'puppet2' || target.kind === 'warubee') {
 if (target.weakMode === type) { dmg = Math.round(dmg * 1.8); note = '　弱点を突いた！';}
 else if (target.kind === 'hoshigami' && target.phase === 'dark' && type === 'gear') { dmg = Math.round(dmg * 0.5); note = '　暗くて歯車に当たらない！';}
 else dmg = Math.round(dmg * 0.9);
@@ -387,6 +421,13 @@ log(`${target.name} を たおした！`);
 await wait(1100);
 await settleVictory();
 end('win', resolve);
+return;
+}
+if (target.kind === 'warubee' && target.hp > 0 && target.hp <= target.maxHp * 0.25 && !B.eventDone) {
+B.eventDone = true;
+log('わるびーは よろめいた……！');
+await wait(1100);
+end('event', resolve);
 return;
 }
 } // 通常敵の攻撃処理ここまで

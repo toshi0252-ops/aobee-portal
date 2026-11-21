@@ -33,6 +33,12 @@ const Engine = (() => {
     genzou: { file: 'npc-genzou.png', cx: 0.50, cy: 0.24, side: 0.50 },
     kaito: { file: 'npc-kaito.png', cx: 0.50, cy: 0.26, side: 0.50 },
     tome: { file: 'npc-tome.png', cx: 0.50, cy: 0.26, side: 0.50 },
+    hayate: { file: 'npc-hayate.png', cx: 0.50, cy: 0.26, side: 0.50 },
+    bolt: { file: 'npc-bolt.png', cx: 0.50, cy: 0.26, side: 0.50 },
+    rin: { file: 'npc-rin.png', cx: 0.50, cy: 0.26, side: 0.50 },
+    hoshio: { file: 'npc-hoshio.png', cx: 0.50, cy: 0.26, side: 0.50 },
+    ruru: { file: 'npc-ruru.png', cx: 0.50, cy: 0.26, side: 0.50 },
+    tetsu: { file: 'npc-tetsu.png', cx: 0.50, cy: 0.26, side: 0.50 },
     torune: { file: 'enemy-torune.png', cx: 0.58, cy: 0.30, side: 0.52 },
     yuragi: { file: 'enemy-yuragi.png', cx: 0.50, cy: 0.38, side: 0.55 }
   };
@@ -53,7 +59,8 @@ const Engine = (() => {
     oocog:   { file: 'enemy-guardian.png', h: 58 },
     kuwa:    { file: 'enemy-kuwa.png', h: 44 },
     akari:   { file: 'enemy-akari.png', h: 44 },
-    kani:    { file: 'enemy-kani.png', h: 46 }
+    kani:    { file: 'enemy-kani.png', h: 46 },
+    puppet:  { file: 'enemy-karakuri.png', h: 54 }
   };
   const actorImgs = {};
   for (const k of Object.keys(ACTOR_ART)) {

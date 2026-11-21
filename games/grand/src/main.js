@@ -16,7 +16,7 @@
     'assets/chars/npc-mio.png', 'assets/chars/npc-choro.png', 'assets/chars/enemy-akari.png', 'assets/chars/enemy-hoshigami.png',
     'assets/chars/npc-jirou.png', 'assets/chars/enemy-torune.png', 'assets/chars/enemy-yuragi.png',
     'assets/chars/npc-ochiyo.png', 'assets/chars/npc-gen.png',
-    'assets/chars/npc-genzou.png', 'assets/chars/npc-kaito.png', 'assets/chars/npc-tome.png', 'assets/chars/enemy-kani.png', 'assets/chars/enemy-tako.png', 'assets/fish-scene.jpg',
+    'assets/chars/npc-genzou.png', 'assets/chars/npc-kaito.png', 'assets/chars/npc-tome.png', 'assets/chars/enemy-kani.png', 'assets/chars/enemy-tako.png', 'assets/race-scene.jpg', 'assets/hoshi-scene.jpg', 'assets/chars/enemy-warubee-machine.png', 'assets/chars/enemy-warubee.png', 'assets/fish-scene.jpg',
     'assets/warubee-front-v1.png',
     'assets/cut-warubee-roof.png'
   ];
@@ -60,6 +60,40 @@
   /* ---------- HUD ---------- */
   function objective() {
     const f = S.flags;
+    if (S.chapter >= 14) {
+      if (S.flags.finalDone) return '祭りの夜へ';
+      if (curMap === 'tower1' && !S.flags.gearPlaced) return '歯車を運んで、北の扉を開けよう';
+      if (curMap === 'tower2' && !S.flags.tower2Open) return '壁画の順に燭台を灯そう（中上→左上→右下→右上→左下）';
+      return '頂上で、わるびーと決着をつけよう';
+    }
+    if (S.chapter >= 13) {
+      const sup = [S.flags.supWind, S.flags.supOil, S.flags.supDrop, S.flags.supWeak, S.flags.supMemo].filter(Boolean).length;
+      if (!S.flags.towerOpen) return `仲間の支援を集めよう（${sup}/5）　集まったらテツのところへ`;
+      return 'タワーの扉が開いた。決戦へ！';
+    }
+    if (S.chapter >= 12) {
+      if (!S.flags.puppetDown) return '足場を登り、からくり人形・改を倒そう';
+      if (!S.flags.starMachineDone) return '星集め機を止めて、星歯を取り戻そう（ルルの設計メモがあると安全に止められる）';
+      if (!S.flags.amiDone) return '足場編み機の編み目を「下・右・上」の順でほどこう';
+      return 'タワーへの扉が開いた';
+    }
+    if (S.chapter >= 11) {
+      if (!S.flags.hoshioMet) return '集落の長ホシオに挨拶しよう';
+      if (!S.flags.hutKey) return `星屑を集めてホシオに渡そう（手持ち ${S.flags.starShards || 0}/10）`;
+      if (!S.flags.recordSeen || !S.flags.letterSeen) return 'あの人の小屋を調べよう（集落の西はずれ）';
+      return 'タワーへの足場を登ろう';
+    }
+    if (S.chapter >= 10) {
+      if (!S.flags.raceFinalDone) return 'コースのピットの看板から、本選レースに出よう';
+      if (!S.flags.machineBossDone) return 'わるびーマシンと直接対決！';
+      return '空の島へ向かおう';
+    }
+    if (S.chapter >= 9) {
+      const pc = (S.flags.tireGear ? 1 : 0) + (S.flags.framePart ? 1 : 0) + (S.flags.springPart ? 1 : 0);
+      if (pc < 3) return `マシンの部品を集めよう（${pc}/3）　ハヤテ・ボルト・リンに頼もう`;
+      if (!S.flags.qualifyDone) return 'コースのピットの看板から、予選レースに出よう';
+      return '本選へ進もう';
+    }
     if (S.chapter >= 8) {
       if (!f.ch8Intro) return '港町に着いた';
       if (!f.contestDone) return '桟橋で港の主と釣り勝負！（海に向かって糸を垂らそう）';
@@ -278,6 +312,41 @@
   function spawnLighthouse() {
     World.actors = UZU_SPOTS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'uzu', x: c.x, y: c.y, visible: true }));
   }
+  /* ---------- 第9章: サーキットの場外の見える整備コグ ---------- */
+  const SEIBI_SPOTS = [
+    { id: 'seibi1', x: 4, y: 10 },
+    { id: 'seibi2', x: 17, y: 8 },
+    { id: 'seibi3', x: 8, y: 11 }
+  ];
+  function spawnCircuit() {
+    World.actors = SEIBI_SPOTS.filter(c => !S.flags['down_' + c.id]).map(c => ({ id: c.id, kind: 'cog', x: c.x, y: c.y, visible: true }));
+  }
+  /* ---------- 第11章: 星屑の原の見えるほしくずコグ ---------- */
+  const HOSHIKUZU_SPOTS = [
+    { id: 'hoshikuzu1', x: 4, y: 4 },
+    { id: 'hoshikuzu2', x: 15, y: 4 },
+    { id: 'hoshikuzu3', x: 10, y: 10 }
+  ];
+  function spawnHara() {
+    World.actors = HOSHIKUZU_SPOTS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'cog', x: c.x, y: c.y, visible: true }));
+  }
+  function spawnSkyup() {
+    World.actors = S.flags.puppetDown ? [] : [{ id: 'puppet2', kind: 'puppet', x: 10, y: 4, visible: true }];
+  }
+  const TOWER1_HEITAI = [
+    { id: 'heitai1', x: 6, y: 5 },
+    { id: 'heitai2', x: 13, y: 8 }
+  ];
+  const TOWER2_HEITAI = [
+    { id: 'heitai3', x: 5, y: 9 },
+    { id: 'heitai4', x: 14, y: 9 }
+  ];
+  function spawnTower1() {
+    World.actors = TOWER1_HEITAI.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'cog', x: c.x, y: c.y, visible: true }));
+  }
+  function spawnTower2() {
+    World.actors = TOWER2_HEITAI.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'cog', x: c.x, y: c.y, visible: true }));
+  }
   function spawnMinato() {
     // 壊れた自動魚獲り機の残骸（調べると spotWreck）
     World.actors = [{ id: 'wreck', kind: 'cog', x: 15, y: 11, visible: true }];
@@ -329,6 +398,16 @@
       }
       if (ex.gate === 'candles' && (S.flags.litCandles || []).length < 5) {
         Dialogue.play(Data.dlg.candlesGateMsg);
+        pushBack(ex);
+        return;
+      }
+      if (ex.gate === 'towerdoor' && !S.flags.towerOpen) {
+        Dialogue.play(Data.dlg.tetsuWait);
+        World.player.gy += 1; World.player.py = World.player.gy * Engine.TILE;
+        return;
+      }
+      if (ex.gate === 'skyup' && !((S.chapter || 1) >= 12 && S.flags.ch11Done)) {
+        Dialogue.play([Data.L('あおびー', '足場はまだ編み上がっていない。集落の用事を済ませてからだね。', 'aobee')]);
         pushBack(ex);
         return;
       }
@@ -505,6 +584,27 @@
       startBoss();
       return;
     }
+    // 第14章: 歯車の層の風圧（風読みの合図があれば読める）
+    if (curMap === 'tower1' && !S.flags.supWind && !Battle.active && !Dialogue.active) {
+      S.flags.gustStep = (S.flags.gustStep || 0) + 1;
+      if (S.flags.gustStep % 14 === 0) {
+        const p = World.player;
+        const below = World.tileAt(p.gx, p.gy + 1);
+        if (p.gy < 12 && (below === '.' || below === '=')) {
+          p.gy += 1; p.py = p.gy * Engine.TILE;
+          if (!S.flags.windMsgSeen) {
+            S.flags.windMsgSeen = true;
+            Dialogue.play([Data.L('あおびー', '強い風に押し戻された……！　風読みの合図があれば、風を読めるのに。', 'aobee')]);
+          }
+        }
+      }
+    }
+    // 第14章: 頂上の決戦ゾーン
+    if (curMap === 'towertop' && !S.flags.finalDone && !S.flags.finalStarted && x >= 8 && x <= 11 && y >= 5 && y <= 7) {
+      S.flags.finalStarted = true;
+      startFinale();
+      return;
+    }
     // 第8章ボスゾーン（灯室の装置の前）
     if (curMap === 'lamp' && !S.flags.takoDone && !S.flags.takoStarted && x >= 8 && x <= 11 && y >= 7 && y <= 8) {
       S.flags.takoStarted = true;
@@ -513,6 +613,10 @@
     }
   }
 
+  const TOWER2_CANDLES = [
+    { x: 3, y: 2 }, { x: 8, y: 2 }, { x: 13, y: 2 }, { x: 6, y: 5 }, { x: 11, y: 5 }
+  ];
+  const TOWER2_ORDER = ['8,2', '3,2', '11,5', '13,2', '6,5']; // 中上→左上→右下→右上→左下
   function applyTiles(w) {
     // 収集済みタイルを消す
     for (const key of Object.keys(S.picked)) {
@@ -524,6 +628,11 @@
     if (S.flags.millGear && w.mapId === 'mill') {
       // 小歯車タイル除去
       for (let y = 0; y < 14; y++) for (let x = 0; x < 20; x++) if (w.tileAt(x, y) === 'G') w.setTile(x, y, '.');
+    }
+    if (w.mapId === 'tower1' && S.flags.gearPlaced) { w.setTile(9, 0, '.'); w.setTile(10, 0, '.'); }
+    if (w.mapId === 'tower2') {
+      for (const c of TOWER2_CANDLES) w.setTile(c.x, c.y, (S.flags.litTower || []).includes(c.x + ',' + c.y) ? 'L' : 'C');
+      if (S.flags.tower2Open) { w.setTile(9, 0, '.'); w.setTile(10, 0, '.'); }
     }
     if (w.mapId === 'temple') {
       // 点灯済みの燭台を 'L' に復元する
@@ -579,6 +688,11 @@
       }
     }
     if (id === 'lighthouse') spawnLighthouse();
+    if (id === 'circuit') spawnCircuit();
+    if (id === 'hara') spawnHara();
+    if (id === 'skyup') spawnSkyup();
+    if (id === 'tower1') spawnTower1();
+    if (id === 'tower2') spawnTower2();
     if (id === 'road' && !S.flags.roadIntro) {
       S.flags.roadIntro = true;
       setTimeout(() => Dialogue.play(Data.dlg.roadIntro), 250);
@@ -637,6 +751,12 @@
     'monzen:9,2': 'spotMonzenShop', 'monzen:10,2': 'spotMonzenShop', 'monzen:11,2': 'spotMonzenShop',
     'monzen:3,10': 'spotMonzenInn', 'monzen:4,10': 'spotMonzenInn', 'monzen:5,10': 'spotMonzenInn',
     'lighthouse:2,0': 'spotRemnant', 'lighthouse:17,0': 'spotRecord',
+    'circuit:9,2': 'spotClock', 'circuit:10,2': 'spotClock',
+    'sky:10,4': 'spotSkySign',
+    'hara:3,2': 'spotStar', 'hara:14,2': 'spotStar', 'hara:5,8': 'spotStar', 'hara:16,8': 'spotStar',
+    'skyhut:6,3': 'spotRecord11', 'skyhut:12,3': 'spotLetter',
+    'skyup:3,3': 'spotDiary',
+    'tower2:9,7': 'spotMuralTower', 'tower2:10,7': 'spotMuralTower',
     'lamp:9,6': 'spotLampAfter', 'lamp:10,6': 'spotLampAfter',
     'monzen:7,12': 'spotMonzenSign',
     'minato:7,2': 'spotMarket', 'minato:8,2': 'spotMarket', 'minato:9,2': 'spotMarket',
@@ -671,6 +791,20 @@
       } else if (curMap === 'lighthouse') {
         const uc = UZU_SPOTS.find(c => c.id === actor.id && !visitDone[c.id]);
         if (uc) { startUzuBattle(uc); return; }
+      } else if (curMap === 'tower1') {
+        const ht = TOWER1_HEITAI.find(c => c.id === actor.id && !visitDone[c.id]);
+        if (ht) { startHeitaiBattle(ht); return; }
+      } else if (curMap === 'tower2') {
+        const ht = TOWER2_HEITAI.find(c => c.id === actor.id && !visitDone[c.id]);
+        if (ht) { startHeitaiBattle(ht); return; }
+      } else if (curMap === 'skyup') {
+        if (actor.id === 'puppet2' && !S.flags.puppetDown) { startPuppetBattle(); return; }
+      } else if (curMap === 'hara') {
+        const hc = HOSHIKUZU_SPOTS.find(c => c.id === actor.id && !visitDone[c.id]);
+        if (hc) { startHoshikuzuBattle(hc); return; }
+      } else if (curMap === 'circuit') {
+        const sc = SEIBI_SPOTS.find(c => c.id === actor.id && !S.flags['down_' + c.id]);
+        if (sc) { startSeibiBattle(sc); return; }
       } else if (curMap === 'minato') {
         if (actor.id === 'wreck') { Dialogue.play(Data.dlg.spotWreck); return; }
       }
@@ -842,6 +976,116 @@
           Dialogue.play(Data.dlg.genChat[(n - 1) % Data.dlg.genChat.length]);
         }
       }
+      else if (npc.id === 'hoshio') {
+        if (!S.flags.hoshioMet) {
+          Dialogue.play(Data.dlg.hoshioFirst, () => { S.flags.hoshioMet = true; S.flags.hoshiQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.hoshiQuest && !S.flags.hutKey && (S.flags.starShards || 0) >= 10) {
+          Dialogue.play(Data.dlg.hoshiDone, () => { S.flags.starShards -= 10; S.flags.hutKey = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.recordSeen) Dialogue.play(Data.dlg.hoshioAfter);
+        else if (S.flags.hutKey) Dialogue.play([Data.L('ホシオ', '小屋は集落の西はずれだ。中にあるものは、丁寧に扱ってやってくれ。', 'hoshio')]);
+        else Dialogue.play(Data.dlg.hoshioWait);
+      }
+      else if (npc.id === 'ruru') {
+        if (!S.flags.ruruMet) {
+          Dialogue.play(Data.dlg.ruruFirst, () => { S.flags.ruruMet = true; refreshHUD(); save(); });
+        }
+        else if ((S.chapter || 1) >= 12 && !S.flags.ruruMemo) {
+          Dialogue.play(Data.dlg.ruruMemo, () => { S.flags.ruruMemo = true; refreshHUD(); save(); });
+        }
+        else if (!S.flags.ruruWishDone && (S.flags.starTotal || 0) >= 15) {
+          Dialogue.play(Data.dlg.ruruWish, () => { S.flags.ruruWishDone = true; refreshHUD(); save(); });
+        }
+        else Dialogue.play(Data.dlg.ruruAfter);
+      }
+      else if (npc.id === 'teruSky') Dialogue.play(Data.dlg.teruSky);
+      else if (npc.id === 'tetsuF') {
+        const ready = S.flags.supWind && S.flags.supOil && S.flags.supDrop && S.flags.supWeak && S.flags.supMemo;
+        if (S.flags.towerOpen) Dialogue.play([Data.L('テツ', '扉は開いておる。行ってきな、あおびー。', 'tetsu')]);
+        else if (ready) {
+          Dialogue.play(Data.dlg.tetsuOpen, () => {
+            S.flags.towerOpen = true;
+            if (S.flags.supCheer && S.flags.lorePhoto && S.flags.genzouGift) S.flags.minnaAobee = true;
+            S.flags.ch13Done = true; S.playMs += Date.now() - S.startedAt; refreshHUD(); save(); showClear13();
+          });
+        }
+        else Dialogue.play(Data.dlg.tetsuWait);
+      }
+      else if (npc.id === 'galdF') {
+        if (!S.flags.galdMet13) Dialogue.play(Data.dlg.gald13, () => { S.flags.galdMet13 = true; refreshHUD(); save(); });
+        else Dialogue.play([Data.L('ガルド', 'わるびーの弱点の見立ては、ボルトが持っておる。……あいつを、頼んだぞ。', 'gardo')]);
+      }
+      else if (npc.id === 'minoriF') {
+        if (!S.flags.supWind) Dialogue.play(Data.dlg.supWindDlg, () => { S.flags.supWind = true; refreshHUD(); save(); });
+        else Dialogue.play([Data.L('みのり', '風読みの合図、塔でも役立つはずや。気をつけてな。', 'minori')]);
+      }
+      else if (npc.id === 'mioF') {
+        if (!S.flags.supOil) Dialogue.play(Data.dlg.supOilDlg, () => { S.flags.supOil = true; refreshHUD(); save(); });
+        else Dialogue.play([Data.L('ミオ', '星灯りのオイル、暗い層でもきっと灯せます。', 'mio')]);
+      }
+      else if (npc.id === 'herbF') {
+        if (S.flags.supDrop) Dialogue.play([Data.L('ハル婆', 'ほし雫は決戦の切り札じゃ。大事に使いな。', 'herb')]);
+        else if (!S.flags.supOil) Dialogue.play(Data.dlg.herbWait13);
+        else Dialogue.play(Data.dlg.supDropDlg, () => { S.flags.supDrop = true; S.flags.hoshiShizuku = (S.flags.hoshiShizuku || 0) + 2; refreshHUD(); save(); });
+      }
+      else if (npc.id === 'choroF') {
+        if (!S.flags.lorePhoto) Dialogue.play(Data.dlg.choro13, () => { S.flags.lorePhoto = true; refreshHUD(); save(); });
+        else Dialogue.play([Data.L('長老', 'わるびーの意地の裏側を、あおびーなら分かってやれるじゃろう。', 'choro')]);
+      }
+      else if (npc.id === 'hayateF') {
+        if (!S.flags.supCheer) Dialogue.play(Data.dlg.supCheerDlg, () => { S.flags.supCheer = true; refreshHUD(); save(); });
+        else Dialogue.play([Data.L('ハヤテ', '声援は任せろ。塔の下から、全力で叫ぶぞ！', 'hayate')]);
+      }
+      else if (npc.id === 'boltF') {
+        if (S.flags.supWeak) Dialogue.play([Data.L('ボルト', '見立て通り、弱点は入れ替わる。表示を見逃すなよ。', 'bolt')]);
+        else if (!S.flags.galdMet13) Dialogue.play(Data.dlg.boltWait13);
+        else Dialogue.play(Data.dlg.supWeakDlg, () => { S.flags.supWeak = true; refreshHUD(); save(); });
+      }
+      else if (npc.id === 'genzouF') {
+        if (!S.flags.genzouGift) Dialogue.play(Data.dlg.genzou13, () => { S.flags.genzouGift = true; S.herbs += 2; refreshHUD(); save(); });
+        else Dialogue.play([Data.L('源造', '無事に帰ってこいよ、あおびー。', 'genzou')]);
+      }
+      else if (npc.id === 'teruF') {
+        if (!S.flags.supMemo) Dialogue.play(Data.dlg.supMemoDlg, () => { S.flags.supMemo = true; refreshHUD(); save(); });
+        else Dialogue.play([Data.L('郵便屋テル', '設計メモは大事にね。心臓を止める手順だよ。', 'postman')]);
+      }
+      else if (npc.id === 'hayate') {
+        if (!S.flags.hayateMet) {
+          Dialogue.play(Data.dlg.hayateFirst, () => { S.flags.hayateMet = true; S.flags.seibiQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.seibiQuest && !S.flags.tireGear && (S.flags.seibiDown || 0) >= 3) {
+          Dialogue.play(Data.dlg.hayateQuestDone, () => { S.flags.tireGear = true; refreshHUD(); save(); checkParts(); });
+        }
+        else if (S.flags.tireGear) Dialogue.play(Data.dlg.hayateAfter);
+        else Dialogue.play(Data.dlg.hayateWait);
+      }
+      else if (npc.id === 'bolt') {
+        if (!S.flags.clockSeen) {
+          Dialogue.play(Data.dlg.boltClock, () => { S.flags.clockSeen = true; refreshHUD(); save(); });
+        }
+        else if (!S.flags.boltMet) {
+          Dialogue.play(Data.dlg.boltFirst, () => { S.flags.boltMet = true; S.flags.nejiQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.nejiItem && !S.flags.framePart) {
+          Dialogue.play(Data.dlg.boltNejiDone, () => { S.flags.framePart = true; S.flags.nejiItem = false; refreshHUD(); save(); checkParts(); });
+        }
+        else if (S.flags.framePart) Dialogue.play(Data.dlg.boltAfter);
+        else Dialogue.play(Data.dlg.boltWait);
+      }
+      else if (npc.id === 'rin') {
+        if (!S.flags.rinMet) {
+          Dialogue.play(Data.dlg.rinFirst, () => { S.flags.rinMet = true; S.flags.toolQuest = true; refreshHUD(); save(); });
+        }
+        else if (S.flags.toolItem && !S.flags.springPart) {
+          Dialogue.play(Data.dlg.rinToolDone, () => { S.flags.springPart = true; S.flags.toolItem = false; S.flags.rinSupport = true; refreshHUD(); save(); checkParts(); });
+        }
+        else if (S.flags.springPart) Dialogue.play(Data.dlg.rinAfter);
+        else Dialogue.play(Data.dlg.rinWait);
+      }
+      else if (npc.id === 'hayateC') Dialogue.play(Data.dlg.hayateC);
+      else if (npc.id === 'boltC') Dialogue.play(Data.dlg.boltC);
+      else if (npc.id === 'rinC') Dialogue.play(Data.dlg.rinC);
       else if (npc.id === 'tome') {
         if (!S.flags.tomeMet) {
           Dialogue.play(Data.dlg.tomeFirst, () => { S.flags.tomeMet = true; refreshHUD(); save(); });
@@ -940,10 +1184,60 @@
       else Dialogue.play(Data.dlg.hutAfter);
       return;
     }
+    if (curMap === 'sky' && World.tileAt(f.x, f.y) === 'U') {
+      if (!S.flags.hutKey) { Dialogue.play(Data.dlg.spotHutDoor); return; }
+      curMap = 'skyhut';
+      World.loadMap('skyhut', 10, 12, true);
+      World.player.dir = 'up';
+      return;
+    }
     // 調べるスポット（家具・大木・石柱・時計など）
     const spotKey = curMap + ':' + f.x + ',' + f.y;
     if (curMap === 'hill' && f.y === 2 && f.x >= 9 && f.x <= 11) { Dialogue.play(S.flags.cleared4 ? Data.dlg.spotWindmillAfter : Data.dlg.spotWindmill); return; }
     if (curMap === 'clockroom' && f.y === 1 && f.x >= 9 && f.x <= 11) { Dialogue.play(S.flags.cleared6 ? Data.dlg.spotClockAfter : Data.dlg.spotClock); return; }
+    if (spotKey === 'circuit:2,2' && S.flags.nejiQuest && !S.flags.nejiItem && !S.flags.framePart) {
+      Dialogue.play(Data.dlg.spotNeji, () => { S.flags.nejiItem = true; refreshHUD(); save(); });
+      return;
+    }
+    if (spotKey === 'circuit:15,10' && S.flags.toolQuest && !S.flags.toolItem && !S.flags.springPart) {
+      Dialogue.play(Data.dlg.spotTool, () => { S.flags.toolItem = true; refreshHUD(); save(); });
+      return;
+    }
+    if (spotKey === 'course:3,3') { pitSign(); return; }
+    if (spotKey === 'hara:10,8') {
+      if (S.flags.hoshiQuest && !S.flags.ch11Done) { startGathering(); return; }
+      Dialogue.play(Data.dlg.spotStar);
+      return;
+    }
+    if (spotKey === 'skyhut:6,3' && !S.flags.recordSeen) {
+      Dialogue.play(Data.dlg.spotRecord11, () => { S.flags.recordSeen = true; refreshHUD(); save(); checkHutDone(); });
+      return;
+    }
+    if (spotKey === 'skyhut:12,3' && !S.flags.letterSeen) {
+      Dialogue.play(Data.dlg.spotLetter, () => { S.flags.letterSeen = true; refreshHUD(); save(); checkHutDone(); });
+      return;
+    }
+    if ((spotKey === 'skyup:4,2' || spotKey === 'skyup:5,2')) { starMachineSpot(); return; }
+    if ((spotKey === 'skyup:12,2' || spotKey === 'skyup:13,2')) { amiMachineSpot(); return; }
+    if (spotKey === 'skyup:8,11' || spotKey === 'skyup:11,9' || spotKey === 'skyup:8,8') { weaveSpot(spotKey); return; }
+    if (spotKey === 'tower1:3,11') {
+      if (S.flags.gearPlaced) Dialogue.play([Data.L('', '歯車はソケットにはまっている。')]);
+      else if (S.flags.gearCarrying) Dialogue.play([Data.L('あおびー', 'もう歯車は担いでいる。ソケットは北東だ。', 'aobee')]);
+      else Dialogue.play(Data.dlg.spotGearPile, () => { S.flags.gearCarrying = true; refreshHUD(); save(); });
+      return;
+    }
+    if (spotKey === 'tower1:16,3') {
+      if (S.flags.gearPlaced) Dialogue.play([Data.L('', '扉は開いている。')]);
+      else if (S.flags.gearCarrying) {
+        Dialogue.play(Data.dlg.spotSocketDone, () => {
+          S.flags.gearCarrying = false; S.flags.gearPlaced = true;
+          World.setTile(9, 0, '.'); World.setTile(10, 0, '.');
+          refreshHUD(); save();
+        });
+      } else Dialogue.play([Data.L('あおびー', '歯車のソケットだ。大きな歯車をはめれば、扉が開きそう。歯車は南西にあったはず。', 'aobee')]);
+      return;
+    }
+    if (curMap === 'tower2' && TOWER2_CANDLES.some(c => spotKey === 'tower2:' + c.x + ',' + c.y)) { towerCandle(spotKey); return; }
     const spotDlg = SPOTS[spotKey];
     if (spotDlg) { Dialogue.play(Data.dlg[spotDlg]); return; }
     const t = World.tileAt(f.x, f.y);
@@ -1111,6 +1405,28 @@
     refreshHUD();
   }
 
+  /* 第9章: 場外の見える整備コグ戦（倒した数はクエスト用に永続記録） */
+  async function startSeibiBattle(cog) {
+    const res = await Battle.start({
+      state: S, enemies: [{ ...Data.enemies.seibi }],
+      intro: '整備コグ が あらわれた！'
+    });
+    if (res === 'win') {
+      S.flags['down_' + cog.id] = true;
+      S.flags.seibiDown = (S.flags.seibiDown || 0) + 1;
+      World.actors = World.actors.filter(a => a.id !== cog.id);
+      refreshHUD(); save();
+    } else onLose();
+    refreshHUD();
+  }
+  /* 第9章: 部品が3つ揃ったらマシン完成イベント */
+  function checkParts() {
+    if (S.flags.tireGear && S.flags.framePart && S.flags.springPart && !S.flags.machineBuilt) {
+      S.flags.machineBuilt = true;
+      Dialogue.play(Data.dlg.partsAll, () => { refreshHUD(); save(); });
+    }
+  }
+
   /* 第7章: 釣り軽量版（タイミングバー。ゾーンで止めると釣れる） */
   const Fishing = {
     active: false, pos: 0, dir: 1, zoneStart: 55, zoneW: 18, speed: 2.2, timer: null, onDone: null,
@@ -1148,6 +1464,348 @@
     }
   };
   window.__grandFishing = Fishing; // 状態遷移テスト用ハンドル
+
+  /* 第9・10章: レース軽量版（タイミングバーでコーナーを抜ける） */
+  const Race = {
+    active: false, pos: 0, dir: 1, zoneStart: 55, zoneW: 16, speed: 2.6, timer: null, onDone: null,
+    corner: 0, corners: 3, clean: 0, need: 2,
+    start(onDone, opts) {
+      if (this.active) return;
+      this.active = true; this.onDone = onDone || null;
+      this.corners = (opts && opts.corners) || 3;
+      this.need = (opts && opts.need) || 2;
+      this.zoneW = (opts && opts.zoneW) || 16;
+      this.speed = (opts && opts.speed) || 2.6;
+      this.corner = 0; this.clean = 0;
+      this.newZone();
+      $('race-msg').textContent = (opts && opts.msg) || 'ゾーンで止めて、コーナーを抜けよう！';
+      World.frozen = true;
+      $('race-screen').classList.remove('hidden');
+      this.timer = setInterval(() => {
+        this.pos += this.dir * this.speed;
+        if (this.pos >= 100) { this.pos = 100; this.dir = -1; }
+        if (this.pos <= 0) { this.pos = 0; this.dir = 1; }
+        $('race-marker').style.left = this.pos + '%';
+      }, 30);
+    },
+    newZone() {
+      this.pos = 0; this.dir = 1;
+      this.zoneStart = 30 + Math.floor(Math.random() * (95 - this.zoneW - 30 + 1));
+      const zone = $('race-zone');
+      zone.style.left = this.zoneStart + '%'; zone.style.width = this.zoneW + '%';
+      $('race-marker').style.left = '0%';
+      $('race-info').textContent = `コーナー ${this.corner + 1}/${this.corners}　クリーン ${this.clean}（${this.need}つで成功）`;
+    },
+    stop() {
+      if (!this.active) return;
+      const okR = this.pos >= this.zoneStart && this.pos <= this.zoneStart + this.zoneW;
+      if (okR) this.clean++;
+      this.corner++;
+      if (this.corner < this.corners) {
+        $('race-msg').textContent = okR ? 'いいコーナリング！　次のコーナーだ！' : 'コーナーで膨らんだ……次のコーナーで取り返そう！';
+        this.newZone();
+        return;
+      }
+      this.active = false;
+      if (this.timer) clearInterval(this.timer);
+      this.timer = null;
+      $('race-screen').classList.add('hidden');
+      World.frozen = false;
+      const cb = this.onDone; this.onDone = null;
+      if (cb) cb(this.clean >= this.need, this.clean);
+    }
+  };
+  window.__grandRace = Race; // 状態遷移テスト用ハンドル
+
+  /* 第11章: 星集め軽量版（降ってくる星屑を集める） */
+  const Hoshi = {
+    active: false, caught: 0, need: 8, timeLeft: 45, timer: null, onDone: null, stars: [], spawnT: 0,
+    start(onDone, opts) {
+      if (this.active) return;
+      this.active = true; this.onDone = onDone || null;
+      this.caught = 0; this.need = (opts && opts.need) || 8; this.timeLeft = (opts && opts.seconds) || 45;
+      this.stars = []; this.spawnT = 0;
+      $('hoshi-field').innerHTML = '';
+      $('hoshi-msg').textContent = (opts && opts.msg) || '降ってくる星をタップするか、「キャッチ！」で一番下の星を取ろう！';
+      this.paint();
+      World.frozen = true;
+      $('hoshi-screen').classList.remove('hidden');
+      this.timer = setInterval(() => this.tick(), 100);
+    },
+    paint() { $('hoshi-info').textContent = `星屑 ${this.caught}/${this.need}　のこり ${Math.max(0, Math.ceil(this.timeLeft))}秒`; },
+    tick() {
+      if (!this.active) return;
+      this.timeLeft -= 0.1;
+      this.spawnT += 0.1;
+      if (this.spawnT >= 0.9) { this.spawnT = 0; this.spawn(); }
+      for (const st of this.stars) {
+        if (st.dead) continue;
+        st.y += st.v;
+        if (st.y > 102) { st.dead = true; if (st.el.remove) st.el.remove(); }
+        else st.el.style.top = st.y + '%';
+      }
+      this.stars = this.stars.filter(st => !st.dead);
+      this.paint();
+      if (this.timeLeft <= 0) this.finish(this.caught >= this.need);
+    },
+    spawn() {
+      const el = document.createElement('div');
+      el.textContent = '★';
+      el.className = 'hoshi-star';
+      el.style.left = (5 + Math.random() * 88) + '%';
+      el.style.top = '-6%';
+      const st = { el, y: -6, v: 1.6 + Math.random() * 1.2, dead: false };
+      el.addEventListener('pointerdown', () => this.catchStar(st));
+      $('hoshi-field').appendChild(el);
+      this.stars.push(st);
+    },
+    catchStar(st) {
+      if (!this.active || st.dead) return;
+      st.dead = true; if (st.el.remove) st.el.remove();
+      this.caught++;
+      Engine.Snd.pickup();
+      this.paint();
+      if (this.caught >= this.need) this.finish(true);
+    },
+    catchOne() {
+      if (!this.active) return;
+      let best = null;
+      for (const st of this.stars) if (!st.dead && (!best || st.y > best.y)) best = st;
+      if (best) this.catchStar(best);
+    },
+    finish(okH) {
+      if (!this.active) return;
+      this.active = false;
+      if (this.timer) clearInterval(this.timer);
+      this.timer = null;
+      $('hoshi-screen').classList.add('hidden');
+      World.frozen = false;
+      const cb = this.onDone; this.onDone = null;
+      if (cb) cb(okH, this.caught);
+    },
+    stop() { this.finish(this.caught >= this.need); }
+  };
+  window.__grandHoshi = Hoshi; // 状態遷移テスト用ハンドル
+  function startGathering() {
+    Hoshi.start((okH) => {
+      if (okH) {
+        Snd.pickup();
+        S.flags.starShards = (S.flags.starShards || 0) + 5;
+        S.flags.starTotal = (S.flags.starTotal || 0) + 5;
+        Dialogue.play([Data.L('', `星屑を5個集めた！（手持ち ${S.flags.starShards}個）`)], () => { refreshHUD(); save(); });
+      } else {
+        Dialogue.play([Data.L('', '時間切れ……もう一度挑戦しよう。')]);
+      }
+      refreshHUD();
+    }, { need: 8, seconds: 45, msg: '星集め！　降ってくる星を8つ集めよう！' });
+  }
+  async function startPuppetBattle() {
+    Dialogue.play(Data.dlg.puppetIntro, async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.puppet2 }],
+        intro: 'からくり人形・改 が あらわれた！',
+        hint: ['弱点は2ターンごとに入れ替わる。歯車が見えるターンは歯車アタック、そうでないターンは通常こうげきだ。']
+      });
+      if (res === 'win') {
+        S.flags.puppetDown = true;
+        World.actors = [];
+        Dialogue.play(Data.dlg.puppetWin, () => { refreshHUD(); save(); });
+      } else onLose();
+      refreshHUD();
+    });
+  }
+  function starMachineSpot() {
+    if (!S.flags.puppetDown) { Dialogue.play(Data.dlg.spotMachineLock); return; }
+    if (S.flags.starMachineDone) { Dialogue.play(Data.dlg.spotMachineAfter); return; }
+    if (!S.flags.ruruMemo) { Dialogue.play(Data.dlg.spotStarMachineNoMemo); return; }
+    Dialogue.play(Data.dlg.spotStarMachine, (res) => {
+      S.flags.starMachineDone = true;
+      S.flags.starSafeStop = res === 0;
+      if (res === 1) S.flags.islandDark = true;
+      S.hoshiba = 5;
+      refreshHUD(); save();
+    });
+  }
+  function amiMachineSpot() {
+    if (!S.flags.puppetDown) { Dialogue.play(Data.dlg.spotMachineLock); return; }
+    if (S.flags.amiDone) { Dialogue.play([Data.L('', '足場編み機は、別の針で編み続けている。足場は無事だ。')]); return; }
+    if (!S.flags.starMachineDone) { Dialogue.play(Data.dlg.spotAmiOrder); return; }
+    if (!S.flags.amiStarted) {
+      Dialogue.play(Data.dlg.spotAmiStart, () => { S.flags.amiStarted = true; S.flags.weaveStep = 0; refreshHUD(); save(); });
+      return;
+    }
+    Dialogue.play([Data.L('あおびー', '編み目は足場の3か所。ホシオの教えは「下・右・上」の順だ。', 'aobee')]);
+  }
+  const WEAVE_ORDER = ['skyup:8,11', 'skyup:11,9', 'skyup:8,8'];
+  const WEAVE_NAMES = { 'skyup:8,11': '下の編み目', 'skyup:11,9': '右の編み目', 'skyup:8,8': '上の編み目' };
+  function weaveSpot(spotKey) {
+    if (!S.flags.amiStarted || S.flags.amiDone) {
+      Dialogue.play([Data.L('', '足場の編み目だ。編み機の仕組みが分からないと、ほどけそうにない。')]);
+      return;
+    }
+    const step = S.flags.weaveStep || 0;
+    if (WEAVE_ORDER[step] === spotKey) {
+      S.flags.weaveStep = step + 1;
+      if (S.flags.weaveStep >= 3) {
+        Dialogue.play(Data.dlg.amiDone, () => {
+          S.flags.amiDone = true;
+          S.hoshiba = 6;
+          S.flags.ch12Done = true; S.playMs += Date.now() - S.startedAt; refreshHUD(); save(); showClear12();
+        });
+      } else {
+        Dialogue.play([Data.L('', `${WEAVE_NAMES[spotKey]}をほどいた！（${S.flags.weaveStep}/3）`)], () => { refreshHUD(); save(); });
+      }
+    } else {
+      S.flags.weaveStep = 0;
+      Dialogue.play([Data.L('あおびー', '順番が違う……編み目が元に戻った。ホシオの教えは「下・右・上」だ。', 'aobee')], () => { refreshHUD(); save(); });
+    }
+  }
+  async function startHeitaiBattle(cog) {
+    const res = await Battle.start({
+      state: S, enemies: [{ ...Data.enemies.heitai }],
+      intro: 'からくり兵隊 が あらわれた！'
+    });
+    if (res === 'win') {
+      visitDone[cog.id] = true;
+      World.actors = World.actors.filter(a => a.id !== cog.id);
+      refreshHUD(); save();
+    } else onLose();
+    refreshHUD();
+  }
+  function towerCandle(spotKey) {
+    const key = spotKey.replace('tower2:', '');
+    S.flags.litTower = S.flags.litTower || [];
+    if (S.flags.litTower.includes(key)) { Dialogue.play([Data.L('', 'この燭台は、もう灯っている。')]); return; }
+    if (!S.flags.supOil) {
+      Dialogue.play([Data.L('あおびー', '燭台だ。……灯すための星灯りのオイルがない。ミオに分けてもらおう。', 'aobee')]);
+      return;
+    }
+    if (TOWER2_ORDER[S.flags.litTower.length] === key) {
+      S.flags.litTower.push(key);
+      World.setTile(...key.split(',').map(Number), 'L');
+      Snd.pickup();
+      if (S.flags.litTower.length >= 5) {
+        S.flags.tower2Open = true;
+        World.setTile(9, 0, '.'); World.setTile(10, 0, '.');
+        Dialogue.play([Data.L('', '5本の燭台が灯った！　北の扉が開く音がした！')], () => { refreshHUD(); save(); });
+      } else {
+        Dialogue.play([Data.L('', `燭台に灯りがともった！（${S.flags.litTower.length}/5）`)], () => { refreshHUD(); save(); });
+      }
+    } else {
+      S.flags.litTower = [];
+      for (const c of TOWER2_CANDLES) World.setTile(c.x, c.y, 'C');
+      Dialogue.play([Data.L('あおびー', '順番が違う……灯りが全部消えた。壁画の順は「中上→左上→右下→右上→左下」だ。', 'aobee')], () => { refreshHUD(); save(); });
+    }
+  }
+  /* ---------- 第14章: 最終決戦（3段階） ---------- */
+  function startFinale() {
+    Dialogue.play(Data.dlg.finaleIntro, async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.heitai }, { ...Data.enemies.heitai }],
+        intro: 'からくり兵隊 が あらわれた！'
+      });
+      if (res !== 'win') { S.flags.finalStarted = false; onLose(); return; }
+      if (S.flags.supCheer && !S.flags.cheerUsed) {
+        S.flags.cheerUsed = true;
+        Dialogue.play(Data.dlg.cheerHeal, async () => { S.hp = S.maxHp; refreshHUD(); finaleStage2(); });
+      } else finaleStage2();
+    });
+  }
+  function finaleStage2() {
+    Dialogue.play(Data.dlg.machine2Intro, async () => {
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.machine2 }],
+        intro: 'わるびーマシン改 が あらわれた！',
+        hint: [S.flags.supWeak ? 'ボルトとガルドの見立て通り、弱点は2ターンごとに入れ替わる。' : '弱点は2ターンごとに入れ替わるようだ。']
+      });
+      if (res !== 'win') { S.flags.finalStarted = false; onLose(); return; }
+      Dialogue.play(Data.dlg.warubeeFinalIntro, async () => {
+        const res2 = await Battle.start({
+          state: S, enemies: [{ ...Data.enemies.warubee }],
+          intro: 'わるびー が 立ちはだかった！'
+        });
+        if (res2 === 'lose') { S.flags.finalStarted = false; onLose(); return; }
+        S.flags.finalDone = true;
+        S.hoshiba = 7;
+        refreshHUD(); save();
+        Dialogue.play(Data.dlg.climax, () => {
+          curMap = 'village';
+          World.loadMap('village', 10, 11, true);
+          World.player.dir = 'up';
+          Dialogue.play(Data.dlg.epilogue, () => {
+            S.flags.endingDone = true; S.playMs += Date.now() - S.startedAt; refreshHUD(); save(); showEnding();
+          });
+        });
+      });
+    });
+  }
+  function checkHutDone() {
+    if (S.flags.recordSeen && S.flags.letterSeen && !S.flags.ch11Done) {
+      Dialogue.play(Data.dlg.hutWrap, () => {
+        S.flags.ch11Done = true; S.playMs += Date.now() - S.startedAt; refreshHUD(); save(); showClear11();
+      });
+    }
+  }
+  async function startHoshikuzuBattle(cog) {
+    const res = await Battle.start({
+      state: S, enemies: [{ ...Data.enemies.hoshikuzu }],
+      intro: 'ほしくずコグ が あらわれた！'
+    });
+    if (res === 'win') {
+      visitDone[cog.id] = true;
+      World.actors = World.actors.filter(a => a.id !== cog.id);
+      refreshHUD(); save();
+    } else onLose();
+    refreshHUD();
+  }
+  function pitSign() {
+    if (S.chapter >= 10) {
+      if (!S.flags.raceFinalDone) { Dialogue.play(Data.dlg.raceFinalIntro, () => startFinalRace()); }
+      else if (!S.flags.machineBossDone) { Dialogue.play(Data.dlg.machineIntro, () => startMachineBattle()); }
+      else Dialogue.play([Data.L('', '本選は終わった。空の島からの便りが届いている。')]);
+      return;
+    }
+    if (!S.flags.machineBuilt) { Dialogue.play([Data.L('あおびー', 'まだマシンがない。部品を集めて、ボルトに仕上げてもらおう。', 'aobee')]); return; }
+    if (!S.flags.qualifyDone) { Dialogue.play(Data.dlg.raceIntroQ, () => startQualify()); return; }
+    Dialogue.play([Data.L('', '予選は通過済みだ。')]);
+  }
+  function startQualify() {
+    Race.start((pass) => {
+      if (pass) {
+        S.flags.qualifyDone = true;
+        Dialogue.play(Data.dlg.qualifyWin, () => {
+          S.flags.ch9Done = true; S.playMs += Date.now() - S.startedAt; refreshHUD(); save(); showClear9();
+        });
+      } else {
+        Dialogue.play(Data.dlg.qualifyRetry);
+      }
+      refreshHUD();
+    }, { corners: 3, zoneW: 17, speed: 2.6, need: 2, msg: '予選レース！　3つのコーナー、2つ以上クリーンで通過！' });
+  }
+  function startFinalRace() {
+    Race.start((pass) => {
+      S.flags.raceFinalDone = true;
+      Dialogue.play(pass ? Data.dlg.raceWin : Data.dlg.raceLose, () => {
+        Dialogue.play(Data.dlg.machineIntro, () => startMachineBattle());
+      });
+      refreshHUD();
+    }, { corners: 4, zoneW: 14, speed: 3.0, need: 3, msg: '本選レース！　4つのコーナー、3つ以上クリーンで勝ち！' });
+  }
+  async function startMachineBattle() {
+    const res = await Battle.start({
+      state: S, enemies: [{ ...Data.enemies.machine }],
+      intro: 'わるびーマシン が あらわれた！',
+      hint: ['弱点は2ターンごとに入れ替わる。歯車が見えるターンは歯車アタック、そうでないターンは通常こうげきが効く。']
+    });
+    if (res === 'win') {
+      S.flags.machineBossDone = true;
+      S.hoshiba = 4;
+      Dialogue.play(Data.dlg.machineWin, () => {
+        S.flags.ch10Done = true; S.playMs += Date.now() - S.startedAt; refreshHUD(); save(); showClear10();
+      });
+    } else onLose();
+    refreshHUD();
+  }
   function onFishResult(okF) {
     if (okF) {
       Snd.pickup();
@@ -1392,6 +2050,33 @@
   function onLose() {
     S.losses++;
     S.hp = S.maxHp; S.guts = 0;
+    if (S.chapter >= 13) {
+      // 第13・14章の復活点は麓の町（テツのところ）
+      S.herbs += 1;
+      curMap = 'fumoto';
+      World.loadMap('fumoto', 10, 12, true);
+      World.player.dir = 'up';
+      setTimeout(() => Dialogue.play(Data.dlg.loseFumoto, () => { refreshHUD(); save(); }), 200);
+      return;
+    }
+    if (S.chapter >= 11) {
+      // 第11・12章の復活点は空の島の集落（ホシオのところ）
+      S.herbs += 1;
+      curMap = 'sky';
+      World.loadMap('sky', 10, 12, true);
+      World.player.dir = 'up';
+      setTimeout(() => Dialogue.play(Data.dlg.loseSky, () => { refreshHUD(); save(); }), 200);
+      return;
+    }
+    if (S.chapter >= 9) {
+      // 第9・10章の復活点はサーキットの町（ボルトの工房）
+      S.herbs += 1;
+      curMap = 'circuit';
+      World.loadMap('circuit', 10, 12, true);
+      World.player.dir = 'up';
+      setTimeout(() => Dialogue.play(Data.dlg.loseCircuit, () => { refreshHUD(); save(); }), 200);
+      return;
+    }
     if (S.chapter >= 7) {
       // 第7・8章の復活点は港町（源造のところ）。ほし草のお茶で、ほし草も1つ分けてもらえる
       S.herbs += 1;
@@ -1459,7 +2144,7 @@
   }
 
   /* ---------- 章タイトルカード ---------- */
-  const CHAPTER_TITLES = { 1: 'はぐるま村の異変', 2: '水車小屋の対決', 3: 'まきばの集落', 4: '暴走！ 大風車', 5: '神殿門前町', 6: '星の神殿と止まった時計', 7: '港町と灯台守', 8: '灯台と大ダコ騒動' };
+  const CHAPTER_TITLES = { 1: 'はぐるま村の異変', 2: '水車小屋の対決', 3: 'まきばの集落', 4: '暴走！ 大風車', 5: '神殿門前町', 6: '星の神殿と止まった時計', 7: '港町と灯台守', 8: '灯台と大ダコ騒動', 9: 'サーキットの町', 10: '歯車サーキットの挑戦状', 11: '空の島の集落', 12: '空の島と、わるびーの手紙', 13: 'タワーの麓の町', 14: '歯車タワー決戦' };
   let chapterCardTimer = null;
   // 章が切り替わる瞬間にタイトルカードを出す（約1.75秒、ワールドは停止してから done へ）
   function showChapterCard(n, done) {
@@ -1626,7 +2311,212 @@
     $('btn-to-ch5').style.display = 'none';
     $('btn-to-ch7').style.display = 'none';
     $('btn-to-ch8').style.display = 'none';
-    $('btn-to-ch8').style.display = 'none';
+    $('btn-to-ch9').style.display = '';
+    $('btn-to-ch10').style.display = 'none';
+    $('btn-to-ch11').style.display = 'none';
+    $('btn-to-ch12').style.display = 'none';
+    $('btn-to-ch13').style.display = 'none';
+    $('btn-to-ch14').style.display = 'none';
+    $('clear-link').style.display = 'none';
+    $('clear-screen').classList.remove('hidden');
+  }
+  function hideClearBtns() {
+    for (const id of ['btn-to-ch3', 'btn-to-ch5', 'btn-to-ch7', 'btn-to-ch8', 'btn-to-ch9', 'btn-to-ch10', 'btn-to-ch11', 'btn-to-ch12', 'btn-to-ch13', 'btn-to-ch14']) {
+      const b = $(id); if (b) b.style.display = 'none';
+    }
+  }
+
+  /* ---------- 第9章: 開始 ---------- */
+  function startChapter9() {
+    S.chapter = 9;
+    S.flags.ch9Started = true;
+    S.flags.capLv12 = true;
+    curMap = 'circuit';
+    World.loadMap('circuit', 10, 11, true);
+    World.player.dir = 'up';
+    refreshHUD();
+    showChapterCard(9, () => {
+      Dialogue.play(Data.dlg.ch9Start, () => {
+        S.flags.ch9Intro = true;
+        refreshHUD(); save();
+      });
+    });
+  }
+  function showClear9() {
+    const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
+    $('clear-title').textContent = '第9章 クリア！';
+    $('clear-stats').innerHTML =
+      `プレイ時間（累計）： ${mins}分${secs}秒<br>` +
+      `星歯： ${S.hoshiba}/7<br>` +
+      `レベル： Lv${S.level || 1}（上限は Lv12 に上昇）<br>` +
+      `集めた部品： 3/3<br>` +
+      `強がりで踏みとどまった回数： ${S.stats.gutsSaves}回<br>` +
+      `たおれた回数： ${S.losses}回`;
+    $('clear-next').innerHTML = '予選通過！　本選では、わるびーマシンとの直接対決が待っている。<br>第10章「歯車サーキットの挑戦状」へつづく。';
+    hideClearBtns();
+    $('btn-to-ch10').style.display = '';
+    $('clear-link').style.display = 'none';
+    $('clear-screen').classList.remove('hidden');
+  }
+
+  /* ---------- 第10章: 開始 ---------- */
+  function startChapter10() {
+    S.chapter = 10;
+    S.flags.ch10Started = true;
+    curMap = 'course';
+    World.loadMap('course', 5, 11, true);
+    World.player.dir = 'up';
+    refreshHUD();
+    showChapterCard(10, () => {
+      Dialogue.play(Data.dlg.ch10Start, () => {
+        S.flags.ch10Intro = true;
+        refreshHUD(); save();
+      });
+    });
+  }
+  function showClear10() {
+    const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
+    $('clear-title').textContent = '第10章 クリア！';
+    $('clear-stats').innerHTML =
+      `プレイ時間（累計）： ${mins}分${secs}秒<br>` +
+      `星歯： ${S.hoshiba}/7<br>` +
+      `レベル： Lv${S.level || 1}<br>` +
+      `強がりで踏みとどまった回数： ${S.stats.gutsSaves}回<br>` +
+      `たおれた回数： ${S.losses}回`;
+    $('clear-next').innerHTML = '星歯4枚目を取り戻した。わるびーの様子が、少しだけ気にかかる……。<br>空の島から星屑の便りが届いた。第11章へつづく。';
+    hideClearBtns();
+    $('btn-to-ch11').style.display = '';
+    $('clear-link').style.display = 'none';
+    $('clear-screen').classList.remove('hidden');
+  }
+
+  /* ---------- 第11章: 開始 ---------- */
+  function startChapter11() {
+    S.chapter = 11;
+    S.flags.ch11Started = true;
+    curMap = 'sky';
+    World.loadMap('sky', 10, 11, true);
+    World.player.dir = 'up';
+    refreshHUD();
+    showChapterCard(11, () => {
+      Dialogue.play(Data.dlg.ch11Start, () => {
+        S.flags.ch11Intro = true;
+        refreshHUD(); save();
+      });
+    });
+  }
+  function showClear11() {
+    const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
+    $('clear-title').textContent = '第11章 クリア！';
+    $('clear-stats').innerHTML =
+      `プレイ時間（累計）： ${mins}分${secs}秒<br>` +
+      `星歯： ${S.hoshiba}/7<br>` +
+      `レベル： Lv${S.level || 1}<br>` +
+      `集めた星屑（累計）： ${S.flags.starTotal || 0}個<br>` +
+      `強がりで踏みとどまった回数： ${S.stats.gutsSaves}回<br>` +
+      `たおれた回数： ${S.losses}回`;
+    $('clear-next').innerHTML = '仕送りの記録と、書きかけの手紙。わるびーの意地の裏側が見えてきた。<br>足場を登り、二つの機械から星歯を取り戻そう。第12章へつづく。';
+    hideClearBtns();
+    $('btn-to-ch12').style.display = '';
+    $('clear-link').style.display = 'none';
+    $('clear-screen').classList.remove('hidden');
+  }
+  function startChapter13() {
+    S.chapter = 13;
+    S.flags.ch13Started = true;
+    S.flags.capLv15 = true;
+    curMap = 'fumoto';
+    World.loadMap('fumoto', 10, 11, true);
+    World.player.dir = 'up';
+    refreshHUD();
+    showChapterCard(13, () => {
+      Dialogue.play(Data.dlg.ch13Start, () => {
+        Dialogue.play(Data.dlg.warubeeLetterScene, () => {
+          S.flags.ch13Intro = true;
+          refreshHUD(); save();
+        });
+      });
+    });
+  }
+  function showClear13() {
+    const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
+    const sup = [S.flags.supWind, S.flags.supOil, S.flags.supDrop, S.flags.supWeak, S.flags.supMemo].filter(Boolean).length;
+    $('clear-title').textContent = '第13章 クリア！';
+    $('clear-stats').innerHTML =
+      `プレイ時間（累計）： ${mins}分${secs}秒<br>` +
+      `星歯： ${S.hoshiba}/7<br>` +
+      `レベル： Lv${S.level || 1}<br>` +
+      `集まった支援： ${sup}/5${S.flags.supCheer ? '（＋応援の声）' : ''}<br>` +
+      (S.flags.minnaAobee ? `称号： みんなのあおびー<br>` : '') +
+      `強がりで踏みとどまった回数： ${S.stats.gutsSaves}回<br>` +
+      `たおれた回数： ${S.losses}回`;
+    $('clear-next').innerHTML = 'タワーの扉が開いた。仲間たちの支援を背に、いざ決戦へ。<br>第14章「歯車タワー決戦」へつづく。';
+    hideClearBtns();
+    $('btn-to-ch14').style.display = '';
+    $('clear-link').style.display = 'none';
+    $('clear-screen').classList.remove('hidden');
+  }
+  function startChapter14() {
+    S.chapter = 14;
+    S.flags.ch14Started = true;
+    curMap = 'fumoto';
+    World.loadMap('fumoto', 10, 4, true);
+    World.player.dir = 'up';
+    refreshHUD();
+    showChapterCard(14, () => {
+      Dialogue.play(Data.dlg.ch14Start, () => {
+        S.flags.ch14Intro = true;
+        refreshHUD(); save();
+      });
+    });
+  }
+  function showEnding() {
+    const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
+    $('clear-title').textContent = 'エピローグ クリア！';
+    $('clear-stats').innerHTML =
+      `全14章 クリア！　おつかれさま！<br>` +
+      `プレイ時間（累計）： ${mins}分${secs}秒<br>` +
+      `星歯： ${S.hoshiba}/7（全て回収！）<br>` +
+      `レベル： Lv${S.level || 1}<br>` +
+      `星集め機の止め方： ${S.flags.starSafeStop ? '安全停止（島の星明かりは無事）' : '強制停止'}<br>` +
+      (S.flags.ruruWishDone ? `ルルの願い： かなえた<br>` : '') +
+      (S.flags.minnaAobee ? `称号： みんなのあおびー<br>` : '') +
+      `強がりで踏みとどまった回数： ${S.stats.gutsSaves}回<br>` +
+      `たおれた回数： ${S.losses}回`;
+    $('clear-next').innerHTML = '『あおびーと失われた歯車』は、これでおしまい。<br>遊んでくれてありがとう！　セーブはこのまま残るので、寄り道の続きもどうぞ。';
+    hideClearBtns();
+    $('clear-link').style.display = 'none';
+    $('clear-screen').classList.remove('hidden');
+  }
+  function startChapter12() {
+    S.chapter = 12;
+    S.flags.ch12Started = true;
+    curMap = 'sky';
+    World.loadMap('sky', 10, 11, true);
+    World.player.dir = 'up';
+    refreshHUD();
+    showChapterCard(12, () => {
+      Dialogue.play(Data.dlg.ch12Start, () => {
+        S.flags.ch12Intro = true;
+        refreshHUD(); save();
+      });
+    });
+  }
+  function showClear12() {
+    const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
+    $('clear-title').textContent = '第12章 クリア！';
+    $('clear-stats').innerHTML =
+      `プレイ時間（累計）： ${mins}分${secs}秒<br>` +
+      `星歯： ${S.hoshiba}/7<br>` +
+      `レベル： Lv${S.level || 1}<br>` +
+      `星集め機の止め方： ${S.flags.starSafeStop ? '安全停止（島の星明かりは無事）' : '強制停止'}<br>` +
+      `強がりで踏みとどまった回数： ${S.stats.gutsSaves}回<br>` +
+      `たおれた回数： ${S.losses}回`;
+    $('clear-next').innerHTML = '星歯6枚目を取り戻した。残るはタワーの心臓の1枚だけ。<br>麓の町で仲間と合流し、決戦の準備を整えよう。第13章へつづく。';
+    hideClearBtns();
+    $('btn-to-ch13').style.display = '';
+    $('clear-link').style.display = 'none';
+    $('clear-screen').classList.remove('hidden');
     $('clear-link').style.display = 'none';
     $('clear-screen').classList.remove('hidden');
   }
@@ -1686,9 +2576,57 @@
         startChapter7();
         return;
       }
+      if (S.flags.ch8Done && (S.chapter || 1) < 9) {
+        startChapter9();
+        return;
+      }
+      if (S.flags.ch12Done && (S.chapter || 1) < 13) {
+        startChapter13();
+        return;
+      }
+      if (S.flags.ch13Done && (S.chapter || 1) < 14) {
+        startChapter14();
+        return;
+      }
+      if (S.flags.ch11Done && (S.chapter || 1) < 12) {
+        startChapter12();
+        return;
+      }
+      if (S.flags.ch10Done && (S.chapter || 1) < 11) {
+        startChapter11();
+        return;
+      }
+      if (S.flags.ch9Done && (S.chapter || 1) < 10) {
+        startChapter10();
+        return;
+      }
       if (S.flags.ch7Done && (S.chapter || 1) < 8) {
         // 第7章クリア画面で閉じたセーブは第8章の冒頭から開始
         startChapter8();
+        return;
+      }
+      if (S.chapter >= 13 && !S.flags.ch13Intro) {
+        startChapter13();
+        return;
+      }
+      if (S.chapter >= 14 && !S.flags.ch14Intro) {
+        startChapter14();
+        return;
+      }
+      if (S.chapter >= 12 && !S.flags.ch12Intro) {
+        startChapter12();
+        return;
+      }
+      if (S.chapter >= 11 && !S.flags.ch11Intro) {
+        startChapter11();
+        return;
+      }
+      if (S.chapter >= 10 && !S.flags.ch10Intro) {
+        startChapter10();
+        return;
+      }
+      if (S.chapter >= 9 && !S.flags.ch9Intro) {
+        startChapter9();
         return;
       }
       if (S.chapter >= 8 && !S.flags.ch8Intro) {
@@ -1900,6 +2838,80 @@
       save();
       return;
     }
+    if (n === 9) {
+      // 第9章: サーキットの町に着いた直後（部品集めはこれから）
+      S = presetState(
+        { chapter: 9, level: 8, exp: 690, maxHp: 96, hp: 96, herbs: 6, fragments: 4, hoshiba: 3, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
+        { ...CH1_DONE_FLAGS, ...RANCH_DONE_FLAGS, ...TEMPLE_DONE_FLAGS,
+          ch7Started: true, ch7Intro: true, tomeMet: true, kaitoMet: true, driftDone: true, ch7Done: true,
+          ch8Started: true, ch8Intro: true, contestDone: true, lighthouseKey: true, takoDone: true, ch8Done: true, capLv12: true }
+      );
+      startChapter9();
+      save();
+      return;
+    }
+    if (n === 10) {
+      // 第10章: 本選の日（部品・予選・リンの応援は完了済みの想定）
+      S = presetState(
+        { chapter: 10, level: 9, exp: 900, maxHp: 104, hp: 104, herbs: 6, fragments: 4, hoshiba: 3, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
+        { ...CH1_DONE_FLAGS, ...RANCH_DONE_FLAGS, ...TEMPLE_DONE_FLAGS,
+          ch7Started: true, ch7Intro: true, driftDone: true, ch7Done: true,
+          ch8Started: true, ch8Intro: true, contestDone: true, lighthouseKey: true, takoDone: true, ch8Done: true, capLv12: true,
+          ch9Started: true, ch9Intro: true, clockSeen: true, hayateMet: true, seibiQuest: true, seibiDown: 3, tireGear: true,
+          boltMet: true, framePart: true, rinMet: true, springPart: true, rinSupport: true, machineBuilt: true, qualifyDone: true, ch9Done: true }
+      );
+      startChapter10();
+      save();
+      return;
+    }
+    if (n === 11) {
+      // 第11章: 空の島に着いた直後（星集めはこれから）
+      S = presetState(
+        { chapter: 11, level: 10, exp: 1150, maxHp: 112, hp: 112, herbs: 6, fragments: 4, hoshiba: 4, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
+        { ...CH1_DONE_FLAGS, ...RANCH_DONE_FLAGS, ...TEMPLE_DONE_FLAGS,
+          ch7Done: true, ch8Done: true, capLv12: true, ch9Done: true, ch10Done: true, machineBossDone: true, rinSupport: true }
+      );
+      startChapter11();
+      save();
+      return;
+    }
+    if (n === 12) {
+      // 第12章: 足場を登る直前（小屋の探索は完了済みの想定）
+      S = presetState(
+        { chapter: 12, level: 11, exp: 1450, maxHp: 120, hp: 120, herbs: 6, fragments: 4, hoshiba: 4, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
+        { ...CH1_DONE_FLAGS, ...RANCH_DONE_FLAGS, ...TEMPLE_DONE_FLAGS,
+          ch7Done: true, ch8Done: true, capLv12: true, ch9Done: true, ch10Done: true, machineBossDone: true, rinSupport: true,
+          ch11Started: true, ch11Intro: true, hoshioMet: true, hoshiQuest: true, hutKey: true, recordSeen: true, letterSeen: true, ch11Done: true, starTotal: 10 }
+      );
+      startChapter12();
+      save();
+      return;
+    }
+    if (n === 13) {
+      // 第13章: 麓の町に着いた直後（支援集めはこれから）
+      S = presetState(
+        { chapter: 13, level: 12, exp: 1800, maxHp: 128, hp: 128, herbs: 6, fragments: 4, hoshiba: 6, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
+        { ...CH1_DONE_FLAGS, ...RANCH_DONE_FLAGS, ...TEMPLE_DONE_FLAGS,
+          ch7Done: true, ch8Done: true, capLv12: true, ch9Done: true, ch10Done: true, machineBossDone: true, rinSupport: true,
+          ch11Done: true, hutKey: true, recordSeen: true, letterSeen: true, ch12Done: true, puppetDown: true, starMachineDone: true, starSafeStop: true, amiDone: true, ruruMemo: true, capLv15: true }
+      );
+      startChapter13();
+      save();
+      return;
+    }
+    if (n === 14) {
+      // 第14章: 支援が全部揃って扉が開いた直後
+      S = presetState(
+        { chapter: 14, level: 13, exp: 2200, maxHp: 136, hp: 136, herbs: 8, fragments: 4, hoshiba: 6, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
+        { ...CH1_DONE_FLAGS, ...RANCH_DONE_FLAGS, ...TEMPLE_DONE_FLAGS,
+          ch7Done: true, ch8Done: true, capLv12: true, ch9Done: true, ch10Done: true, machineBossDone: true, rinSupport: true,
+          ch11Done: true, hutKey: true, recordSeen: true, letterSeen: true, ch12Done: true, puppetDown: true, starMachineDone: true, starSafeStop: true, amiDone: true, ruruMemo: true, capLv15: true,
+          ch13Started: true, ch13Intro: true, supWind: true, supOil: true, supDrop: true, supWeak: true, supMemo: true, supCheer: true, hoshiShizuku: 2, galdMet13: true, lorePhoto: true, genzouGift: true, towerOpen: true, ch13Done: true, minnaAobee: true }
+      );
+      startChapter14();
+      save();
+      return;
+    }
     // 第6章: 神殿に入った直後（燭台はこれから）
     S = presetState(
       { chapter: 6, level: 5, exp: 230, maxHp: 72, hp: 72, herbs: 6, fragments: 4, hoshiba: 1, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
@@ -1941,7 +2953,7 @@
       try { location.reload(); } catch (e) { /* テスト環境などでは無視 */ }
     });
     $('btn-menu-close').addEventListener('click', () => closeMenu());
-    for (let n = 1; n <= 8; n++) $('btn-dbg-' + n).addEventListener('click', () => startDebugChapter(n));
+    for (let n = 1; n <= 14; n++) $('btn-dbg-' + n).addEventListener('click', () => startDebugChapter(n));
     $('btn-howto').addEventListener('click', () => { $('howto-screen').classList.remove('hidden'); });
     $('btn-howto-back').addEventListener('click', () => { $('howto-screen').classList.add('hidden'); });
     $('btn-clear-back').addEventListener('click', () => location.reload());
@@ -1961,7 +2973,35 @@
       $('clear-screen').classList.add('hidden');
       startChapter8();
     });
+    $('btn-to-ch9').addEventListener('click', () => {
+      $('clear-screen').classList.add('hidden');
+      startChapter9();
+    });
+    $('btn-to-ch13').addEventListener('click', () => {
+      $('clear-screen').classList.add('hidden');
+      startChapter13();
+    });
+    $('btn-to-ch14').addEventListener('click', () => {
+      $('clear-screen').classList.add('hidden');
+      startChapter14();
+    });
+    $('btn-to-ch12').addEventListener('click', () => {
+      $('clear-screen').classList.add('hidden');
+      startChapter12();
+    });
+    $('btn-to-ch11').addEventListener('click', () => {
+      $('clear-screen').classList.add('hidden');
+      startChapter11();
+    });
+    $('btn-to-ch10').addEventListener('click', () => {
+      $('clear-screen').classList.add('hidden');
+      startChapter10();
+    });
     $('btn-fish-stop').addEventListener('click', () => Fishing.stop());
+    $('btn-race-stop').addEventListener('click', () => Race.stop());
+    $('btn-hoshi-catch').addEventListener('click', () => Hoshi.catchOne());
+    window.addEventListener('grand-tapa', () => { if (Hoshi.active) Hoshi.catchOne(); });
+    window.addEventListener('grand-tapa', () => { if (Race.active) Race.stop(); });
     window.addEventListener('grand-tapa', () => { if (Fishing.active) Fishing.stop(); });
     // BGMミュート切替（状態は Snd 側で localStorage に保存される）
     const bgmBtn = $('btn-bgm');

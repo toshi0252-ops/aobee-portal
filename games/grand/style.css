@@ -128,7 +128,7 @@ canvas#game { width: 100%; height: 100%; display: block; }
 #clear-screen h2 { font-size: 26px; }
 
 /* HUD */
-#hud { margin: 0 0 6px 2px; pointer-events: none; }
+#hud { margin: 0 0 6px 2px; pointer-events: none; position: relative; z-index: 16; } /* ♪ボタンをスティック判定レイヤー(z-index:8)より上に出す（Bボタンと同じ階層） */
 #hud-obj {
   display: inline-block; background: rgba(12,24,38,.85); border: 1.5px solid #ffd94d; color: #ffe9a8;
   border-radius: 8px; padding: 5px 10px; font-size: 13px; font-weight: 700;
@@ -225,6 +225,33 @@ body.touch #foot { display: none; }
 
 /* 釣り（第7章・軽量版） */
 #fish-screen { padding: 0; }
+#race-screen { padding: 0; }
+#hoshi-screen { padding: 0; }
+#race-art { flex: 1 1 auto; min-height: 0; width: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
+#hoshi-art { flex: 1 1 auto; min-height: 0; width: 100%; object-fit: cover; object-position: 50% 35%; display: block; }
+#race-track {
+  position: relative; height: 34px; margin: 2px 4px 8px;
+  border: 2px solid var(--ink, #23406b); border-radius: 17px;
+  background: linear-gradient(180deg, #e8e8e8 0 22%, #8a8f98 22% 78%, #e8e8e8 78% 100%);
+  overflow: hidden;
+}
+#race-zone {
+  position: absolute; top: 0; bottom: 0;
+  background: rgba(255, 201, 60, .85);
+  border-left: 2px solid #a86e00; border-right: 2px solid #a86e00;
+}
+#race-marker {
+  position: absolute; top: -2px; bottom: -2px; width: 6px;
+  background: #e33; border-radius: 3px; box-shadow: 0 0 6px rgba(255,255,255,.8);
+}
+#race-info { text-align: center; margin-top: 2px; }
+#hoshi-screen .fish-panel { position: relative; }
+#hoshi-field { position: absolute; left: 0; right: 0; top: 0; bottom: 118px; overflow: hidden; pointer-events: none; }
+.hoshi-star {
+  position: absolute; font-size: 32px; line-height: 1; color: #ffd94d;
+  text-shadow: 0 0 10px #ffec9e, 0 0 22px #ffb52e; cursor: pointer; pointer-events: auto;
+  transform: translate(-50%, 0); user-select: none; -webkit-user-select: none;
+}
 .fish-panel {
   width: 100%; height: 100%; max-width: none; max-height: none;
   border: none; border-radius: 0; background: none; padding: 0;
