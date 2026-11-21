@@ -41,6 +41,7 @@ yuragi: { src: 'assets/chars/enemy-yuragi.png', h: 175, shadow: 120 },
 moguru: { src: 'assets/chars/enemy-moguru.png', h: 215, shadow: 160 },
 akari: { src: 'assets/chars/enemy-akari.png', h: 150, shadow: 110 },
 kani: { src: 'assets/chars/enemy-kani.png', h: 150, shadow: 115 },
+tako: { src: 'assets/chars/enemy-tako.png', h: 215, shadow: 160 },
 hoshigami: { src: 'assets/chars/enemy-hoshigami.png', h: 220, shadow: 155 }
 };
 function cogFallback(art) {
@@ -82,6 +83,16 @@ const sh = document.createElement('div'); sh.className = 'enemy-shadow'; sh.styl
 visual.appendChild(sh);
 return visual;
 }
+function plateText(e) {
+if (e.gears) return e.name + `（歯車 あと${e.gearLeft}）`;
+if (e.kind === 'tako') {
+if (e.exposed) return e.name + '（本体むき出し！）';
+return e.name + (e.phase === 'ink'? '（墨まみれ：背びれが見えない）': `（背びれの歯車 あと${e.finLeft}）`);
+}
+if (e.kind === 'hoshigami') return e.name + `（${e.phase === 'dark'? '暗': '明'}：弱点 ${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`;
+if (e.kind === 'boss') return e.name + `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`;
+return e.name;
+}
 function renderEnemy() {
 enemyArea.innerHTML = '';
 B.enemies.forEach((e, i) => {
@@ -90,7 +101,7 @@ d.className = 'enemy'; d.id = 'enemy-' + i;
 d.style.left = (50 + (i - (B.enemies.length - 1) / 2) * 34) + '%';
 const plate = document.createElement('div'); plate.className = 'eplate';
 const nm = document.createElement('div'); nm.className = 'ename';
-nm.textContent = e.name + (e.gears? `（歯車 あと${e.gearLeft}）`: (e.kind === 'hoshigami'? `（${e.phase === 'dark'? '暗': '明'}：弱点 ${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`: (e.kind === 'boss'? `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`: '')));
+nm.textContent = plateText(e);
 const hp = document.createElement('div'); hp.className = 'ehp';
 const fill = document.createElement('div'); fill.style.width = (e.gears? (e.gearLeft / e.gears * 100): (Math.max(0, e.hp) / e.maxHp * 100)) + '%';
 hp.appendChild(fill); plate.appendChild(nm); plate.appendChild(hp);
@@ -105,9 +116,7 @@ function refreshEnemyHP() {
 B.enemies.forEach(e => {
 if (e._el) {
 e._el._fill.style.width = (e.gears? (e.gearLeft / e.gears * 100): (Math.max(0, e.hp) / e.maxHp * 100)) + '%';
-if (e.gears) e._el._nm.textContent = e.name + `（歯車 あと${e.gearLeft}）`;
-else if (e.kind === 'hoshigami') e._el._nm.textContent = e.name + `（${e.phase === 'dark'? '暗': '明'}：弱点 ${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`;
-else if (e.kind === 'boss') e._el._nm.textContent = e.name + `（弱点：${e.weakMode === 'gear'? '歯車スキル': '通常こうげき'}）`;
+e._el._nm.textContent = plateText(e);
 if (e.gears? e.gearLeft <= 0: e.hp <= 0) e._el.style.opacity = '0.25';
 }
 });
@@ -136,11 +145,11 @@ return new Promise(async (resolve) => {
 const state = cfg.state;
 B = {
 state, cfg, charged: false, round: 0, phaseRound: 0, busy: true, midDone: false,
-enemies: cfg.enemies.map(e => ({...e, hp: e.maxHp, weakMode: e.weakMode || 'normal', gearLeft: e.gears || 0}))
+enemies: cfg.enemies.map(e => ({...e, hp: e.maxHp, weakMode: e.weakMode || 'normal', gearLeft: e.gears || 0, finLeft: e.finGears || 0, exposed: false}))
 };
 ui.classList.remove('hidden');
 document.getElementById('hud').classList.add('hidden');
-Engine.Snd.bgm(cfg.enemies.some(e => e.kind === 'boss' || e.kind === 'moguru' || e.kind === 'hoshigami') ? 'boss' : 'battle');
+Engine.Snd.bgm(cfg.enemies.some(e => e.kind === 'boss' || e.kind === 'moguru' || e.kind === 'hoshigami' || e.kind === 'tako') ? 'boss' : 'battle');
 renderEnemy(); renderStatus(); setCmds(false);
 Engine.Snd.gear();
 await logSeq([cfg.intro || `${B.enemies[0].name} が あらわれた！`], 900);
@@ -184,10 +193,10 @@ end('lose', resolve || B._resolve);
 return true;
 }
 /* 勝利時の精算: 雑魚ドロップ（ほし草30%）＋経験値付与＋レベルアップ（最大HP+8/レベル・全回復） */
-const EXP_THRESHOLDS = [0, 30, 75, 140, 230]; // 添字+1 = レベル（上限5）
+const EXP_THRESHOLDS = [0, 30, 75, 140, 230, 350, 500, 690]; // 添字+1 = レベル（上限8。第8章で拡張）
 async function settleVictory() {
 const s = B.state;
-const droppable = B.enemies.some(e => !e.gears && e.kind !== 'boss' && e.kind !== 'hoshigami'); // ボス・歯車制ボスはドロップなし
+const droppable = B.enemies.some(e => !e.gears && e.kind !== 'boss' && e.kind !== 'hoshigami' && e.kind !== 'tako'); // ボス・歯車制ボスはドロップなし
 if (droppable && Math.random() < 0.3) {
 s.herbs++;
 Engine.Snd.pickup();
@@ -280,6 +289,20 @@ refreshEnemyHP();
 await wait(1150);
 }
 }
+// タコぐるま: 2ターンごとに「背びれ⇔墨」フェーズが切り替わる。背びれの歯車を全部外すと本体がむき出しになる
+const tk = B.enemies.find(e => e.kind === 'tako');
+if (tk && tk.hp > 0 && !tk.exposed && B) {
+B.phaseRound++;
+if (B.phaseRound % 2 === 0) {
+tk.phase = tk.phase === 'gear' ? 'ink' : 'gear';
+tk.weakMode = tk.phase === 'gear' ? 'gear' : 'ink';
+if (tk._el) tk._el.classList.toggle('darkphase', tk.phase === 'ink');
+Engine.Snd.gear();
+log(tk.phase === 'ink' ? 'タコぐるまが墨を吐いた！　まっ黒で背びれが見えない。目がかすんで、こうげきが当たりにくい！' : '墨が晴れた！　タコぐるまの背びれが開いた。歯車アタックで背びれの歯車を外せる！');
+refreshEnemyHP();
+await wait(1150);
+}
+}
 return true;
 }
 
@@ -335,6 +358,22 @@ else if (target.kind === 'hoshigami' && target.phase === 'dark' && type === 'gea
 else dmg = Math.round(dmg * 0.9);
 }
 if (B.charged) note += '　歯車が1つ外れた！';
+if (target.kind === 'tako') {
+// タコぐるま専用ルール: 背びれフェーズの歯車アタックで背びれの歯車が外れる。墨フェーズは目がかすんで半減
+if (target.exposed) { dmg = Math.round(dmg * 1.2); note = '　むき出しの本体に、よく効いた！';}
+else if (target.phase === 'gear' && type === 'gear') {
+target.finLeft--;
+dmg = Math.round(dmg * 1.5);
+note = `　背びれの歯車が外れた！（あと ${target.finLeft}）`;
+if (target.finLeft <= 0) {
+target.exposed = true; target.weakMode = 'normal';
+if (target._el) target._el.classList.remove('darkphase');
+note += '　背びれの歯車が全部外れた！　タコぐるまの本体がむき出しになった！';
+}
+}
+else if (target.phase === 'ink') { dmg = Math.round(dmg * 0.5); note = type === 'gear' ? '　墨で背びれが見えない！' : '　墨で目がかすんで、うまく当たらない！';}
+else dmg = Math.round(dmg * 0.9);
+}
 B.charged = false;
 target.hp -= dmg;
 Engine.Snd.hit();

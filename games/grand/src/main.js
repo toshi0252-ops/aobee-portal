@@ -16,7 +16,7 @@
     'assets/chars/npc-mio.png', 'assets/chars/npc-choro.png', 'assets/chars/enemy-akari.png', 'assets/chars/enemy-hoshigami.png',
     'assets/chars/npc-jirou.png', 'assets/chars/enemy-torune.png', 'assets/chars/enemy-yuragi.png',
     'assets/chars/npc-ochiyo.png', 'assets/chars/npc-gen.png',
-    'assets/chars/npc-genzou.png', 'assets/chars/npc-kaito.png', 'assets/chars/npc-tome.png', 'assets/chars/enemy-kani.png', 'assets/fish-scene.jpg',
+    'assets/chars/npc-genzou.png', 'assets/chars/npc-kaito.png', 'assets/chars/npc-tome.png', 'assets/chars/enemy-kani.png', 'assets/chars/enemy-tako.png', 'assets/fish-scene.jpg',
     'assets/warubee-front-v1.png',
     'assets/cut-warubee-roof.png'
   ];
@@ -60,6 +60,14 @@
   /* ---------- HUD ---------- */
   function objective() {
     const f = S.flags;
+    if (S.chapter >= 8) {
+      if (!f.ch8Intro) return '港町に着いた';
+      if (!f.contestDone) return '桟橋で港の主と釣り勝負！（海に向かって糸を垂らそう）';
+      if (!f.lighthouseKey) return '源造から灯台の鍵をもらおう';
+      if (!f.takoDone) return '灯台を登って、タコぐるまを止めよう！';
+      if (!f.ch8Done) return '桟橋の源造に報告しよう';
+      return '第9章へつづく';
+    }
     if (S.chapter >= 7) {
       if (!f.ch7Intro) return '港町に着いた';
       if (!f.trialQuest) return '桟橋の渡し守・源造に会おう（町の南から桟橋へ）';
@@ -262,6 +270,14 @@
   function spawnPier() {
     World.actors = KANI_SPOTS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'kani', x: c.x, y: c.y, visible: true }));
   }
+  /* ---------- 第8章: 灯台内部の見えるうずコグ ---------- */
+  const UZU_SPOTS = [
+    { id: 'uzu1', x: 5, y: 11 },
+    { id: 'uzu2', x: 14, y: 5 }
+  ];
+  function spawnLighthouse() {
+    World.actors = UZU_SPOTS.filter(c => !visitDone[c.id]).map(c => ({ id: c.id, kind: 'uzu', x: c.x, y: c.y, visible: true }));
+  }
   function spawnMinato() {
     // 壊れた自動魚獲り機の残骸（調べると spotWreck）
     World.actors = [{ id: 'wreck', kind: 'cog', x: 15, y: 11, visible: true }];
@@ -313,6 +329,11 @@
       }
       if (ex.gate === 'candles' && (S.flags.litCandles || []).length < 5) {
         Dialogue.play(Data.dlg.candlesGateMsg);
+        pushBack(ex);
+        return;
+      }
+      if (ex.gate === 'lighthouse' && !S.flags.lighthouseKey) {
+        Dialogue.play(Data.dlg.lighthouseGateMsg);
         pushBack(ex);
         return;
       }
@@ -484,6 +505,12 @@
       startBoss();
       return;
     }
+    // 第8章ボスゾーン（灯室の装置の前）
+    if (curMap === 'lamp' && !S.flags.takoDone && !S.flags.takoStarted && x >= 8 && x <= 11 && y >= 7 && y <= 8) {
+      S.flags.takoStarted = true;
+      startTakoEvent();
+      return;
+    }
   }
 
   function applyTiles(w) {
@@ -504,6 +531,16 @@
         const [cx, cy] = k.split(',').map(Number);
         if (w.tileAt(cx, cy) === 'C') w.setTile(cx, cy, 'L');
       }
+    }
+    if (w.mapId === 'lighthouse' && S.flags.gearDoorOpen) {
+      // 開いた歯車扉を復元する
+      if (w.tileAt(17, 3) === 'W') w.setTile(17, 3, '_');
+      if (w.tileAt(18, 3) === 'W') w.setTile(18, 3, '_');
+    }
+    if (w.mapId === 'lamp' && S.flags.takoDone) {
+      // 点灯した灯りの装置を復元する
+      if (w.tileAt(9, 6) === 'C') w.setTile(9, 6, 'L');
+      if (w.tileAt(10, 6) === 'C') w.setTile(10, 6, 'L');
     }
   }
 
@@ -531,7 +568,17 @@
     if (id === 'urayama') spawnUrayama();
     if (id === 'approach') spawnApproach();
     if (id === 'minato') spawnMinato();
-    if (id === 'pier') spawnPier();
+    if (id === 'pier') {
+      spawnPier();
+      // 第8章: タコぐるま撃破後に桟橋へ戻ると、締めのイベント（挑戦状の開示）
+      if (S.flags.takoDone && !S.flags.ch8Done && S.chapter >= 8) {
+        setTimeout(() => {
+          if (curMap !== 'pier' || Battle.active || Dialogue.active) return;
+          Dialogue.play(Data.dlg.pierFinale, () => { S.flags.ch8Done = true; S.playMs += Date.now() - S.startedAt; refreshHUD(); save(); showClear8(); });
+        }, 400);
+      }
+    }
+    if (id === 'lighthouse') spawnLighthouse();
     if (id === 'road' && !S.flags.roadIntro) {
       S.flags.roadIntro = true;
       setTimeout(() => Dialogue.play(Data.dlg.roadIntro), 250);
@@ -589,6 +636,8 @@
     'monzen:4,2': 'spotPhoto', 'monzen:3,2': 'spotPhoto', 'monzen:5,2': 'spotPhoto',
     'monzen:9,2': 'spotMonzenShop', 'monzen:10,2': 'spotMonzenShop', 'monzen:11,2': 'spotMonzenShop',
     'monzen:3,10': 'spotMonzenInn', 'monzen:4,10': 'spotMonzenInn', 'monzen:5,10': 'spotMonzenInn',
+    'lighthouse:2,0': 'spotRemnant', 'lighthouse:17,0': 'spotRecord',
+    'lamp:9,6': 'spotLampAfter', 'lamp:10,6': 'spotLampAfter',
     'monzen:7,12': 'spotMonzenSign',
     'minato:7,2': 'spotMarket', 'minato:8,2': 'spotMarket', 'minato:9,2': 'spotMarket',
     'pier:18,1': 'spotPierSign',
@@ -619,6 +668,9 @@
       } else if (curMap === 'pier') {
         const kc = KANI_SPOTS.find(c => c.id === actor.id && !visitDone[c.id]);
         if (kc) { startKaniBattle(kc); return; }
+      } else if (curMap === 'lighthouse') {
+        const uc = UZU_SPOTS.find(c => c.id === actor.id && !visitDone[c.id]);
+        if (uc) { startUzuBattle(uc); return; }
       } else if (curMap === 'minato') {
         if (actor.id === 'wreck') { Dialogue.play(Data.dlg.spotWreck); return; }
       }
@@ -797,6 +849,7 @@
         else if (S.flags.fishDone && !S.flags.rumorTome) {
           Dialogue.play(Data.dlg.tomeRumor, () => { S.flags.rumorTome = true; refreshHUD(); save(); });
         }
+        else if (S.flags.ch8Done) Dialogue.play(Data.dlg.tomeAfter8);
         else if (S.flags.rumorTome) Dialogue.play(Data.dlg.tomeAfter);
         else Dialogue.play(Data.dlg.tomeChat);
       }
@@ -810,12 +863,20 @@
         else if (S.flags.fishDone && !S.flags.rumorKaito) {
           Dialogue.play(Data.dlg.kaitoRumor, () => { S.flags.rumorKaito = true; refreshHUD(); save(); });
         }
+        else if (S.flags.ch8Done) Dialogue.play(Data.dlg.kaitoAfter8);
         else if (S.flags.driftDone) Dialogue.play(Data.dlg.kaitoAfter);
         else Dialogue.play(Data.dlg.kaitoChat);
       }
       else if (npc.id === 'genzou') {
         const f7 = S.flags;
-        if (f7.climaxDone) Dialogue.play(Data.dlg.genzouAfter);
+        if (S.chapter >= 8) {
+          if (f7.ch8Done) Dialogue.play(Data.dlg.genzouAfter8);
+          else if (f7.takoDone) Dialogue.play([Data.L('源造', '灯りが戻ったな！　桟橋の皆にも、顔を見せてやってくれ。', 'genzou')]);
+          else if (f7.lighthouseKey) Dialogue.play(Data.dlg.genzouHint8);
+          else if (f7.contestDone) Dialogue.play(Data.dlg.genzouKey, () => { f7.lighthouseKey = true; refreshHUD(); save(); });
+          else Dialogue.play(Data.dlg.genzouContest);
+        }
+        else if (f7.climaxDone) Dialogue.play(Data.dlg.genzouAfter);
         else if (!f7.trialQuest) {
           Dialogue.play(Data.dlg.genzouFirst, () => { f7.trialQuest = true; refreshHUD(); save(); });
         }
@@ -888,9 +949,20 @@
     const t = World.tileAt(f.x, f.y);
     if (t === 'C') { tryLightCandle(f.x, f.y); return; }
     if (t === 'L') { Dialogue.play([Data.L('', 'もう灯っている。')]); return; }
-    if (t === 'S') Dialogue.play(curMap === 'road' ? Data.dlg.roadSign : curMap === 'approach' ? Data.dlg.approachSign : curMap === 'temple' ? Data.dlg.mural3 : Data.dlg.sign);
+    if (t === 'S') {
+      if (curMap === 'lighthouse') pullLever();
+      else Dialogue.play(curMap === 'road' ? Data.dlg.roadSign : curMap === 'approach' ? Data.dlg.approachSign : curMap === 'temple' ? Data.dlg.mural3 : Data.dlg.sign);
+    }
     else if (t === '~' && curMap === 'pier') {
-      if (!S.flags.trialQuest) {
+      if (S.chapter >= 8 && !S.flags.contestDone) {
+        if (!S.flags.ch8Intro) {
+          Dialogue.play([Data.L('あおびー', 'まずは源造の話を聞こう。', 'aobee')]);
+        } else {
+          Dialogue.play(Data.dlg.contestIntro, () => {
+            Fishing.start(onContestResult, { zoneW: 14, speed: 2.9, msg: '大物だ！　マーカーが金色のゾーンに入ったら「ここだ！」' });
+          });
+        }
+      } else if (!S.flags.trialQuest) {
         Dialogue.play([Data.L('あおびー', '釣り竿がないな。まずは桟橋の源造に話しかけよう。', 'aobee')]);
       } else {
         Fishing.start(onFishResult);
@@ -1041,20 +1113,23 @@
 
   /* 第7章: 釣り軽量版（タイミングバー。ゾーンで止めると釣れる） */
   const Fishing = {
-    active: false, pos: 0, dir: 1, zoneStart: 55, zoneW: 18, timer: null, onDone: null,
-    start(onDone) {
+    active: false, pos: 0, dir: 1, zoneStart: 55, zoneW: 18, speed: 2.2, timer: null, onDone: null,
+    start(onDone, opts) {
       if (this.active) return;
       this.active = true; this.onDone = onDone || null;
       this.pos = 0; this.dir = 1;
-      this.zoneStart = 45 + Math.floor(Math.random() * 35); // 45〜79%
+      this.zoneW = (opts && opts.zoneW) || 18;
+      this.speed = (opts && opts.speed) || 2.2;
+      if (opts) this.zoneStart = 40 + Math.floor(Math.random() * (90 - this.zoneW - 40 + 1)); // 勝負用: 40%〜
+      else this.zoneStart = 45 + Math.floor(Math.random() * 35); // 45〜79%
       const zone = $('fish-zone'), marker = $('fish-marker');
       zone.style.left = this.zoneStart + '%'; zone.style.width = this.zoneW + '%';
       marker.style.left = '0%';
-      $('fish-msg').textContent = 'マーカーが金色のゾーンに入ったら「ここだ！」';
+      $('fish-msg').textContent = (opts && opts.msg) || 'マーカーが金色のゾーンに入ったら「ここだ！」';
       World.frozen = true;
       $('fish-screen').classList.remove('hidden');
       this.timer = setInterval(() => {
-        this.pos += this.dir * 2.2;
+        this.pos += this.dir * this.speed;
         if (this.pos >= 100) { this.pos = 100; this.dir = -1; }
         if (this.pos <= 0) { this.pos = 0; this.dir = 1; }
         marker.style.left = this.pos + '%';
@@ -1090,6 +1165,66 @@
     } else {
       Dialogue.play([Data.L('', '魚は逃げてしまった……。マーカーを金色のゾーンで止めよう。')]);
     }
+  }
+
+  /* 第8章: 港の主との釣り勝負（成功で囮の正体が判明する） */
+  function onContestResult(okF) {
+    if (okF) {
+      Snd.pickup();
+      Dialogue.play(Data.dlg.contestWin, () => { S.flags.contestDone = true; refreshHUD(); save(); });
+    } else {
+      Dialogue.play([Data.L('', '大物は逃げてしまった……。もう一度、糸を垂らそう。')]);
+    }
+  }
+
+  /* 第8章: 灯台内部の見えるうずコグ戦（再入場で復活するレベリング相手） */
+  async function startUzuBattle(cog) {
+    const res = await Battle.start({
+      state: S, enemies: [{ ...Data.enemies.uzu }],
+      intro: 'うずコグ が あらわれた！'
+    });
+    if (res === 'win') {
+      visitDone[cog.id] = true;
+      World.actors = World.actors.filter(a => a.id !== cog.id);
+      refreshHUD(); save();
+    } else onLose();
+    refreshHUD();
+  }
+
+  /* 第8章: 灯台の歯車扉レバー */
+  function pullLever() {
+    if (S.flags.gearDoorOpen) { Dialogue.play([Data.L('', 'レバーはもう引いてある。歯車扉は開いている。')]); return; }
+    S.flags.gearDoorOpen = true; Snd.gear();
+    World.setTile(17, 3, '_'); World.setTile(18, 3, '_');
+    Dialogue.play([Data.L('', 'レバーを引いた！　ガコン、と大きな音がして、東の歯車扉が開いた。')], () => { refreshHUD(); save(); });
+  }
+
+  /* 第8章ボス: タコぐるま戦（背びれの歯車＋墨の複合フェーズ） */
+  function startTakoEvent() {
+    const intro = S.flags.driftDone ? Data.dlg.takoIntroHint : Data.dlg.takoIntroPlain;
+    Dialogue.play(intro, async () => {
+      const phase = S.flags.driftDone ? 'gear' : 'ink';
+      const res = await Battle.start({
+        state: S, enemies: [{ ...Data.enemies.tako, phase, weakMode: phase === 'gear' ? 'gear' : 'ink' }],
+        intro: 'タコぐるま が 灯りの装置に巻きついている！',
+        hint: [
+          '背びれの歯車が急所だ。墨フェーズでは目がかすんで、こうげきが半減する。',
+          '背びれフェーズに「歯車チャージ→こうげき」を当てると、歯車が1つ外れる。3つ外せば本体がむき出しだ！',
+          '墨の間は、歯車チャージや ほし草で立て直すのがおすすめ。'
+        ]
+      });
+      if (res === 'win') {
+        S.hoshiba = 3;
+        S.flags.takoDone = true;
+        World.setTile(9, 6, 'L'); World.setTile(10, 6, 'L');
+        Snd.pickup();
+        Dialogue.play(Data.dlg.takoWin, () => { refreshHUD(); save(); });
+      } else {
+        S.flags.takoStarted = false; // 敗北したら灯室に入り直して再挑戦できる
+        onLose();
+      }
+      refreshHUD();
+    });
   }
 
   /* 拡大版第3章: 参道の見えるあかりコグ戦（再入場で復活するレベリング相手） */
@@ -1257,6 +1392,15 @@
   function onLose() {
     S.losses++;
     S.hp = S.maxHp; S.guts = 0;
+    if (S.chapter >= 7) {
+      // 第7・8章の復活点は港町（源造のところ）。ほし草のお茶で、ほし草も1つ分けてもらえる
+      S.herbs += 1;
+      curMap = 'minato';
+      World.loadMap('minato', 10, 12, true);
+      World.player.dir = 'up';
+      setTimeout(() => Dialogue.play(Data.dlg.loseMinato, () => { refreshHUD(); save(); }), 200);
+      return;
+    }
     if (S.chapter >= 5) {
       // 第5・6章の復活点は参道（ミオのところ）。ほし草も1つ分けてもらえる
       S.herbs += 1;
@@ -1309,12 +1453,13 @@
     $('btn-to-ch3').style.display = '';
     $('btn-to-ch5').style.display = 'none';
     $('btn-to-ch7').style.display = 'none';
+    $('btn-to-ch8').style.display = 'none';
     $('clear-link').style.display = 'none';
     $('clear-screen').classList.remove('hidden');
   }
 
   /* ---------- 章タイトルカード ---------- */
-  const CHAPTER_TITLES = { 1: 'はぐるま村の異変', 2: '水車小屋の対決', 3: 'まきばの集落', 4: '暴走！ 大風車', 5: '神殿門前町', 6: '星の神殿と止まった時計', 7: '港町と灯台守' };
+  const CHAPTER_TITLES = { 1: 'はぐるま村の異変', 2: '水車小屋の対決', 3: 'まきばの集落', 4: '暴走！ 大風車', 5: '神殿門前町', 6: '星の神殿と止まった時計', 7: '港町と灯台守', 8: '灯台と大ダコ騒動' };
   let chapterCardTimer = null;
   // 章が切り替わる瞬間にタイトルカードを出す（約1.75秒、ワールドは停止してから done へ）
   function showChapterCard(n, done) {
@@ -1375,6 +1520,7 @@
     $('btn-to-ch3').style.display = 'none';
     $('btn-to-ch5').style.display = '';
     $('btn-to-ch7').style.display = 'none';
+    $('btn-to-ch8').style.display = 'none';
     $('clear-link').style.display = '';
     $('clear-screen').classList.remove('hidden');
   }
@@ -1442,10 +1588,46 @@
     $('btn-to-ch3').style.display = 'none';
     $('btn-to-ch5').style.display = 'none';
     $('btn-to-ch7').style.display = 'none';
+    $('btn-to-ch8').style.display = 'none';
+    $('btn-to-ch8').style.display = '';
     const link = $('clear-link');
     link.href = '../aobee_pico_fishing_v68_portal.html';
     link.textContent = '元ネタの「あおびーの釣り」で遊ぶ ↗';
     link.style.display = '';
+    $('clear-screen').classList.remove('hidden');
+  }
+
+  /* ---------- 第8章: 開始とエンディング ---------- */
+  function startChapter8() {
+    S.chapter = 8;
+    S.flags.ch8Started = true;
+    curMap = 'minato';
+    World.loadMap('minato', 10, 12, true);
+    World.player.dir = 'up';
+    refreshHUD();
+    showChapterCard(8, () => {
+      Dialogue.play(Data.dlg.ch8Start, () => {
+        S.flags.ch8Intro = true;
+        refreshHUD(); save();
+      });
+    });
+  }
+  function showClear8() {
+    const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
+    $('clear-title').textContent = '第8章 クリア！';
+    $('clear-stats').innerHTML =
+      `プレイ時間（累計）： ${mins}分${secs}秒<br>` +
+      `星歯： ${S.hoshiba}/7<br>` +
+      `レベル： Lv${S.level || 1}（上限は Lv8 に上昇）<br>` +
+      `強がりで踏みとどまった回数： ${S.stats.gutsSaves}回<br>` +
+      `たおれた回数： ${S.losses}回`;
+    $('clear-next').innerHTML = '灯台に灯りが戻り、船が出せるようになった。<br>挑戦状の行き先は「歯車サーキット」——第9章へつづく。';
+    $('btn-to-ch3').style.display = 'none';
+    $('btn-to-ch5').style.display = 'none';
+    $('btn-to-ch7').style.display = 'none';
+    $('btn-to-ch8').style.display = 'none';
+    $('btn-to-ch8').style.display = 'none';
+    $('clear-link').style.display = 'none';
     $('clear-screen').classList.remove('hidden');
   }
 
@@ -1502,6 +1684,16 @@
       if (S.flags.cleared6 && (S.chapter || 1) < 7) {
         // 第6章クリア画面で閉じたセーブは第7章の冒頭から開始
         startChapter7();
+        return;
+      }
+      if (S.flags.ch7Done && (S.chapter || 1) < 8) {
+        // 第7章クリア画面で閉じたセーブは第8章の冒頭から開始
+        startChapter8();
+        return;
+      }
+      if (S.chapter >= 8 && !S.flags.ch8Intro) {
+        // 第8章の到着会話の途中で閉じた場合の救済: もう一度流す
+        startChapter8();
         return;
       }
       if (S.chapter >= 7 && !S.flags.ch7Intro) {
@@ -1695,6 +1887,19 @@
       save();
       return;
     }
+    if (n === 8) {
+      // 第8章: 港町に着いた直後（釣り勝負はこれから。第7章の流木サブも完了済みの想定）
+      S = presetState(
+        { chapter: 8, level: 5, exp: 230, maxHp: 72, hp: 72, herbs: 6, fragments: 4, hoshiba: 2, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
+        { ...CH1_DONE_FLAGS, ...RANCH_DONE_FLAGS, ...TEMPLE_DONE_FLAGS,
+          ch7Started: true, ch7Intro: true, tomeMet: true, kaitoMet: true, rodQuest: true, driftCount: 3, driftDone: true,
+          trialQuest: true, fishCount: 3, fishDone: true, rumorGenzou: true, hutChecked: true, rumorTome: true, rumorKaito: true,
+          climaxDone: true, ch7Done: true }
+      );
+      startChapter8();
+      save();
+      return;
+    }
     // 第6章: 神殿に入った直後（燭台はこれから）
     S = presetState(
       { chapter: 6, level: 5, exp: 230, maxHp: 72, hp: 72, herbs: 6, fragments: 4, hoshiba: 1, animalsCaught: 5, capturedIds: [...ALL_ANIMALS] },
@@ -1736,7 +1941,7 @@
       try { location.reload(); } catch (e) { /* テスト環境などでは無視 */ }
     });
     $('btn-menu-close').addEventListener('click', () => closeMenu());
-    for (let n = 1; n <= 7; n++) $('btn-dbg-' + n).addEventListener('click', () => startDebugChapter(n));
+    for (let n = 1; n <= 8; n++) $('btn-dbg-' + n).addEventListener('click', () => startDebugChapter(n));
     $('btn-howto').addEventListener('click', () => { $('howto-screen').classList.remove('hidden'); });
     $('btn-howto-back').addEventListener('click', () => { $('howto-screen').classList.add('hidden'); });
     $('btn-clear-back').addEventListener('click', () => location.reload());
@@ -1751,6 +1956,10 @@
     $('btn-to-ch7').addEventListener('click', () => {
       $('clear-screen').classList.add('hidden');
       startChapter7();
+    });
+    $('btn-to-ch8').addEventListener('click', () => {
+      $('clear-screen').classList.add('hidden');
+      startChapter8();
     });
     $('btn-fish-stop').addEventListener('click', () => Fishing.stop());
     window.addEventListener('grand-tapa', () => { if (Fishing.active) Fishing.stop(); });
