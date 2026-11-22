@@ -1433,6 +1433,21 @@
   }
 
   /* 第7章: 釣り軽量版（タイミングバー。ゾーンで止めると釣れる） */
+  /* ---------- ミニゲームのベスト記録（端末に保存し、セーブスロットとは独立に残す） ---------- */
+  const RECORDS_KEY = 'aobeeGrandRecordsV1';
+  function loadRecords() {
+    try { return JSON.parse(localStorage.getItem(RECORDS_KEY) || '{}') || {}; } catch (e) { return {}; }
+  }
+  function saveRecords(r) { try { localStorage.setItem(RECORDS_KEY, JSON.stringify(r)); } catch (e) { /* 保存できない環境では無視 */ } }
+  function recordText(kind) {
+    const r = loadRecords()[kind];
+    if (!r || !r.tries) return 'ベスト記録： まだ記録なし';
+    if (kind === 'fish') return `ベスト記録： 成功 ${r.wins}/${r.tries}回 ・ 中心への近さ あと${r.bestErr == null ? '—' : r.bestErr + '%'}`;
+    if (kind === 'race') return `ベスト記録： クリーン ${r.bestClean}コーナー ・ 勝利 ${r.wins}/${r.tries}回`;
+    return `ベスト記録： 星屑 ${r.bestCaught}個 ・ クリア ${r.wins}/${r.tries}回`;
+  }
+  window.__grandRecords = { load: loadRecords, text: recordText };
+
   const Fishing = {
     active: false, pos: 0, dir: 1, zoneStart: 55, zoneW: 18, speed: 2.2, timer: null, onDone: null,
     start(onDone, opts) {
@@ -1447,6 +1462,7 @@
       zone.style.left = this.zoneStart + '%'; zone.style.width = this.zoneW + '%';
       marker.style.left = '0%';
       $('fish-msg').textContent = (opts && opts.msg) || 'マーカーが金色のゾーンに入ったら「ここだ！」';
+      $('fish-record').textContent = recordText('fish');
       World.frozen = true;
       $('fish-screen').classList.remove('hidden');
       this.timer = setInterval(() => {
@@ -1464,6 +1480,15 @@
       $('fish-screen').classList.add('hidden');
       World.frozen = false;
       const okF = this.pos >= this.zoneStart && this.pos <= this.zoneStart + this.zoneW;
+      const recs = loadRecords();
+      const fr = recs.fish || (recs.fish = { tries: 0, wins: 0, bestErr: null });
+      fr.tries++;
+      if (okF) {
+        fr.wins++;
+        const err = Math.round(Math.abs(this.pos - (this.zoneStart + this.zoneW / 2)));
+        if (fr.bestErr == null || err < fr.bestErr) fr.bestErr = err;
+      }
+      saveRecords(recs);
       const cb = this.onDone; this.onDone = null;
       if (cb) cb(okF);
     }
@@ -1484,6 +1509,7 @@
       this.corner = 0; this.clean = 0;
       this.newZone();
       $('race-msg').textContent = (opts && opts.msg) || 'ゾーンで止めて、コーナーを抜けよう！';
+      $('race-record').textContent = recordText('race');
       World.frozen = true;
       $('race-screen').classList.remove('hidden');
       this.timer = setInterval(() => {
@@ -1516,6 +1542,12 @@
       this.timer = null;
       $('race-screen').classList.add('hidden');
       World.frozen = false;
+      const recs = loadRecords();
+      const rr = recs.race || (recs.race = { tries: 0, wins: 0, bestClean: 0 });
+      rr.tries++;
+      if (this.clean >= this.need) rr.wins++;
+      if (this.clean > rr.bestClean) rr.bestClean = this.clean;
+      saveRecords(recs);
       const cb = this.onDone; this.onDone = null;
       if (cb) cb(this.clean >= this.need, this.clean);
     }
@@ -1532,6 +1564,7 @@
       this.stars = []; this.spawnT = 0;
       $('hoshi-field').innerHTML = '';
       $('hoshi-msg').textContent = (opts && opts.msg) || '降ってくる星をタップするか、「キャッチ！」で一番下の星を取ろう！';
+      $('hoshi-record').textContent = recordText('hoshi');
       this.paint();
       World.frozen = true;
       $('hoshi-screen').classList.remove('hidden');
@@ -1585,6 +1618,12 @@
       this.timer = null;
       $('hoshi-screen').classList.add('hidden');
       World.frozen = false;
+      const recs = loadRecords();
+      const hr = recs.hoshi || (recs.hoshi = { tries: 0, wins: 0, bestCaught: 0 });
+      hr.tries++;
+      if (okH) hr.wins++;
+      if (this.caught > hr.bestCaught) hr.bestCaught = this.caught;
+      saveRecords(recs);
       const cb = this.onDone; this.onDone = null;
       if (cb) cb(okH, this.caught);
     },
@@ -2167,7 +2206,17 @@
       });
     }, 300);
   }
+  /* ---------- 章クリア画面の一枚絵 ---------- */
+  const CLEAR_ART = { 2: 'assets/title-key.jpg', 4: 'assets/clear-ch4.jpg', 6: 'assets/clear-ch6.jpg', 7: 'assets/fish-scene.jpg', 8: 'assets/clear-ch8.jpg', 9: 'assets/race-scene.jpg', 10: 'assets/clear-ch10.jpg', 11: 'assets/hoshi-scene.jpg', 12: 'assets/clear-ch12.jpg', 13: 'assets/clear-ch13.jpg', 14: 'assets/ending-gear.jpg' };
+  function setClearArt(n) {
+    const im = $('clear-art');
+    if (!im) return;
+    const src = CLEAR_ART[n];
+    if (src) { im.src = src; im.style.display = ''; } else im.style.display = 'none';
+  }
+
   function showClear2() {
+    setClearArt(2);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = '第2章 クリア！';
     $('clear-stats').innerHTML =
@@ -2235,6 +2284,7 @@
     });
   }
   function showClear4() {
+    setClearArt(4);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = '第4章 クリア！';
     $('clear-stats').innerHTML =
@@ -2268,6 +2318,7 @@
     });
   }
   function showClear6() {
+    setClearArt(6);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = '第6章 クリア！';
     $('clear-stats').innerHTML =
@@ -2303,6 +2354,7 @@
     });
   }
   function showClear7() {
+    setClearArt(7);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = '第7章 クリア！';
     $('clear-stats').innerHTML =
@@ -2340,6 +2392,7 @@
     });
   }
   function showClear8() {
+    setClearArt(8);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = '第8章 クリア！';
     $('clear-stats').innerHTML =
@@ -2385,6 +2438,7 @@
     });
   }
   function showClear9() {
+    setClearArt(9);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = '第9章 クリア！';
     $('clear-stats').innerHTML =
@@ -2417,6 +2471,7 @@
     });
   }
   function showClear10() {
+    setClearArt(10);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = '第10章 クリア！';
     $('clear-stats').innerHTML =
@@ -2448,6 +2503,7 @@
     });
   }
   function showClear11() {
+    setClearArt(11);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = '第11章 クリア！';
     $('clear-stats').innerHTML =
@@ -2481,6 +2537,7 @@
     });
   }
   function showClear13() {
+    setClearArt(13);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     const sup = [S.flags.supWind, S.flags.supOil, S.flags.supDrop, S.flags.supWeak, S.flags.supMemo].filter(Boolean).length;
     $('clear-title').textContent = '第13章 クリア！';
@@ -2513,6 +2570,7 @@
     });
   }
   function showEnding() {
+    setClearArt(14);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = 'エピローグ クリア！';
     $('clear-stats').innerHTML =
@@ -2545,6 +2603,7 @@
     });
   }
   function showClear12() {
+    setClearArt(12);
     const mins = Math.floor(S.playMs / 60000), secs = Math.floor((S.playMs % 60000) / 1000);
     $('clear-title').textContent = '第12章 クリア！';
     $('clear-stats').innerHTML =
@@ -2636,6 +2695,10 @@
     const eGot = enemies.filter(e => z.enemies[e.id]).length;
     const nGot = ZUKAN_NPCS.filter(n => z.npcs[n.kind]).length;
     $('zukan-progress').textContent = `てき ${eGot}/${enemies.length} ・ なかま ${nGot}/${ZUKAN_NPCS.length}`;
+    $('zukan-records').innerHTML =
+      `つり： ${recordText('fish').replace('ベスト記録： ', '')}<br>` +
+      `レース： ${recordText('race').replace('ベスト記録： ', '')}<br>` +
+      `星集め： ${recordText('hoshi').replace('ベスト記録： ', '')}`;
     const eg = $('zukan-enemies');
     eg.innerHTML = '';
     for (const e of enemies) {

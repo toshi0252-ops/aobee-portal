@@ -100,6 +100,8 @@
         <div id="zukan-enemies" class="zukan-grid"></div>
         <h3 class="zukan-sec">なかま</h3>
         <div id="zukan-npcs" class="zukan-grid"></div>
+        <h3 class="zukan-sec">ミニゲームのきろく</h3>
+        <p id="zukan-records" class="zukan-records"></p>
         <div class="slot-btns">
           <button id="btn-zukan-close" class="bigbtn slot" type="button">とじる</button>
         </div>
@@ -154,6 +156,7 @@
     <!-- クリア画面（第2章・第4章・第6章で共用。文面はJSで差し替える） -->
     <div id="clear-screen" class="overlay hidden">
       <div class="panel">
+        <img id="clear-art" class="clear-art" alt="">
         <h2 id="clear-title">第2章 クリア！</h2>
         <div id="clear-stats"></div>
         <p class="clear-next" id="clear-next">大歯車は戻った。でも、歯が1枚欠けたまま…。<br>わるびーは何を隠しているのか——第3章へつづく。</p>
@@ -183,6 +186,7 @@
           </div>
           <p id="race-msg" class="title-note">コーナーに合わせて「ここだ！」</p>
           <p id="race-info" class="title-note"></p>
+          <p id="race-record" class="title-note"></p>
           <button id="btn-race-stop" class="bigbtn" type="button">ここだ！</button>
         </div>
       </div>
@@ -196,6 +200,7 @@
         <div class="fish-controls">
           <p id="hoshi-msg" class="title-note">降ってくる星屑をタイミングよくキャッチ！</p>
           <p id="hoshi-info" class="title-note"></p>
+          <p id="hoshi-record" class="title-note"></p>
           <button id="btn-hoshi-catch" class="bigbtn" type="button">キャッチ！</button>
         </div>
       </div>
@@ -220,6 +225,7 @@
             <div id="fish-marker"></div>
           </div>
           <p id="fish-msg" class="title-note">マーカーが金色のゾーンに入ったら「ここだ！」</p>
+          <p id="fish-record" class="title-note"></p>
           <button id="btn-fish-stop" class="bigbtn" type="button">ここだ！</button>
         </div>
       </div>
