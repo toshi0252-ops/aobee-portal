@@ -3,6 +3,15 @@
 ボスは3ターンごとに歯車を付け替えて弱点（通常/歯車）が入れ替わる。強がりゲージで踏みとどまり。 */
 const Battle = (() => {
 const ui = document.getElementById('battle-ui');
+// ダメージ数字のポップ表示（小演出）: 対象の上に数字を浮かせて消す
+function dmgPop(anchor, text, cls) {
+if (!anchor || !anchor.appendChild) return;
+const el = document.createElement('div');
+el.className = 'dmg-pop' + (cls ? ' ' + cls : '');
+el.textContent = text;
+anchor.appendChild(el);
+setTimeout(() => { if (el.remove) el.remove(); }, 950);
+}
 const logEl = document.getElementById('battle-log');
 const statusEl = document.getElementById('battle-status');
 const cmdsEl = document.getElementById('battle-cmds');
@@ -256,6 +265,7 @@ const atk = e.gears ? e.atk + (e.gears - e.gearLeft) * 1 : e.atk;
 let dmg = rnd(Math.max(1, atk - 2), atk + 2);
 if (mult !== 1) dmg = Math.max(1, Math.ceil(dmg * mult)); // 2回目の突進は倍率を掛ける（半分・切り上げ）
 s.hp -= dmg; s.guts = Math.min(100, s.guts + 34);
+dmgPop(ui, dmg, 'player');
 Engine.Snd.hurt();
 log(e.gears ? `${e.name} の突進！　あおびーに ${dmg} のダメージ！` : `${e.name} のこうげき！　あおびーに ${dmg} のダメージ！`);
 renderStatus();
@@ -371,6 +381,7 @@ if (target._el) { target._el.classList.remove('hit'); void target._el.offsetWidt
 if (type === 'gear') {
 B.charged = false;
 target.gearLeft--;
+dmgPop(target._el, '歯車！', 'crit');
 Engine.Snd.gear();
 log(`あおびーの歯車アタック！　${target.name} の歯車が1つ外れた！（あと ${target.gearLeft}）`);
 refreshEnemyHP(); renderStatus();
@@ -417,6 +428,7 @@ else dmg = Math.round(dmg * 0.9);
 }
 B.charged = false;
 target.hp -= dmg;
+dmgPop(target._el, dmg, note.includes('弱点') ? 'crit' : '');
 Engine.Snd.hit();
 if (target._el) { target._el.classList.remove('hit'); void target._el.offsetWidth; target._el.classList.add('hit');}
 log(`あおびーの${type === 'gear'? '歯車アタック': 'こうげき'}！　${target.name} に ${dmg} のダメージ！${note}`);
