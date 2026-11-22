@@ -227,6 +227,11 @@ body.touch #foot { display: none; }
 #fish-screen { padding: 0; }
 #race-screen { padding: 0; }
 #hoshi-screen { padding: 0; }
+#ending-screen { padding: 0; }
+#ending-img { flex: 1 1 auto; min-height: 0; width: 100%; object-fit: cover; display: block; }
+#ending-cap { padding: 12px 16px; background: rgba(10, 16, 34, .88); color: #fff; font-size: 15px; line-height: 1.8; white-space: pre-line; }
+#ending-hint { text-align: center; margin: 6px 0 2px; animation: endingBlink 1.6s ease-in-out infinite; }
+@keyframes endingBlink { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
 #race-art { flex: 1 1 auto; min-height: 0; width: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
 #hoshi-art { flex: 1 1 auto; min-height: 0; width: 100%; object-fit: cover; object-position: 50% 35%; display: block; }
 #race-track {

@@ -742,6 +742,9 @@
     'village:15,3': 'spotBakery', 'village:16,3': 'spotBakery', 'village:17,3': 'spotBakery',
     'village:5,1': 'spotTree', 'village:6,1': 'spotTree', 'village:13,1': 'spotTree', 'village:14,1': 'spotTree',
     'village:3,8': 'spotTree', 'village:16,8': 'spotTree',
+    'village:12,7': 'spotVillageSign', 'road:10,5': 'spotRoadSign', 'approach:10,11': 'spotApproachSign',
+    'temple:9,1': 'spotTempleAltar',
+    'towertop:9,2': 'spotTowerHeart', 'towertop:10,2': 'spotTowerHeart',
     'trail:2,2': 'spotTrailTree', 'trail:3,2': 'spotTrailTree',
     'mill:2,3': 'spotMillHouse', 'mill:3,3': 'spotMillHouse', 'mill:4,3': 'spotMillHouse', 'mill:12,6': 'spotRiver',
     'road:3,1': 'spotRoadTree', 'road:4,1': 'spotRoadTree', 'road:15,1': 'spotRoadTree', 'road:16,1': 'spotRoadTree',
@@ -1586,6 +1589,43 @@
     stop() { this.finish(this.caught >= this.need); }
   };
   window.__grandHoshi = Hoshi; // 状態遷移テスト用ハンドル
+
+  /* ===== エンディング一枚絵スライドショー（第14章） ===== */
+  const Ending = (() => {
+    const SCENES = [
+      { img: 'assets/ending-dawn.jpg', cap: 'あくる朝――\nタワーの頂上で、ふたりは並んで朝日を見た。\n言葉は少なくても、肩が触れる距離が、全部を語っていた。' },
+      { img: 'assets/ending-gear.jpg', cap: '村の大歯車に、7枚目の星歯が はまった。\n止まっていた村の時間が、ゆっくりと、でも確かに回りはじめる。' },
+      { img: 'assets/ending-workshop.jpg', cap: 'それから、工房に小さな見習いが増えた。\n「……仕様です」――その言い訳は、いつしか ふたりの合言葉になった。' },
+      { img: 'assets/ending-everyone.jpg', cap: 'はぐるま村、歯車まつりの日。\nみんなの笑顔と、回り続ける歯車と。\n――あおびーの冒険は、これからも続いていく。' }
+    ];
+    let idx = -1, done = null;
+    function show(i) {
+      idx = i;
+      $('ending-img').src = SCENES[i].img;
+      $('ending-cap').textContent = SCENES[i].cap;
+      $('ending-hint').textContent = i === SCENES.length - 1 ? 'タップで フィナーレへ ▸' : 'タップで つぎへ ▸';
+    }
+    function start(onDone) {
+      done = onDone || null;
+      SCENES.forEach(s => { const im = new Image(); im.src = s.img; });
+      $('ending-screen').classList.remove('hidden');
+      show(0);
+    }
+    function next() {
+      if (idx < 0) return;
+      if (idx + 1 < SCENES.length) { show(idx + 1); return; }
+      idx = -1;
+      $('ending-screen').classList.add('hidden');
+      if (done) { const d = done; done = null; d(); }
+    }
+    document.getElementById('ending-screen').addEventListener('click', () => { if (idx >= 0) next(); });
+    document.addEventListener('keydown', (e) => {
+      if (idx >= 0 && (e.key === 'z' || e.key === 'Z' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); next(); }
+    });
+    window.__grandEnding = { start, next, active: () => idx >= 0, scene: () => idx };
+    return { start, next };
+  })();
+
   function startGathering() {
     Hoshi.start((okH) => {
       if (okH) {
@@ -1733,7 +1773,7 @@
           World.loadMap('village', 10, 11, true);
           World.player.dir = 'up';
           Dialogue.play(Data.dlg.epilogue, () => {
-            S.flags.endingDone = true; S.playMs += Date.now() - S.startedAt; refreshHUD(); save(); showEnding();
+            S.flags.endingDone = true; S.playMs += Date.now() - S.startedAt; refreshHUD(); save(); Ending.start(() => showEnding());
           });
         });
       });
