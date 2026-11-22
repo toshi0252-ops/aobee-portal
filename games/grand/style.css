@@ -172,7 +172,7 @@ body.touch #foot { display: none; }
   #clear-stats { line-height: 1.6; font-size: 13.5px; margin-bottom: 6px; }
   .clear-next { line-height: 1.5; font-size: 12.5px; margin-bottom: 8px; }
   .bigbtn { padding: 8px 20px; font-size: 15px; min-width: 180px; }
-  .title-art { display: none; } /* 低い画面ではタイトル全体の収まりを優先して隠す */
+  .title-art { width: 100%; max-height: 180px; object-fit: cover; } /* 小さい画面でもキービジュアルは帯状に表示する */
   .subtitle { margin: 6px 0 10px; }
   .title-btns { gap: 7px; }
   .title-note { margin-top: 8px; }
@@ -183,7 +183,7 @@ body.touch #foot { display: none; }
 
 /* 背の低い画面ではタイトルを詰めて、デバッグ行まで見えるようにする */
 @media (max-height: 640px) {
-  .title-art { display: none; }
+  .title-art { max-height: 130px; object-fit: cover; }
   .eyebrow { display: none; }
   .title-inner h1 { font-size: 24px; }
   .subtitle { margin: 6px 0 10px; font-size: 13px; }
