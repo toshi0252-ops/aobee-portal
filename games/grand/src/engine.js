@@ -1009,6 +1009,6 @@ const Engine = (() => {
     }
   });
 
-  return { World, Dialogue, Input, Snd, drawAobeeTo, drawCritter, drawNPC, drawCog, drawKarakuri, start, TILE };
+  return { World, Dialogue, Input, Snd, drawAobeeTo, drawCritter, drawNPC, drawCog, drawKarakuri, start, TILE, NPC_FACE };
 })();
 if (typeof module !== 'undefined' && module.exports) module.exports = Engine;

@@ -83,10 +83,26 @@
         <div class="slot-btns">
           <button id="btn-menu-herb" class="bigbtn slot" type="button">ほし草をつかう</button>
           <button id="btn-menu-save" class="bigbtn slot" type="button">セーブする</button>
+          <button id="btn-menu-zukan" class="bigbtn slot" type="button">ずかんをみる</button>
           <button id="btn-menu-title" class="bigbtn slot" type="button">タイトルにもどる</button>
           <button id="btn-menu-close" class="bigbtn slot" type="button">とじる</button>
         </div>
         <p id="menu-note" class="title-note"></p>
+      </div>
+    </div>
+
+    <!-- 図鑑（てき・なかまコレクション） -->
+    <div id="zukan-screen" class="overlay hidden">
+      <div class="panel zukan-panel">
+        <h2>ずかん</h2>
+        <p id="zukan-progress" class="menu-status"></p>
+        <h3 class="zukan-sec">てき</h3>
+        <div id="zukan-enemies" class="zukan-grid"></div>
+        <h3 class="zukan-sec">なかま</h3>
+        <div id="zukan-npcs" class="zukan-grid"></div>
+        <div class="slot-btns">
+          <button id="btn-zukan-close" class="bigbtn slot" type="button">とじる</button>
+        </div>
       </div>
     </div>
 

@@ -1,7 +1,7 @@
 'use strict';
 /* あおびーと失われた歯車 第1章 メイン: 状態管理・イベント進行・セーブ */
 (() => {
-  const { World, Dialogue, Snd } = Engine;
+  const { World, Dialogue, Snd, NPC_FACE } = Engine;
   const SAVE_PREFIX = 'aobeeGrandSaveV2_'; // スロット0=デバッグ専用、1〜3=通常セーブ。旧V1セーブは切り捨て（読まない）
   const slotKey = (n) => SAVE_PREFIX + n;
   let currentSlot = 1;
@@ -32,6 +32,7 @@
       picked: {}, // 'map:x,y' -> true
       choice: null, // 'strong' | 'weak'
       stats: { gutsSaves: 0 },
+      zukan: { enemies: {}, npcs: {} }, // 図鑑: enemies は敵ID→撃破回数、npcs は kind→true（会った記録）
       chapter: 1, // 現在の章（14章プロット準拠の新番号: 村=1、水車小屋=2、牧場=3、風車=4、神殿編=5、神殿内部=6）
       hoshiba: 0, // 星歯の回収数（/7）
       animalsCaught: 0, capturedIds: [] // 第3章: 柵に戻した動物の数とID（捕獲順）
@@ -815,6 +816,7 @@
     const npc = World.map.npcs.find(n => !n.hidden && n.x === f.x && n.y === f.y);
     if (npc) {
       S.talks = S.talks || {};
+      ensureZukan().npcs[npc.kind] = true; // 図鑑（なかま）に登録
       if (npc.id === 'gardo') {
         if (!S.flags.boots) {
           Dialogue.play(Data.dlg.gardoFirst, () => {
@@ -2587,6 +2589,102 @@
     if (menuOpen) closeMenu(); else openMenu();
   }
 
+  /* ---------- 図鑑（てき・なかまコレクション） ---------- */
+  function ensureZukan() {
+    if (!S.zukan) S.zukan = { enemies: {}, npcs: {} };
+    if (!S.zukan.enemies) S.zukan.enemies = {};
+    if (!S.zukan.npcs) S.zukan.npcs = {};
+    return S.zukan;
+  }
+  // なかま一覧: 全マップのNPCを kind で重複排除（初出の名前と場所を採用）
+  const ZUKAN_NPCS = (() => {
+    const seen = {}, list = [];
+    for (const m of Object.values(Data.maps)) {
+      for (const n of (m.npcs || [])) {
+        if (!seen[n.kind]) { seen[n.kind] = true; list.push({ kind: n.kind, name: n.name, place: m.name }); }
+      }
+    }
+    return list;
+  })();
+  function zukanFaceThumb(kind, locked) {
+    const wrap = document.createElement('div');
+    wrap.classList.add('zukan-face');
+    const F = NPC_FACE ? NPC_FACE[kind] : null;
+    const img = new Image();
+    img.className = 'zukan-face-img';
+    img.alt = '';
+    img.src = kind === 'warubee' ? 'assets/warubee-front-v1.png' : 'assets/chars/' + (F ? F.file : 'npc-poco.png');
+    img.onload = () => {
+      if (!F || locked) return; // 未発見はシルエットのまま、わるびーは専用絵をそのまま使う
+      try {
+        const cv = document.createElement('canvas');
+        cv.width = 96; cv.height = 96; cv.className = 'zukan-face-img';
+        const c2 = cv.getContext('2d');
+        const W = img.naturalWidth, H = img.naturalHeight, sp = F.side * H;
+        const sx = Math.min(Math.max(F.cx * W - sp / 2, 0), Math.max(0, W - sp));
+        const sy = Math.min(Math.max(F.cy * H - sp / 2, 0), Math.max(0, H - sp));
+        c2.drawImage(img, sx, sy, sp, sp, 0, 0, 96, 96);
+        img.replaceWith(cv);
+      } catch (e) { /* 切り出しに失敗したら全体表示のまま */ }
+    };
+    wrap.appendChild(img);
+    return wrap;
+  }
+  function renderZukan() {
+    const z = ensureZukan();
+    const enemies = Object.values(Data.enemies);
+    const eGot = enemies.filter(e => z.enemies[e.id]).length;
+    const nGot = ZUKAN_NPCS.filter(n => z.npcs[n.kind]).length;
+    $('zukan-progress').textContent = `てき ${eGot}/${enemies.length} ・ なかま ${nGot}/${ZUKAN_NPCS.length}`;
+    const eg = $('zukan-enemies');
+    eg.innerHTML = '';
+    for (const e of enemies) {
+      const cnt = z.enemies[e.id] || 0;
+      const card = document.createElement('div');
+      card.classList.add('zukan-card');
+      if (!cnt) card.classList.add('locked');
+      const art = (Battle.ENEMY_ART && (Battle.ENEMY_ART[e.id] || Battle.ENEMY_ART[e.kind])) || { src: 'assets/chars/enemy-cog.png' };
+      card.innerHTML =
+        `<div class="zukan-art"><img class="zukan-enemy-img" src="${art.src}" alt=""></div>` +
+        `<div class="zukan-name">${cnt ? e.name : '？？？'}</div>` +
+        `<div class="zukan-info">${cnt ? `HP ${e.maxHp} ・ 攻撃 ${e.atk} ・ EXP ${e.exp}<br>たおした回数： ${cnt}` : 'まだ たたかっていない'}</div>`;
+      eg.appendChild(card);
+    }
+    const ng = $('zukan-npcs');
+    ng.innerHTML = '';
+    for (const n of ZUKAN_NPCS) {
+      const met = !!z.npcs[n.kind];
+      const card = document.createElement('div');
+      card.classList.add('zukan-card');
+      if (!met) card.classList.add('locked');
+      card.appendChild(zukanFaceThumb(n.kind, !met));
+      const nm = document.createElement('div');
+      nm.classList.add('zukan-name');
+      nm.textContent = met ? n.name : '？？？';
+      const inf = document.createElement('div');
+      inf.classList.add('zukan-info');
+      inf.textContent = met ? n.place : 'まだ あっていない';
+      card.appendChild(nm);
+      card.appendChild(inf);
+      ng.appendChild(card);
+    }
+  }
+  let zukanOpen = false;
+  function openZukan() {
+    zukanOpen = true;
+    World.frozen = true;
+    renderZukan();
+    $('menu-screen').classList.add('hidden');
+    $('zukan-screen').classList.remove('hidden');
+  }
+  function closeZukan() {
+    zukanOpen = false;
+    $('zukan-screen').classList.add('hidden');
+    if (menuOpen) { renderMenu(); $('menu-screen').classList.remove('hidden'); }
+    else World.frozen = false;
+  }
+  window.__grandZukan = { open: openZukan, close: closeZukan, data: () => ensureZukan(), npcList: () => ZUKAN_NPCS, get isOpen() { return zukanOpen; } };
+
   function beginGame(fromSave, slot) {
     currentSlot = slot == null ? 1 : slot;
     $('title-screen').classList.add('hidden');
@@ -2988,6 +3086,8 @@
       save();
       $('menu-note').textContent = `スロット${currentSlot === 0 ? '（デバッグ枠）' : currentSlot} にセーブしました。`;
     });
+    $('btn-menu-zukan').addEventListener('click', () => openZukan());
+    $('btn-zukan-close').addEventListener('click', () => closeZukan());
     $('btn-menu-title').addEventListener('click', () => {
       save();
       try { location.reload(); } catch (e) { /* テスト環境などでは無視 */ }
