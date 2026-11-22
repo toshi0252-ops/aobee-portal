@@ -234,6 +234,13 @@ await wait(1300);
 }
 }
 function end(result, resolve) {
+// 図鑑登録: 倒した（または決着がついた）敵を記録する
+if (B && B.state && (result === 'win' || result === 'event')) {
+const s = B.state;
+if (!s.zukan) s.zukan = { enemies: {}, npcs: {} };
+if (!s.zukan.enemies) s.zukan.enemies = {};
+for (const e of B.enemies) s.zukan.enemies[e.id] = (s.zukan.enemies[e.id] || 0) + 1;
+}
 Engine.Snd.bgm('field');
 ui.classList.add('hidden');
 document.getElementById('hud').classList.remove('hidden');
@@ -472,6 +479,6 @@ else if (e.detail && e.detail.y === -1) moveSel(-1);
 });
 window.addEventListener('grand-tapa', () => { if (cmdsVisible()) activateSel(); });
 
-return { start, get active() { return!!B;}};
+return { start, ENEMY_ART, get active() { return!!B;}};
 })();
 if (typeof module!== 'undefined' && module.exports) module.exports = Battle;
