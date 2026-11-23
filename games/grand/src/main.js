@@ -3157,6 +3157,26 @@
     });
     $('btn-menu-close').addEventListener('click', () => closeMenu());
     for (let n = 1; n <= 14; n++) $('btn-dbg-' + n).addEventListener('click', () => startDebugChapter(n));
+    /* 隠しコマンド: タイトル絵を5回タップ（クリック）か、キーボードで「debug」と打つとデバッグ行を表示 */
+    let artTaps = 0, artTapTimer = null;
+    const artEl = $('title-art');
+    if (artEl) artEl.addEventListener('click', () => {
+      artTaps++;
+      if (artTapTimer) clearTimeout(artTapTimer);
+      artTapTimer = setTimeout(() => { artTaps = 0; }, 2500);
+      if (artTaps >= 5) {
+        artTaps = 0;
+        $('title-screen').classList.add('dbg-on');
+        Engine.Snd.pickup();
+      }
+    });
+    let dbgKeys = '';
+    window.addEventListener('keydown', (e) => {
+      if (!e || !e.key || e.key.length !== 1) return;
+      dbgKeys = (dbgKeys + e.key.toLowerCase()).slice(-5);
+      if (dbgKeys === 'debug') { $('title-screen').classList.add('dbg-on'); Engine.Snd.pickup(); }
+    });
+    window.__grandDebugReveal = () => $('title-screen').classList.contains('dbg-on');
     $('btn-howto').addEventListener('click', () => { $('howto-screen').classList.remove('hidden'); });
     $('btn-howto-back').addEventListener('click', () => { $('howto-screen').classList.add('hidden'); });
     $('btn-clear-back').addEventListener('click', () => location.reload());

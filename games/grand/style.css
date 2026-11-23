@@ -33,7 +33,7 @@ canvas#game { width: 100%; height: 100%; display: block; }
 #title-screen > * { margin: 0 auto; } /* タイトルは上詰めにして、縦に長い画面でも頭が切れず自然にスクロールさせる */
 .title-inner { width: min(94vw, 560px); }
 .title-art {
-  display: block; width: min(92%, 520px); height: auto; margin: 0 auto 10px;
+  display: block; width: min(96%, 560px); height: auto; margin: 0 auto 10px;
   border-radius: 12px; border: 2px solid #5b82a6; box-shadow: 0 4px 14px rgba(0,0,0,.45);
   object-fit: cover;
 }
@@ -194,7 +194,7 @@ body.touch #foot { display: none; }
   .bigbtn { padding: 7px 16px; font-size: 14px; min-width: 170px; }
   #title-screen { padding: 6px; }
   .overlay { position: fixed; inset: 0; z-index: 60; } /* 小さい画面ではステージ枠に閉じ込めず、画面全体に広げて表示する */
-  .title-art { width: 100%; max-height: 88px; object-fit: cover; margin-bottom: 6px; } /* 縦画面でもスクロールなしで収める帯状表示 */
+  .title-art { width: 100%; max-height: 260px; object-fit: cover; margin-bottom: 6px; } /* デバッグ行と章一覧を外して空いた分、絵を大きく */
   .title-inner h1 { font-size: 24px; margin: 2px 0 4px; }
   .subtitle { margin: 4px 0 8px; font-size: 11px; line-height: 1.5; }
   .title-btns { gap: 6px; }
@@ -207,7 +207,7 @@ body.touch #foot { display: none; }
 
 /* 背の低い画面ではタイトルを詰めて、デバッグ行まで見えるようにする */
 @media (max-height: 640px) {
-  .title-art { max-height: 130px; object-fit: cover; }
+  .title-art { max-height: 170px; object-fit: cover; }
   .eyebrow { display: none; }
   .title-inner h1 { font-size: 24px; }
   .subtitle { margin: 6px 0 10px; font-size: 13px; }
@@ -226,7 +226,8 @@ body.touch #foot { display: none; }
 /* セーブスロット選択・デバッグ開始 */
 .slot-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
 .bigbtn.slot { text-align: left; font-size: 15px; }
-.dbg-row { margin-top: 14px; text-align: center; }
+.dbg-row { display: none; margin-top: 14px; text-align: center; } /* 公開版では隠す（隠しコマンドで表示） */
+#title-screen.dbg-on .dbg-row { display: block; }
 .dbg-label { font-size: 12px; opacity: .75; }
 .dbg-btns { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; }
 .dbgbtn { background: #31567a; color: #dbeafe; border: 1px solid #5b82a6; border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
