@@ -276,7 +276,7 @@
       if (def.hp <= 0) { def.hp = 0; killed = true; }
     }
     atk.morale = Math.min(150, atk.morale + 5 + (killed ? 8 : 0));
-    events.push({ type: "attack", atk: atk.name, def: def.name, weapon: w.name, hit: isHit, hitRate: hit, dmg, killed, defHp: def.hp, atkX: atk.x, atkY: atk.y, defX: def.x, defY: def.y });
+    events.push({ type: "attack", atk: atk.name, def: def.name, weapon: w.name, fx: w.fx || "melee", power: w.power, hit: isHit, hitRate: hit, dmg, killed, defHp: def.hp, atkX: atk.x, atkY: atk.y, defX: def.x, defY: def.y });
     if (atk.side === "ally" && def.side === "enemy") {
       let exp = isHit ? 20 : 8;
       if (killed) {
@@ -317,7 +317,7 @@
     const w = atk.weapons[wIdx];
     const amount = w.power + atk.atk * 3;
     target.hp = Math.min(target.maxHp, target.hp + amount);
-    const events = [{ type: "heal", atk: atk.name, def: target.name, weapon: w.name, amount, defHp: target.hp, defX: target.x, defY: target.y }];
+    const events = [{ type: "heal", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: w.power, amount, defHp: target.hp, defX: target.x, defY: target.y }];
     if (atk.side === "ally") gainExp(st, atk, 15, rng || Math.random);
     return events;
   }
