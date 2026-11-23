@@ -232,7 +232,7 @@ async function doPlayerAttack() {
   const u = sel.unit, d = sel.target;
   const events = E.resolveCombat(st, u, d, sel.weaponIdx, Math.random);
   const useScene = isLandscape() && settings.anim;
-  if (useScene) await BattleView.playScene(u, d, events);
+  if (useScene) await BattleView.playScene(u, d, events, sel.forecast);
   else await BattleView.playSimplified($("grid"), st, events);
   sel = null; u.acted = true; busy = false;
   render();

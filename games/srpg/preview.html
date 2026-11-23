@@ -81,6 +81,7 @@ body.landscape.panel-hidden #panel{display:none}
 .bs-side{min-width:38%}.bs-hpname{font-size:11px;color:#bae6fd}
 .bs-barwrap{height:9px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden;margin:3px 0}
 .bs-barwrap i{display:block;height:100%;background:#22c55e;border-radius:4px;transition:width .6s ease}
+.bs-guard{filter:brightness(1.7)} .bs-evade{transform:translateX(-30px)}
 .bs-dmg{position:absolute;left:0;right:0;top:-26px;text-align:center;font-weight:900;font-size:19px;color:#fff;text-shadow:0 0 5px #000,0 2px 2px #000;animation:pop .9s ease-out;z-index:5}
 #log{font-size:11px;color:#94a3b8;max-height:90px;overflow-y:auto;line-height:1.5}
 </style></head><body>
@@ -247,7 +248,7 @@ body.landscape.panel-hidden #panel{display:none}
     teru: "お届けものでーす！",
     hayate: "速さなら負けない！"
   };
-  function playScene(atkU, defU, events) {
+  function playScene(atkU, defU, events, forecast) {
     return new Promise(resolve => {
       const ov = document.createElement("div");
       ov.className = "battle-scene";
@@ -293,6 +294,8 @@ body.landscape.panel-hidden #panel{display:none}
       const steps = [];
       if (main) steps.push({ el: left, foe: right, ev: main, who: atkU, foeSide: defSide, foeU: defU });
       if (counter) steps.push({ el: right, foe: left, ev: counter, who: defU, foeSide: atkSide, foeU: atkU });
+      else if (main && forecast && forecast.stance === "defend") steps.push({ react: "defend", el: right, who: defU });
+      else if (main && forecast && forecast.stance === "evade" && main.hit) steps.push({ react: "evade", el: right, who: defU });
       let i = 0;
       function next() {
         if (done) return;
@@ -303,6 +306,12 @@ body.landscape.panel-hidden #panel{display:none}
           return;
         }
         const s = steps[i++];
+        if (s.react) {
+          quote.textContent = s.who.name + (s.react === "defend" ? "「防御した！ ダメージ半減」" : "「回避しきれなかった…！」");
+          s.el.classList.add(s.react === "defend" ? "bs-guard" : "bs-evade");
+          setTimeout(() => { s.el.classList.remove("bs-guard", "bs-evade"); setTimeout(next, 500); }, 650);
+          return;
+        }
         const line = LINES[s.who.pilotId] || (s.who.side === "enemy" ? "……！" : "いくよ！");
         quote.textContent = s.who.name + "「" + line + " " + s.ev.weapon + "！」";
         s.el.classList.add("bs-dash");
@@ -938,7 +947,7 @@ async function doPlayerAttack() {
   const u = sel.unit, d = sel.target;
   const events = E.resolveCombat(st, u, d, sel.weaponIdx, Math.random);
   const useScene = isLandscape() && settings.anim;
-  if (useScene) await BattleView.playScene(u, d, events);
+  if (useScene) await BattleView.playScene(u, d, events, sel.forecast);
   else await BattleView.playSimplified($("grid"), st, events);
   sel = null; u.acted = true; busy = false;
   render();

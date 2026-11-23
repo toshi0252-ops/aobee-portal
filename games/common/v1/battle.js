@@ -33,7 +33,7 @@
     teru: "お届けものでーす！",
     hayate: "速さなら負けない！"
   };
-  function playScene(atkU, defU, events) {
+  function playScene(atkU, defU, events, forecast) {
     return new Promise(resolve => {
       const ov = document.createElement("div");
       ov.className = "battle-scene";
@@ -79,6 +79,8 @@
       const steps = [];
       if (main) steps.push({ el: left, foe: right, ev: main, who: atkU, foeSide: defSide, foeU: defU });
       if (counter) steps.push({ el: right, foe: left, ev: counter, who: defU, foeSide: atkSide, foeU: atkU });
+      else if (main && forecast && forecast.stance === "defend") steps.push({ react: "defend", el: right, who: defU });
+      else if (main && forecast && forecast.stance === "evade" && main.hit) steps.push({ react: "evade", el: right, who: defU });
       let i = 0;
       function next() {
         if (done) return;
@@ -89,6 +91,12 @@
           return;
         }
         const s = steps[i++];
+        if (s.react) {
+          quote.textContent = s.who.name + (s.react === "defend" ? "「防御した！ ダメージ半減」" : "「回避しきれなかった…！」");
+          s.el.classList.add(s.react === "defend" ? "bs-guard" : "bs-evade");
+          setTimeout(() => { s.el.classList.remove("bs-guard", "bs-evade"); setTimeout(next, 500); }, 650);
+          return;
+        }
         const line = LINES[s.who.pilotId] || (s.who.side === "enemy" ? "……！" : "いくよ！");
         quote.textContent = s.who.name + "「" + line + " " + s.ev.weapon + "！」";
         s.el.classList.add("bs-dash");
