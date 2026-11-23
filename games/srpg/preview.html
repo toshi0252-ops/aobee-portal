@@ -87,7 +87,7 @@ body.landscape.panel-hidden #panel{display:none}
 .chip-img{position:absolute;inset:1px;width:calc(100% - 2px);height:calc(100% - 2px);object-fit:contain;pointer-events:none;border-radius:7px;border:2px solid rgba(56,189,248,.95);background:rgba(10,28,50,.55);box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .chip-img.enemy{border-color:rgba(239,68,68,.95);background:rgba(50,16,16,.55)}
 .chip-img.boss{border-color:#facc15;background:rgba(50,40,4,.55)}
-.chip-img.acted{filter:grayscale(.8) brightness(.68)}
+.chip-img.acted{filter:grayscale(.45) brightness(.85)}
 .bs-dmg{position:absolute;left:0;right:0;top:-26px;text-align:center;font-weight:900;font-size:19px;color:#fff;text-shadow:0 0 5px #000,0 2px 2px #000;animation:pop .9s ease-out;z-index:5}
 .fx-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
 .bs-unit{z-index:2}.bs-quote{z-index:6}.bs-skip{z-index:6}.bs-bars{z-index:5}
@@ -1365,6 +1365,7 @@ function cancelMove() {
 }
 function endUnitAction() {
   sel.unit.acted = true; sel = null; render(); checkEnd();
+  saveAll(); /* 待機・ほし等の行動終了でも中断セーブを更新する */
   maybeAutoEnemyPhase();
 }
 /* 全味方が行動済みなら、少し間を置いて自動で敵フェイズへ */
