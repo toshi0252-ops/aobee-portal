@@ -11,10 +11,11 @@ header button.sub{background:#334155}
 #main{flex:1;display:flex;flex-direction:column;min-height:0}
 #mapwrap{padding:6px;display:flex;justify-content:center}
 #grid{display:grid;gap:1px;width:min(100%,calc((100dvh - 330px)*1.333));max-width:560px}
-body.landscape #main{flex-direction:row}
-body.landscape #mapwrap{flex:1;align-items:center}
-body.landscape #grid{width:min(100%,calc((100dvh - 70px)*1.333))}
-body.landscape #panel{width:330px;flex:none}
+body.landscape #main{position:relative;display:block}
+body.landscape #mapwrap{position:absolute;inset:0;align-items:center}
+body.landscape #grid{width:min(100%,calc((100dvh - 64px)*1.333));max-width:none}
+body.landscape #panel{position:absolute;top:6px;right:6px;bottom:6px;width:min(330px,44vw);flex:none;z-index:6;background:rgba(17,24,39,.94);border:1px solid #475569;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+body.landscape.panel-hidden #panel{display:none}
 #panel{flex:1;min-height:120px}
 .cell{aspect-ratio:1;border:1px solid rgba(255,255,255,.12);position:relative;display:flex;align-items:center;justify-content:center}
 .t-plain{background:#3f6212}.t-path{background:#57534e}.t-gear{background:#581c87}.t-forest{background:#14532d}.t-village{background:#92400e}.t-river{background:#0369a1}.t-water{background:#0e7490}.t-lamp{background:#a16207}.t-block{background:#1c1917}
@@ -45,6 +46,11 @@ body.landscape #panel{width:330px;flex:none}
 .bs-shake{animation:shake .35s}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
 .bs-bars{position:absolute;left:0;right:0;bottom:0;background:rgba(2,6,23,.9);color:#fff;display:flex;justify-content:space-between;padding:8px 14px;font-size:13px}
 .bs-skip{position:absolute;top:64px;right:10px;background:#f59e0b;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
+.battle-scene{transition:opacity .25s}.bs-fade{opacity:0}
+.bs-side{min-width:38%}.bs-hpname{font-size:11px;color:#bae6fd}
+.bs-barwrap{height:9px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden;margin:3px 0}
+.bs-barwrap i{display:block;height:100%;background:#22c55e;border-radius:4px;transition:width .6s ease}
+.bs-dmg{position:absolute;left:0;right:0;top:-26px;text-align:center;font-weight:900;font-size:19px;color:#fff;text-shadow:0 0 5px #000,0 2px 2px #000;animation:pop .9s ease-out;z-index:5}
 #log{font-size:11px;color:#94a3b8;max-height:90px;overflow-y:auto;line-height:1.5}
 </style></head><body>
 <div id="title-screen">
@@ -60,6 +66,7 @@ body.landscape #panel{width:330px;flex:none}
     <span id="hd-stage">第1面</span><span id="hd-turn">TURN 1</span>
     <span id="hd-obj" style="font-weight:400;color:#bae6fd"></span>
     <span class="spacer"></span><span id="hd-funds"></span>
+    <button id="btn-panel" class="sub">パネル表示/隠す</button>
     <button id="btn-phase" class="sub">フェイズ終了</button>
     <button id="btn-title" class="sub">タイトルへ</button>
   </header>

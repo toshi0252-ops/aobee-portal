@@ -48,6 +48,7 @@ $("btn-anim").addEventListener("click", () => {
   localStorage.setItem("aobee-taisen-anim", settings.anim ? "on" : "off");
   refreshTitle();
 });
+$("btn-panel").addEventListener("click", () => document.body.classList.toggle("panel-hidden"));
 $("btn-title").addEventListener("click", () => {
   if (run) E.saveRun(localStorage, run);
   $("app").classList.add("hidden"); $("title-screen").classList.remove("hidden"); refreshTitle();
