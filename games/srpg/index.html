@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>あおびー大戦（仮）｜序盤縦切り 第1〜5面</title>
+<link rel="stylesheet" href="../../common/v1/panel.css">
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#0f172a;color:#e2e8f0;font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
+#app{height:100dvh;display:flex;flex-direction:column}
+header{display:flex;gap:8px;align-items:center;background:#1e3a5f;padding:6px 10px;font-size:13px;font-weight:700;flex-wrap:wrap}
+header .spacer{flex:1}header button{background:#0ea5e9;border:none;color:#fff;border-radius:6px;padding:6px 10px;font-weight:700;cursor:pointer}
+header button.sub{background:#334155}
+#main{flex:1;display:flex;flex-direction:column;min-height:0}
+#mapwrap{padding:6px;display:flex;justify-content:center}
+#grid{display:grid;gap:1px;width:min(100%,calc((100dvh - 330px)*1.333));max-width:560px}
+body.landscape #main{flex-direction:row}
+body.landscape #mapwrap{flex:1;align-items:center}
+body.landscape #grid{width:min(100%,calc((100dvh - 70px)*1.333))}
+body.landscape #panel{width:330px;flex:none}
+#panel{flex:1;min-height:120px}
+.cell{aspect-ratio:1;border:1px solid rgba(255,255,255,.12);position:relative;display:flex;align-items:center;justify-content:center}
+.t-plain{background:#3f6212}.t-path{background:#57534e}.t-gear{background:#581c87}.t-forest{background:#14532d}.t-village{background:#92400e}.t-river{background:#0369a1}.t-water{background:#0e7490}.t-lamp{background:#a16207}.t-block{background:#1c1917}
+.cell.hl-move{outline:2px solid #38bdf8;outline-offset:-2px;background-image:linear-gradient(rgba(56,189,248,.35),rgba(56,189,248,.35))}
+.cell.hl-attack{outline:2px solid #f87171;outline-offset:-2px;background-image:linear-gradient(rgba(248,113,113,.35),rgba(248,113,113,.35))}
+.chip-unit{width:78%;height:78%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#111;border:2px solid rgba(255,255,255,.7);z-index:2}
+.chip-unit.enemy{border-radius:6px;color:#fff}.chip-unit.boss{border-color:#fbbf24;box-shadow:0 0 6px #fbbf24}
+.chip-unit.acted{filter:grayscale(.8);opacity:.55}
+.mini-hp{position:absolute;left:8%;right:8%;bottom:2px;height:4px;background:rgba(0,0,0,.6);border-radius:2px;z-index:3}
+.mini-hp i{display:block;height:100%;background:#22c55e;border-radius:2px}
+.dmg-pop{position:absolute;inset:auto 0 60% 0;text-align:center;font-weight:900;color:#fff;text-shadow:0 0 4px #000,0 2px 2px #000;font-size:13px;z-index:5;animation:pop .65s ease-out}
+@keyframes pop{0%{transform:translateY(6px);opacity:0}25%{opacity:1}100%{transform:translateY(-8px);opacity:0}}
+#title-screen{height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:linear-gradient(#1e3a5f,#0f172a);text-align:center;padding:16px}
+#title-screen h1{font-size:30px;margin:0;color:#7dd3fc}
+#title-screen .sub{color:#94a3b8;font-size:13px;max-width:520px;line-height:1.7}
+#title-screen button{background:#0369a1;color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;min-width:240px}
+#title-screen button:disabled{opacity:.4}
+#title-screen button.sub{background:#1f2937;border-color:#4b5563;font-weight:400}
+.hidden{display:none!important}
+.battle-scene{position:fixed;inset:0;background:linear-gradient(#7dd3fc 0 55%,#65a30d 55%);z-index:80}
+.bs-quote{position:absolute;top:10px;left:10px;right:10px;background:rgba(2,6,23,.88);color:#fff;border-radius:8px;padding:8px 12px;font-size:14px}
+.bs-unit{position:absolute;bottom:52px;text-align:center;transition:transform .3s}
+.bs-left{left:10%}.bs-right{right:10%}
+.bs-sprite{width:92px;height:92px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#111;border:3px solid rgba(255,255,255,.8);padding:4px}
+.bs-right .bs-sprite{color:#fff}
+.bs-name{color:#fff;text-shadow:0 1px 3px #000;font-size:12px;margin-top:4px;font-weight:700}
+.bs-dash{transform:translateX(46px)}.bs-right.bs-dash{transform:translateX(-46px)}
+.bs-shake{animation:shake .35s}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.bs-bars{position:absolute;left:0;right:0;bottom:0;background:rgba(2,6,23,.9);color:#fff;display:flex;justify-content:space-between;padding:8px 14px;font-size:13px}
+.bs-skip{position:absolute;top:64px;right:10px;background:#f59e0b;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
+#log{font-size:11px;color:#94a3b8;max-height:90px;overflow-y:auto;line-height:1.5}
+</style></head><body>
+<div id="title-screen">
+  <h1>あおびー大戦（仮）</h1>
+  <div class="sub">スパロボ風SLG・序盤縦切り版（第1〜5面）<br>縦画面：下部パネル＋簡略戦闘 ／ 横画面：右パネル＋戦闘アニメ<br>ユニットは仮チップ表示です</div>
+  <button id="btn-new">はじめから</button>
+  <button id="btn-continue" class="sub">つづきから</button>
+  <div id="stage-select" class="hidden"></div>
+  <button id="btn-anim" class="sub">戦闘アニメ（横画面）: ON</button>
+</div>
+<div id="app" class="hidden">
+  <header>
+    <span id="hd-stage">第1面</span><span id="hd-turn">TURN 1</span>
+    <span id="hd-obj" style="font-weight:400;color:#bae6fd"></span>
+    <span class="spacer"></span><span id="hd-funds"></span>
+    <button id="btn-phase" class="sub">フェイズ終了</button>
+    <button id="btn-title" class="sub">タイトルへ</button>
+  </header>
+  <div id="main">
+    <div id="mapwrap"><div id="grid"></div></div>
+    <div id="panel"></div>
+  </div>
+</div>
+<script src="../../common/v1/panel.js"></script>
+<script src="../../common/v1/dialog.js"></script>
+<script src="../../common/v1/gridmap.js"></script>
+<script src="../../common/v1/battle.js"></script>
+<script src="engine.js"></script>
+<script src="main.js"></script>
+</body></html>

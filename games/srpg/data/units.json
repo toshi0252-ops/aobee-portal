@@ -1,0 +1,424 @@
+{
+ "units": {
+  "animal": {
+   "aim": 0,
+   "armor": 200,
+   "color": "#fef3c7",
+   "en": 0,
+   "eva": 60,
+   "hp": 500,
+   "move": 2,
+   "name": "まきばの動物",
+   "npc": true,
+   "weapons": []
+  },
+  "bannin": {
+   "aim": 108,
+   "armor": 1000,
+   "color": "#78716c",
+   "en": 80,
+   "eva": 95,
+   "hp": 3400,
+   "move": 0,
+   "name": "番人コグ",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 75,
+     "max": 1,
+     "min": 1,
+     "name": "番人の腕",
+     "power": 1500
+    }
+   ]
+  },
+  "banninkai": {
+   "aim": 112,
+   "armor": 1050,
+   "color": "#57534e",
+   "en": 90,
+   "eva": 98,
+   "hp": 3800,
+   "move": 3,
+   "name": "番人コグ・改",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 75,
+     "max": 1,
+     "min": 1,
+     "name": "番人の腕・改",
+     "power": 1600
+    },
+    {
+     "en": 10,
+     "hit": 70,
+     "max": 3,
+     "min": 2,
+     "name": "コグ投げ",
+     "power": 1300
+    }
+   ]
+  },
+  "cog": {
+   "aim": 95,
+   "armor": 800,
+   "color": "#94a3b8",
+   "en": 50,
+   "eva": 90,
+   "hp": 1800,
+   "move": 4,
+   "name": "サビつきコグ",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "コグラッシュ",
+     "power": 1100
+    }
+   ]
+  },
+  "cogair": {
+   "aim": 98,
+   "armor": 750,
+   "color": "#7dd3fc",
+   "en": 60,
+   "eva": 105,
+   "hp": 1700,
+   "move": 5,
+   "name": "空賊コグ",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 80,
+     "max": 2,
+     "min": 1,
+     "name": "プロペラカッター",
+     "power": 1150
+    }
+   ]
+  },
+  "cogsea": {
+   "aim": 96,
+   "armor": 850,
+   "color": "#2dd4bf",
+   "en": 50,
+   "eva": 88,
+   "hp": 2000,
+   "move": 4,
+   "name": "水上コグ",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 78,
+     "max": 1,
+     "min": 1,
+     "name": "スクリューアタック",
+     "power": 1200
+    }
+   ]
+  },
+  "fuusha": {
+   "aim": 104,
+   "armor": 950,
+   "color": "#a16207",
+   "en": 80,
+   "eva": 80,
+   "hp": 3600,
+   "move": 0,
+   "name": "大風車機",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 72,
+     "max": 2,
+     "min": 1,
+     "name": "風車ブレード",
+     "power": 1500
+    }
+   ]
+  },
+  "galdon": {
+   "armor": 1250,
+   "color": "#b45309",
+   "en": 100,
+   "hp": 4500,
+   "move": 4,
+   "name": "ガルドン",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 70,
+     "max": 1,
+     "min": 1,
+     "name": "工房アーム",
+     "power": 1750
+    },
+    {
+     "en": 0,
+     "hit": 80,
+     "max": 3,
+     "min": 2,
+     "name": "リベット砲",
+     "power": 1250
+    },
+    {
+     "en": 0,
+     "heal": true,
+     "hit": 100,
+     "max": 3,
+     "min": 1,
+     "name": "修理",
+     "power": 1200
+    }
+   ]
+  },
+  "ganzou": {
+   "aim": 118,
+   "armor": 1280,
+   "color": "#475569",
+   "en": 120,
+   "eva": 92,
+   "hp": 4800,
+   "move": 4,
+   "name": "ガンジョウ改",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 78,
+     "max": 1,
+     "min": 1,
+     "name": "剛腕パンチ",
+     "power": 1600
+    },
+    {
+     "en": 10,
+     "hit": 75,
+     "max": 3,
+     "min": 2,
+     "name": "重装キャノン",
+     "power": 1380
+    }
+   ]
+  },
+  "gearstar": {
+   "armor": 1000,
+   "color": "#38bdf8",
+   "en": 150,
+   "hp": 3200,
+   "move": 5,
+   "name": "ギアスター",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 85,
+     "max": 1,
+     "min": 1,
+     "name": "歯車アタック",
+     "power": 1350
+    },
+    {
+     "en": 10,
+     "hit": 80,
+     "max": 4,
+     "min": 2,
+     "name": "ほしビーム",
+     "power": 1500
+    },
+    {
+     "en": 30,
+     "hit": 75,
+     "max": 1,
+     "min": 1,
+     "morale": 120,
+     "name": "スターフィーバー",
+     "power": 2200
+    }
+   ]
+  },
+  "hoshifune": {
+   "armor": 900,
+   "color": "#a78bfa",
+   "en": 130,
+   "hp": 2800,
+   "move": 5,
+   "name": "ホシフネ",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 85,
+     "max": 3,
+     "min": 1,
+     "name": "星灯りの矢",
+     "power": 1250
+    },
+    {
+     "en": 15,
+     "hit": 80,
+     "max": 4,
+     "min": 2,
+     "name": "星時計の祈り",
+     "power": 1600
+    }
+   ]
+  },
+  "karakuri": {
+   "aim": 110,
+   "armor": 1100,
+   "color": "#b91c1c",
+   "en": 100,
+   "eva": 90,
+   "hp": 4200,
+   "move": 0,
+   "name": "からくり人形",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 75,
+     "max": 1,
+     "min": 1,
+     "name": "からくりパンチ",
+     "power": 1600
+    },
+    {
+     "en": 10,
+     "hit": 70,
+     "max": 3,
+     "min": 2,
+     "name": "歯車ミサイル",
+     "power": 1400
+    }
+   ]
+  },
+  "moomoo": {
+   "armor": 1150,
+   "color": "#eab308",
+   "en": 110,
+   "hp": 4000,
+   "move": 4,
+   "name": "モーモータンク",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 78,
+     "max": 1,
+     "min": 1,
+     "name": "モーモータックル",
+     "power": 1500
+    },
+    {
+     "en": 0,
+     "heal": true,
+     "hit": 100,
+     "max": 2,
+     "min": 1,
+     "name": "ミルクスプラッシュ",
+     "power": 900
+    }
+   ]
+  },
+  "ovenmarmi": {
+   "armor": 850,
+   "color": "#f9a8d4",
+   "en": 120,
+   "hp": 2600,
+   "move": 5,
+   "name": "オーブンマーミ",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 85,
+     "max": 1,
+     "min": 1,
+     "name": "ローリングピン",
+     "power": 1050
+    },
+    {
+     "en": 0,
+     "heal": true,
+     "hit": 100,
+     "max": 3,
+     "min": 1,
+     "name": "焼きたてパン",
+     "power": 1300
+    }
+   ]
+  },
+  "pocodash": {
+   "armor": 800,
+   "color": "#4ade80",
+   "en": 110,
+   "hp": 2400,
+   "move": 7,
+   "name": "ポコダッシュ",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 85,
+     "max": 4,
+     "min": 2,
+     "name": "どんぐりショット",
+     "power": 1150
+    },
+    {
+     "en": 0,
+     "hit": 90,
+     "max": 1,
+     "min": 1,
+     "name": "スピンアタック",
+     "power": 1250
+    }
+   ]
+  },
+  "yuragi": {
+   "aim": 102,
+   "armor": 880,
+   "color": "#c084fc",
+   "en": 70,
+   "eva": 100,
+   "hp": 2100,
+   "move": 4,
+   "name": "ゆらぎコグ",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "ゆらぎタッチ",
+     "power": 1200
+    }
+   ]
+  },
+  "yuragiboss": {
+   "aim": 110,
+   "armor": 980,
+   "color": "#9333ea",
+   "en": 90,
+   "eva": 102,
+   "hp": 3300,
+   "move": 4,
+   "name": "ゆらぎコグ・長",
+   "weapons": [
+    {
+     "en": 0,
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "ゆらぎクラッシュ",
+     "power": 1450
+    },
+    {
+     "en": 10,
+     "hit": 75,
+     "max": 3,
+     "min": 2,
+     "name": "ゆらぎ波",
+     "power": 1300
+    }
+   ]
+  }
+ }
+}
