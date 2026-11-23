@@ -1,8 +1,8 @@
 "use strict";
 /* Dialog部品: 会話ウィンドウ。lines = [[who, text], ...] を順に表示し、終わったら resolve する */
 (function (global) {
-  const NAMES = { aobee: "あおびー", warubee: "わるびー", galdo: "ガルド", marmi: "マーミ", poco: "ポコ", minori: "みのり", mio: "ミオ", ganzou: "ガンジョウ", tia: "ティア", seira: "セイラ", rocco: "ロッコ", mist: "ミスト", granz: "グランツ" };
-  const COLORS = { aobee: "#38bdf8", warubee: "#e879f9", galdo: "#d97706", marmi: "#f472b6", poco: "#4ade80", minori: "#facc15", mio: "#a78bfa", ganzou: "#94a3b8", tia: "#7dd3fc", seira: "#38bdf8", rocco: "#fbbf24", mist: "#a5b4fc", granz: "#cbd5e1" };
+  const NAMES = { aobee: "あおびー", warubee: "わるびー", galdo: "ガルド", marmi: "マーミ", poco: "ポコ", minori: "みのり", mio: "ミオ", ganzou: "ガンジョウ", tia: "ティア", seira: "セイラ", rocco: "ロッコ", mist: "ミスト", granz: "グランツ", teru: "テル", hayate: "ハヤテ", kuzoku: "空賊コグ頭目", toride: "砦の守備隊長", sniper: "狙撃隊長", kaizoku: "海賊コグ隊長" };
+  const COLORS = { aobee: "#38bdf8", warubee: "#e879f9", galdo: "#d97706", marmi: "#f472b6", poco: "#4ade80", minori: "#facc15", mio: "#a78bfa", ganzou: "#94a3b8", tia: "#7dd3fc", seira: "#38bdf8", rocco: "#fbbf24", mist: "#a5b4fc", granz: "#cbd5e1", teru: "#fb923c", hayate: "#ef4444", kuzoku: "#7dd3fc", toride: "#a3e635", sniper: "#c4b5fd", kaizoku: "#5eead4" };
   function showDialog(lines) {
     return new Promise(resolve => {
       const ov = document.createElement("div");

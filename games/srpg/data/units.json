@@ -253,6 +253,35 @@
     }
    ]
   },
+  "hayatespin": {
+   "armor": 820,
+   "color": "#ef4444",
+   "en": 120,
+   "hp": 2700,
+   "move": 8,
+   "name": "ハヤテスピン",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 90,
+     "max": 1,
+     "min": 1,
+     "name": "スピンドライブ",
+     "power": 1300
+    },
+    {
+     "en": 15,
+     "fx": "melee",
+     "hit": 75,
+     "max": 1,
+     "min": 1,
+     "morale": 110,
+     "name": "ニトロチャージ",
+     "power": 1750
+    }
+   ]
+  },
   "hoshifune": {
    "armor": 900,
    "color": "#a78bfa",
@@ -278,6 +307,36 @@
      "min": 2,
      "name": "星時計の祈り",
      "power": 1600
+    }
+   ]
+  },
+  "kaizokuboss": {
+   "aim": 108,
+   "armor": 1000,
+   "color": "#0f766e",
+   "en": 90,
+   "eva": 95,
+   "hp": 3500,
+   "move": 4,
+   "name": "海賊コグ頭目機",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "海賊フック",
+     "power": 1400
+    },
+    {
+     "en": 10,
+     "fx": "gun",
+     "hit": 75,
+     "max": 3,
+     "min": 2,
+     "name": "船上砲",
+     "power": 1300
     }
    ]
   },
@@ -308,6 +367,36 @@
      "min": 2,
      "name": "歯車ミサイル",
      "power": 1400
+    }
+   ]
+  },
+  "kuzokuboss": {
+   "aim": 106,
+   "armor": 950,
+   "color": "#0369a1",
+   "en": 80,
+   "eva": 108,
+   "hp": 3400,
+   "move": 5,
+   "name": "空賊コグ頭目",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 2,
+     "min": 1,
+     "name": "プロペラカッター・改",
+     "power": 1300
+    },
+    {
+     "en": 10,
+     "fx": "missile",
+     "hit": 72,
+     "max": 3,
+     "min": 2,
+     "name": "空賊ミサイル",
+     "power": 1250
     }
    ]
   },
@@ -394,6 +483,261 @@
      "min": 1,
      "name": "スピンアタック",
      "power": 1250
+    }
+   ]
+  },
+  "rocco": {
+   "aim": 104,
+   "armor": 1000,
+   "color": "#fbbf24",
+   "en": 100,
+   "eva": 96,
+   "hp": 3000,
+   "move": 5,
+   "name": "ロッコワークス",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "レンチアーム",
+     "power": 1350
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 78,
+     "max": 3,
+     "min": 2,
+     "name": "スパナ投げ",
+     "power": 1150
+    }
+   ]
+  },
+  "seirabrig": {
+   "armor": 1050,
+   "color": "#60a5fa",
+   "en": 120,
+   "hp": 3400,
+   "move": 5,
+   "name": "セイラブリッグ",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 80,
+     "max": 3,
+     "min": 2,
+     "name": "船首砲",
+     "power": 1400
+    },
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 78,
+     "max": 1,
+     "min": 1,
+     "name": "錨アタック",
+     "power": 1450
+    }
+   ]
+  },
+  "ship": {
+   "aim": 0,
+   "armor": 300,
+   "color": "#fde68a",
+   "en": 0,
+   "eva": 50,
+   "hp": 900,
+   "move": 2,
+   "name": "補給船",
+   "npc": true,
+   "weapons": []
+  },
+  "sniper": {
+   "aim": 115,
+   "armor": 800,
+   "color": "#7c3aed",
+   "en": 80,
+   "eva": 95,
+   "hp": 2100,
+   "move": 4,
+   "name": "狙撃コグ",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 82,
+     "max": 5,
+     "min": 3,
+     "name": "狙撃ライフル",
+     "power": 1300
+    },
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "護身ナイフ",
+     "power": 1000
+    }
+   ]
+  },
+  "sniperboss": {
+   "aim": 120,
+   "armor": 900,
+   "color": "#6d28d9",
+   "en": 100,
+   "eva": 100,
+   "hp": 3200,
+   "move": 4,
+   "name": "狙撃隊長機",
+   "weapons": [
+    {
+     "en": 10,
+     "fx": "gun",
+     "hit": 85,
+     "max": 5,
+     "min": 3,
+     "name": "狙撃ライフル・改",
+     "power": 1450
+    },
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "隊長のナイフ",
+     "power": 1100
+    }
+   ]
+  },
+  "telcarry": {
+   "armor": 750,
+   "color": "#fb923c",
+   "en": 110,
+   "hp": 2300,
+   "move": 7,
+   "name": "テルキャリー",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 85,
+     "max": 1,
+     "min": 1,
+     "name": "郵便カバン",
+     "power": 1050
+    },
+    {
+     "en": 10,
+     "fx": "missile",
+     "hit": 80,
+     "max": 3,
+     "min": 2,
+     "name": "特急便",
+     "power": 1250
+    }
+   ]
+  },
+  "tialaster": {
+   "armor": 780,
+   "color": "#818cf8",
+   "en": 140,
+   "hp": 2400,
+   "move": 5,
+   "name": "ティアラスター",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "beam",
+     "hit": 90,
+     "max": 4,
+     "min": 2,
+     "name": "星読みの光",
+     "power": 1350
+    },
+    {
+     "en": 15,
+     "fx": "beam",
+     "hit": 85,
+     "max": 5,
+     "min": 3,
+     "name": "星盤ビーム",
+     "power": 1650
+    }
+   ]
+  },
+  "toride": {
+   "aim": 106,
+   "armor": 1150,
+   "color": "#65a30d",
+   "en": 90,
+   "eva": 88,
+   "hp": 3600,
+   "move": 3,
+   "name": "砦守備機",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 78,
+     "max": 1,
+     "min": 1,
+     "name": "守備アーム",
+     "power": 1450
+    },
+    {
+     "en": 10,
+     "fx": "gun",
+     "hit": 72,
+     "max": 4,
+     "min": 2,
+     "name": "砦の大砲",
+     "power": 1300
+    }
+   ]
+  },
+  "warugear": {
+   "aim": 115,
+   "armor": 1100,
+   "color": "#a21caf",
+   "en": 130,
+   "eva": 115,
+   "hp": 3800,
+   "move": 6,
+   "name": "ワルギア・カスタム",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 82,
+     "max": 1,
+     "min": 1,
+     "name": "ワルギアクロー",
+     "power": 1500
+    },
+    {
+     "en": 10,
+     "fx": "missile",
+     "hit": 75,
+     "max": 3,
+     "min": 2,
+     "name": "いたずらミサイル",
+     "power": 1350
+    },
+    {
+     "en": 15,
+     "fx": "beam",
+     "hit": 78,
+     "max": 4,
+     "min": 2,
+     "name": "星屑ランチャー",
+     "power": 1450
     }
    ]
   },
