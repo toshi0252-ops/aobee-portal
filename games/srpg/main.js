@@ -17,12 +17,13 @@ const panel = new Panel($("panel"));
 const grid = new GridMap($("grid"), onTapCell);
 
 async function boot() {
-  const [pilots, units, stages] = await Promise.all([
+  const [pilots, units, stages, parts] = await Promise.all([
     fetch("data/pilots.json").then(r => r.json()),
     fetch("data/units.json").then(r => r.json()),
-    fetch("data/stages.json").then(r => r.json())
+    fetch("data/stages.json").then(r => r.json()),
+    fetch("data/parts.json").then(r => r.json())
   ]);
-  DATA = { pilots, units, stages };
+  DATA = { pilots, units, stages, parts };
   refreshTitle();
 }
 function refreshTitle() {
@@ -315,7 +316,12 @@ function renderResultPanel() {
       (st.medal ? " ／ ほし勲章 獲得！" : "（ほし勲章は" + st.stage.medalTurns + "ターン以内）") +
       "<br>歯車コイン: " + run.funds + "</div>");
     const items = [];
-    if (stageIdx + 1 < DATA.stages.stages.length) items.push({ label: "次の面へ", cls: "primary", onClick: () => startStage(stageIdx + 1) });
+    if (stageIdx + 1 < DATA.stages.stages.length) items.push({
+      label: "次の面へ", cls: "primary", onClick: async () => {
+        if (st.stage.after) await showDialog(st.stage.after); // 面間の物語
+        openIntermission(stageIdx + 1);                        // 整備・改造・買い物
+      }
+    });
     items.push({ label: "タイトルへ", onClick: () => $("btn-title").click() });
     panel.buttons(items);
     if (!st._clearShown) { st._clearShown = true; if (st.stage.clear) showDialog(st.stage.clear); }
@@ -329,4 +335,110 @@ function renderResultPanel() {
   }
 }
 async function handleResult() { render(); }
+
+/* ===== インターミッション画面 ===== */
+const MOD_LABEL = { hp: "HP", armor: "装甲", en: "EN", hit: "命中", power: "武器威力" };
+let imNext = 0, imPilot = null;
+function imPilots() {
+  const seen = [];
+  for (let i = 0; i <= imNext && i < DATA.stages.stages.length; i++)
+    for (const a of DATA.stages.stages[i].allies) if (!seen.includes(a.pilot)) seen.push(a.pilot);
+  return Object.keys(DATA.pilots.pilots).filter(pid => seen.includes(pid));
+}
+function openIntermission(nextIdx) {
+  imNext = nextIdx;
+  const list = imPilots();
+  if (!imPilot || !list.includes(imPilot)) imPilot = list[0];
+  renderIntermission();
+  $("intermission").classList.remove("hidden");
+}
+function closeIntermission() { $("intermission").classList.add("hidden"); }
+function stageMarks(lv) { return "■".repeat(lv) + "□".repeat(E.MOD_MAX - lv); }
+function renderIntermission() {
+  const pid = imPilot, p = DATA.pilots.pilots[pid], u = DATA.units.units[p.unit], g = run.pilots[pid];
+  const b = E.calcBonuses(DATA, run, p.unit);
+  const mods = run.mods[p.unit] || {};
+  const stock = run.partStock || {};
+  const face = window.FACE_MAP[pid];
+  let h = "<div class='im-inner'>";
+  h += "<div class='im-head'><h2>インターミッション</h2><div class='im-funds'>歯車コイン: " + run.funds + "</div></div>";
+  h += "<div class='im-topbtns'><button data-act='go' class='primary'>出撃（第" + DATA.stages.stages[imNext].id + "面「" + DATA.stages.stages[imNext].title + "」へ）</button><button data-act='title'>タイトルへ</button></div>";
+  // ユニット選択タブ
+  h += "<div class='im-tabs'>";
+  for (const tp of imPilots()) {
+    const tPilot = DATA.pilots.pilots[tp];
+    const tFace = window.FACE_MAP[tp];
+    h += "<button class='im-tab" + (tp === pid ? " active" : "") + "' data-act='tab' data-pilot='" + tp + "'>" +
+      (tFace ? "<img src='" + assetUrl(tFace) + "' alt=''>" : "") + tPilot.name + "／" + DATA.units.units[tPilot.unit].name + "</button>";
+  }
+  h += "</div>";
+  // 選択中ユニット概要
+  h += "<div class='im-unit'>" + (face ? "<img class='im-face' src='" + assetUrl(face) + "' alt=''>" : "") +
+    "<div><h3>" + p.name + "／" + u.name + " Lv" + g.level + "（EXP " + g.exp + "/100）</h3>" +
+    "<div class='stat'>HP " + (u.hp + g.hp + b.hp) + " ／ EN " + (u.en + b.en) + " ／ 装甲 " + (u.armor + b.armor) +
+    " ／ 命中 " + (p.aim + g.aim + b.hit) + " ／ 移動 " + (u.move + b.move) + " ／ 撃墜数 " + g.kills + "</div></div></div>";
+  // 改造
+  h += "<div class='im-sec'><h3>改造（最大" + E.MOD_MAX + "段階）</h3><table>";
+  for (const t of E.MOD_TRACKS) {
+    const lv = mods[t] || 0, maxed = lv >= E.MOD_MAX, cost = maxed ? null : E.modCost(t, lv);
+    h += "<tr><td>" + MOD_LABEL[t] + "（+" + E.MOD_PER[t] + "/段階）</td><td class='im-marks'>" + stageMarks(lv) + "</td><td>" +
+      (maxed ? "MAX" : cost + "コイン") + "</td><td>" +
+      (maxed ? "" : "<button data-act='mod' data-track='" + t + "'" + (run.funds < cost ? " disabled" : "") + ">改造</button>") + "</td></tr>";
+  }
+  h += "</table></div>";
+  // 強化パーツ: 装備枠
+  h += "<div class='im-sec'><h3>強化パーツ（2枠）</h3><table>";
+  for (let s = 0; s < 2; s++) {
+    const cur = (run.parts[p.unit] || [])[s];
+    const m = cur ? DATA.parts.parts[cur] : null;
+    h += "<tr><td>枠" + (s + 1) + "</td><td>" + (m ? m.name + "（" + m.desc + "）" : "（空）") + "</td><td>" +
+      (cur ? "<button data-act='unequip' data-slot='" + s + "'>外す</button>" : "") + "</td></tr>";
+  }
+  h += "</table>";
+  // 在庫から装備
+  const stocked = Object.keys(DATA.parts.parts).filter(id => (stock[id] || 0) > 0);
+  if (stocked.length) {
+    h += "<div class='stat'>在庫から装備:</div><table>";
+    for (const id of stocked) {
+      const m = DATA.parts.parts[id];
+      h += "<tr><td>" + m.name + "（" + m.desc + "）×" + stock[id] + "</td><td><button data-act='equip' data-slot='0' data-part='" + id + "'>枠1に装備</button></td><td><button data-act='equip' data-slot='1' data-part='" + id + "'>枠2に装備</button></td></tr>";
+    }
+    h += "</table>";
+  }
+  h += "</div>";
+  // ショップ
+  h += "<div class='im-sec'><h3>パーツショップ</h3><table>";
+  for (const id of Object.keys(DATA.parts.parts)) {
+    const m = DATA.parts.parts[id];
+    h += "<tr><td>" + m.name + "</td><td>" + m.desc + "</td><td>" + m.cost + "コイン</td><td>在庫 " + (stock[id] || 0) + "</td><td><button data-act='buy' data-part='" + id + "'" + (run.funds < m.cost ? " disabled" : "") + ">購入</button></td></tr>";
+  }
+  h += "</table></div>";
+  // ほし習得
+  const learned = run.hoshiLearned[pid] || [];
+  h += "<div class='im-sec'><h3>ほしコマンド習得（" + p.name + "）</h3><table>";
+  for (const cid of Object.keys(DATA.pilots.hoshiCommands)) {
+    const m = DATA.pilots.hoshiCommands[cid];
+    if (learned.includes(cid)) h += "<tr><td>" + m.name + "</td><td>SP" + m.sp + "</td><td>" + m.desc + "</td><td>習得済み</td></tr>";
+    else h += "<tr><td>" + m.name + "</td><td>SP" + m.sp + "</td><td>" + m.desc + "</td><td>" + E.HOSHI_COST + "コイン</td><td><button data-act='learn' data-cmd='" + cid + "'" + (run.funds < E.HOSHI_COST ? " disabled" : "") + ">習得</button></td></tr>";
+  }
+  h += "</table></div>";
+  h += "<div class='im-topbtns'><button data-act='go' class='primary'>出撃（第" + DATA.stages.stages[imNext].id + "面へ）</button><button data-act='title'>タイトルへ</button></div>";
+  h += "</div>";
+  const el = $("intermission");
+  el.innerHTML = h;
+  el.querySelectorAll("button[data-act]").forEach(btn => btn.addEventListener("click", () => imAction(btn.dataset)));
+}
+function imAction(d) {
+  const uid = DATA.pilots.pilots[imPilot].unit;
+  if (d.act === "go") { closeIntermission(); startStage(imNext); return; }
+  if (d.act === "title") { closeIntermission(); $("btn-title").click(); return; }
+  if (d.act === "tab") imPilot = d.pilot;
+  else if (d.act === "mod") E.buyMod(run, uid, d.track);
+  else if (d.act === "buy") E.buyPart(run, DATA, d.part);
+  else if (d.act === "equip") E.equipPart(run, uid, Number(d.slot), d.part);
+  else if (d.act === "unequip") E.unequipPart(run, uid, Number(d.slot));
+  else if (d.act === "learn") E.learnHoshi(run, imPilot, d.cmd, DATA);
+  E.saveRun(localStorage, run);
+  renderIntermission();
+}
 boot();

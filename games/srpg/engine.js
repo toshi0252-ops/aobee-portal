@@ -21,14 +21,90 @@
   function dist(a, b) { return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
+  /* ===== インターミッション: 改造・強化パーツ・ほし習得 ===== */
+  const MOD_TRACKS = ["hp", "armor", "en", "hit", "power"];
+  const MOD_MAX = 5;
+  const MOD_PER = { hp: 250, armor: 70, en: 15, hit: 3, power: 50 }; // 1段階あたりの上昇量
+  const HOSHI_COST = 500;
+  function emptyMods() { return { hp: 0, armor: 0, en: 0, hit: 0, power: 0 }; }
+  function normalizeMods(m) {
+    const out = emptyMods();
+    if (m) for (const t of MOD_TRACKS) out[t] = clamp(Math.floor(m[t] || 0), 0, MOD_MAX);
+    return out;
+  }
+  function modCost(track, curLv) { return 200 + 150 * curLv; }
+  function buyMod(run, unitId, track) {
+    if (!MOD_TRACKS.includes(track)) return false;
+    if (!run.mods) run.mods = {};
+    if (!run.mods[unitId]) run.mods[unitId] = emptyMods();
+    const cur = run.mods[unitId][track] || 0;
+    if (cur >= MOD_MAX) return false;
+    const cost = modCost(track, cur);
+    if (run.funds < cost) return false;
+    run.funds -= cost; run.mods[unitId][track] = cur + 1;
+    return true;
+  }
+  function buyPart(run, data, partId) {
+    const master = data.parts && data.parts.parts[partId];
+    if (!master) return false;
+    if (run.funds < master.cost) return false;
+    if (!run.partStock) run.partStock = {};
+    run.funds -= master.cost;
+    run.partStock[partId] = (run.partStock[partId] || 0) + 1;
+    return true;
+  }
+  function equipPart(run, unitId, slotIdx, partId) {
+    if (slotIdx !== 0 && slotIdx !== 1) return false;
+    if (!run.partStock || (run.partStock[partId] || 0) <= 0) return false;
+    if (!run.parts) run.parts = {};
+    if (!Array.isArray(run.parts[unitId])) run.parts[unitId] = [null, null];
+    const cur = run.parts[unitId][slotIdx];
+    if (cur === partId) return false;
+    if (cur) run.partStock[cur] = (run.partStock[cur] || 0) + 1; // 付け替え: 元のパーツは在庫へ戻す
+    run.partStock[partId]--;
+    run.parts[unitId][slotIdx] = partId;
+    return true;
+  }
+  function unequipPart(run, unitId, slotIdx) {
+    if (slotIdx !== 0 && slotIdx !== 1) return false;
+    if (!run.parts || !Array.isArray(run.parts[unitId])) return false;
+    const cur = run.parts[unitId][slotIdx];
+    if (!cur) return false;
+    if (!run.partStock) run.partStock = {};
+    run.partStock[cur] = (run.partStock[cur] || 0) + 1;
+    run.parts[unitId][slotIdx] = null;
+    return true;
+  }
+  function learnHoshi(run, pilotId, cmdId, data) {
+    const list = run.hoshiLearned && run.hoshiLearned[pilotId];
+    if (!list || list.includes(cmdId)) return false;
+    if (data && !(data.pilots.hoshiCommands || {})[cmdId]) return false;
+    if (run.funds < HOSHI_COST) return false;
+    run.funds -= HOSHI_COST; list.push(cmdId);
+    return true;
+  }
+  /* 改造＋装備パーツの合算ボーナス（startStage と画面表示で共用） */
+  function calcBonuses(data, run, unitId) {
+    const b = { hp: 0, armor: 0, en: 0, hit: 0, power: 0, move: 0 };
+    const m = (run.mods && run.mods[unitId]) || {};
+    for (const t of MOD_TRACKS) b[t] += (m[t] || 0) * MOD_PER[t];
+    const master = (data.parts && data.parts.parts) || {};
+    for (const partId of (run.parts && run.parts[unitId]) || []) {
+      if (!partId) continue;
+      const ef = (master[partId] || {}).effect || {};
+      for (const k of Object.keys(b)) if (ef[k]) b[k] += ef[k];
+    }
+    return b;
+  }
+
   function createRun(data) {
-    const run = { funds: 0, cleared: 0, pilots: {}, mods: {}, parts: {}, hoshiLearned: {} };
+    const run = { funds: 0, cleared: 0, pilots: {}, mods: {}, parts: {}, hoshiLearned: {}, partStock: {} };
     for (const pid of Object.keys(data.pilots.pilots)) {
       run.pilots[pid] = { level: 1, exp: 0, kills: 0, hp: 0, atk: 0, aim: 0, eva: 0 };
       run.hoshiLearned[pid] = data.pilots.pilots[pid].hoshi.slice();
     }
     for (const uid of Object.keys(data.units.units)) {
-      run.mods[uid] = { kaizou: 0 };              // インターミッション後付け用: 改造段階（全0）
+      run.mods[uid] = emptyMods();               // 改造5トラック×最大5段階（全0）
       run.parts[uid] = [null, null];              // 強化パーツ枠（2枠・空）
     }
     return run;
@@ -37,12 +113,13 @@
   let uidSeq = 1;
   function allyUnit(data, run, spec) {
     const p = data.pilots.pilots[spec.pilot], u = data.units.units[p.unit], g = run.pilots[spec.pilot];
+    const b = calcBonuses(data, run, p.unit);
     return {
       uid: uidSeq++, side: "ally", pilotId: spec.pilot, unitId: p.unit,
       name: p.name, unitName: u.name, color: p.color, x: spec.x, y: spec.y,
-      maxHp: u.hp + g.hp, hp: u.hp + g.hp, maxEn: u.en, en: u.en,
-      move: u.move, armor: u.armor, aim: p.aim + g.aim, eva: p.eva + g.eva, atk: p.atk + g.atk,
-      weapons: u.weapons, maxSp: p.sp, sp: p.sp, morale: 100, level: g.level,
+      maxHp: u.hp + g.hp + b.hp, hp: u.hp + g.hp + b.hp, maxEn: u.en + b.en, en: u.en + b.en,
+      move: u.move + b.move, armor: u.armor + b.armor, aim: p.aim + g.aim + b.hit, eva: p.eva + g.eva, atk: p.atk + g.atk,
+      weapons: u.weapons.map(w => Object.assign({}, w, { power: w.power + b.power })), maxSp: p.sp, sp: p.sp, morale: 100, level: g.level,
       acted: false, boss: false, flags: {}
     };
   }
@@ -350,7 +427,7 @@
     if (st.result === "win") st.medal = st.turn <= (st.stage.medalTurns || 99);
   }
   function buildSave(run) {
-    return { version: 1, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned };
+    return { version: 1, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned, partStock: run.partStock || {} };
   }
   function saveRun(storage, run) { storage.setItem("aobee-taisen-save-v1", JSON.stringify(buildSave(run))); }
   function loadRun(storage, data) {
@@ -362,13 +439,18 @@
     run.funds = s.funds || 0; run.cleared = s.cleared || 0;
     for (const pid of Object.keys(run.pilots)) if (s.pilots && s.pilots[pid]) run.pilots[pid] = s.pilots[pid];
     for (const uid of Object.keys(run.mods)) {
-      if (s.mods && s.mods[uid]) run.mods[uid] = s.mods[uid];
-      if (s.parts && s.parts[uid]) run.parts[uid] = s.parts[uid];
+      if (s.mods && s.mods[uid]) run.mods[uid] = normalizeMods(s.mods[uid]); // 旧形式 {kaizou:0} も5トラックに正規化
+      if (s.parts && s.parts[uid]) {
+        const arr = Array.isArray(s.parts[uid]) ? s.parts[uid].slice(0, 2) : [null, null];
+        while (arr.length < 2) arr.push(null);
+        run.parts[uid] = arr;
+      }
     }
     for (const pid of Object.keys(run.hoshiLearned)) if (s.hoshiLearned && s.hoshiLearned[pid]) run.hoshiLearned[pid] = s.hoshiLearned[pid];
+    run.partStock = (s.partStock && typeof s.partStock === "object") ? s.partStock : {}; // 旧セーブ（partStockなし）は空で初期化
     return run;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, gainExp };
+  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
