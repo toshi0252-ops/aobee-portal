@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>あおびー大戦（仮）｜序盤縦切り 第1〜5面</title>
+<style>
+/* 共通パネル部品: 画面下部（縦）／右側（横）の両配置で同じ中身を使う */
+#panel {
+  background: #111827;
+  border-top: 2px solid #334155;
+  padding: 8px;
+  overflow-y: auto;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+body.landscape #panel {
+  border-top: none;
+  border-left: 2px solid #334155;
+}
+#panel h3 { margin: 2px 0 6px; font-size: 14px; }
+#panel .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+#panel button {
+  background: #1f2937; color: #e2e8f0; border: 1px solid #4b5563;
+  border-radius: 8px; padding: 9px 12px; font-size: 13px; cursor: pointer;
+  min-height: 40px;
+}
+#panel button.primary { background: #0369a1; border-color: #38bdf8; font-weight: 700; }
+#panel button:disabled { opacity: 0.4; }
+#panel .stat { color: #94a3b8; font-size: 12px; line-height: 1.5; }
+#panel .bar { height: 8px; background: #374151; border-radius: 4px; overflow: hidden; margin: 2px 0 4px; }
+#panel .bar i { display: block; height: 100%; background: #22c55e; }
+#panel .bar.en i { background: #38bdf8; }
+#panel .bar.sp i { background: #f59e0b; }
+#panel table { width: 100%; border-collapse: collapse; font-size: 12px; }
+#panel td, #panel th { border: 1px solid #334155; padding: 4px 6px; text-align: left; }
+
+</style>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#0f172a;color:#e2e8f0;font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
+#app{height:100dvh;display:flex;flex-direction:column}
+header{display:flex;gap:8px;align-items:center;background:#1e3a5f;padding:6px 10px;font-size:13px;font-weight:700;flex-wrap:wrap}
+header .spacer{flex:1}header button{background:#0ea5e9;border:none;color:#fff;border-radius:6px;padding:6px 10px;font-weight:700;cursor:pointer}
+header button.sub{background:#334155}
+#main{flex:1;display:flex;flex-direction:column;min-height:0}
+#mapwrap{padding:6px;display:flex;justify-content:center}
+#grid{display:grid;gap:1px;width:min(100%,calc((100dvh - 330px)*1.333));max-width:560px}
+body.landscape #main{flex-direction:row}
+body.landscape #mapwrap{flex:1;align-items:center}
+body.landscape #grid{width:min(100%,calc((100dvh - 70px)*1.333))}
+body.landscape #panel{width:330px;flex:none}
+#panel{flex:1;min-height:120px}
+.cell{aspect-ratio:1;border:1px solid rgba(255,255,255,.12);position:relative;display:flex;align-items:center;justify-content:center}
+.t-plain{background:#3f6212}.t-path{background:#57534e}.t-gear{background:#581c87}.t-forest{background:#14532d}.t-village{background:#92400e}.t-river{background:#0369a1}.t-water{background:#0e7490}.t-lamp{background:#a16207}.t-block{background:#1c1917}
+.cell.hl-move{outline:2px solid #38bdf8;outline-offset:-2px;background-image:linear-gradient(rgba(56,189,248,.35),rgba(56,189,248,.35))}
+.cell.hl-attack{outline:2px solid #f87171;outline-offset:-2px;background-image:linear-gradient(rgba(248,113,113,.35),rgba(248,113,113,.35))}
+.chip-unit{width:78%;height:78%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#111;border:2px solid rgba(255,255,255,.7);z-index:2}
+.chip-unit.enemy{border-radius:6px;color:#fff}.chip-unit.boss{border-color:#fbbf24;box-shadow:0 0 6px #fbbf24}
+.chip-unit.acted{filter:grayscale(.8);opacity:.55}
+.mini-hp{position:absolute;left:8%;right:8%;bottom:2px;height:4px;background:rgba(0,0,0,.6);border-radius:2px;z-index:3}
+.mini-hp i{display:block;height:100%;background:#22c55e;border-radius:2px}
+.dmg-pop{position:absolute;inset:auto 0 60% 0;text-align:center;font-weight:900;color:#fff;text-shadow:0 0 4px #000,0 2px 2px #000;font-size:13px;z-index:5;animation:pop .65s ease-out}
+@keyframes pop{0%{transform:translateY(6px);opacity:0}25%{opacity:1}100%{transform:translateY(-8px);opacity:0}}
+#title-screen{height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:linear-gradient(#1e3a5f,#0f172a);text-align:center;padding:16px}
+#title-screen h1{font-size:30px;margin:0;color:#7dd3fc}
+#title-screen .sub{color:#94a3b8;font-size:13px;max-width:520px;line-height:1.7}
+#title-screen button{background:#0369a1;color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;min-width:240px}
+#title-screen button:disabled{opacity:.4}
+#title-screen button.sub{background:#1f2937;border-color:#4b5563;font-weight:400}
+.hidden{display:none!important}
+.battle-scene{position:fixed;inset:0;background:linear-gradient(#7dd3fc 0 55%,#65a30d 55%);z-index:80}
+.bs-quote{position:absolute;top:10px;left:10px;right:10px;background:rgba(2,6,23,.88);color:#fff;border-radius:8px;padding:8px 12px;font-size:14px}
+.bs-unit{position:absolute;bottom:52px;text-align:center;transition:transform .3s}
+.bs-left{left:10%}.bs-right{right:10%}
+.bs-sprite{width:92px;height:92px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#111;border:3px solid rgba(255,255,255,.8);padding:4px}
+.bs-right .bs-sprite{color:#fff}
+.bs-name{color:#fff;text-shadow:0 1px 3px #000;font-size:12px;margin-top:4px;font-weight:700}
+.bs-dash{transform:translateX(46px)}.bs-right.bs-dash{transform:translateX(-46px)}
+.bs-shake{animation:shake .35s}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.bs-bars{position:absolute;left:0;right:0;bottom:0;background:rgba(2,6,23,.9);color:#fff;display:flex;justify-content:space-between;padding:8px 14px;font-size:13px}
+.bs-skip{position:absolute;top:64px;right:10px;background:#f59e0b;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
+#log{font-size:11px;color:#94a3b8;max-height:90px;overflow-y:auto;line-height:1.5}
+</style></head><body>
+<div id="title-screen">
+  <h1>あおびー大戦（仮）</h1>
+  <div class="sub">スパロボ風SLG・序盤縦切り版（第1〜5面）／プレビュー単一ファイル版<br>縦画面：下部パネル＋簡略戦闘 ／ 横画面：右パネル＋戦闘アニメ<br>ユニットは仮チップ表示です</div>
+  <button id="btn-new">はじめから</button>
+  <button id="btn-continue" class="sub">つづきから</button>
+  <div id="stage-select" class="hidden"></div>
+  <button id="btn-anim" class="sub">戦闘アニメ（横画面）: ON</button>
+</div>
+<div id="app" class="hidden">
+  <header>
+    <span id="hd-stage">第1面</span><span id="hd-turn">TURN 1</span>
+    <span id="hd-obj" style="font-weight:400;color:#bae6fd"></span>
+    <span class="spacer"></span><span id="hd-funds"></span>
+    <button id="btn-phase" class="sub">フェイズ終了</button>
+    <button id="btn-title" class="sub">タイトルへ</button>
+  </header>
+  <div id="main">
+    <div id="mapwrap"><div id="grid"></div></div>
+    <div id="panel"></div>
+  </div>
+</div>
+<script>
+"use strict";
+/* Panel部品: 中身の入れ替え表示だけを担当する（配置はCSS側） */
+(function (global) {
+  function Panel(el) { this.el = el; }
+  Panel.prototype.show = function (html) { this.el.innerHTML = html; };
+  Panel.prototype.buttons = function (items) {
+    // items: [{label, cls, disabled, onClick}]
+    const row = document.createElement("div"); row.className = "row";
+    for (const it of items) {
+      const b = document.createElement("button");
+      b.textContent = it.label; if (it.cls) b.className = it.cls;
+      if (it.disabled) b.disabled = true;
+      b.addEventListener("click", it.onClick);
+      row.appendChild(b);
+    }
+    this.el.appendChild(row);
+    return row;
+  };
+  Panel.prototype.unitCard = function (u) {
+    const hpPct = Math.max(0, Math.round(u.hp / u.maxHp * 100));
+    const enPct = u.maxEn ? Math.round(u.en / u.maxEn * 100) : 0;
+    const spPct = u.maxSp ? Math.round(u.sp / u.maxSp * 100) : 0;
+    return "<h3>" + u.name + "／" + u.unitName + " Lv" + u.level + " 気力" + u.morale + "</h3>" +
+      "<div class='stat'>HP " + u.hp + "/" + u.maxHp + "</div><div class='bar'><i style='width:" + hpPct + "%'></i></div>" +
+      (u.maxEn ? "<div class='stat'>EN " + u.en + "/" + u.maxEn + "</div><div class='bar en'><i style='width:" + enPct + "%'></i></div>" : "") +
+      (u.maxSp ? "<div class='stat'>SP " + u.sp + "/" + u.maxSp + "</div><div class='bar sp'><i style='width:" + spPct + "%'></i></div>" : "");
+  };
+  global.Panel = Panel;
+})(window);
+
+</script>
+<script>
+"use strict";
+/* Dialog部品: 会話ウィンドウ。lines = [[who, text], ...] を順に表示し、終わったら resolve する */
+(function (global) {
+  const NAMES = { aobee: "あおびー", warubee: "わるびー", galdo: "ガルド", marmi: "マーミ", poco: "ポコ", minori: "みのり", mio: "ミオ", ganzou: "ガンジョウ" };
+  const COLORS = { aobee: "#38bdf8", warubee: "#e879f9", galdo: "#d97706", marmi: "#f472b6", poco: "#4ade80", minori: "#facc15", mio: "#a78bfa", ganzou: "#94a3b8" };
+  function showDialog(lines) {
+    return new Promise(resolve => {
+      const ov = document.createElement("div");
+      ov.style.cssText = "position:fixed;inset:0;background:rgba(2,6,23,.45);display:flex;align-items:flex-end;justify-content:center;z-index:60";
+      const box = document.createElement("div");
+      box.style.cssText = "background:rgba(15,23,42,.96);border:2px solid #475569;border-radius:12px;margin:10px;padding:12px 14px;max-width:640px;width:100%;color:#e2e8f0;min-height:96px;cursor:pointer";
+      ov.appendChild(box); document.body.appendChild(ov);
+      let i = 0;
+      function render() {
+        if (i >= lines.length) { document.body.removeChild(ov); resolve(); return; }
+        const [who, text] = lines[i];
+        box.innerHTML = "<div style='font-weight:700;color:" + (COLORS[who] || "#e2e8f0") + "'>" + (NAMES[who] || who) + "</div><div style='margin-top:4px;line-height:1.6'>" + text + "</div><div style='text-align:right;color:#64748b;font-size:11px'>タップで進む ▼</div>";
+      }
+      ov.addEventListener("click", () => { i++; render(); });
+      render();
+    });
+  }
+  global.showDialog = showDialog;
+})(window);
+
+</script>
+<script>
+"use strict";
+/* GridMap部品: マップ描画・範囲ハイライト・タップ判定 */
+(function (global) {
+  const TERR_CLASS = { ".": "t-plain", P: "t-path", G: "t-gear", F: "t-forest", V: "t-village", R: "t-river", W: "t-water", L: "t-lamp", X: "t-block" };
+  function GridMap(el, onTap) {
+    this.el = el; this.onTap = onTap;
+    this.moveTiles = new Map(); this.attackTiles = new Set();
+  }
+  GridMap.prototype.setHighlights = function (moveTiles, attackTiles) {
+    this.moveTiles = new Map((moveTiles || []).map(t => [t.x + "," + t.y, t]));
+    this.attackTiles = new Set((attackTiles || []).map(t => t.x + "," + t.y));
+  };
+  GridMap.prototype.render = function (st) {
+    const stage = st.stage, w = stage.terrain[0].length, h = stage.terrain.length;
+    this.el.innerHTML = "";
+    this.el.style.gridTemplateColumns = "repeat(" + w + ",1fr)";
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const cell = document.createElement("div");
+      const ch = stage.terrain[y][x];
+      cell.className = "cell " + (TERR_CLASS[ch] || "t-plain");
+      const k = x + "," + y;
+      if (this.moveTiles.has(k)) cell.classList.add("hl-move");
+      if (this.attackTiles.has(k)) cell.classList.add("hl-attack");
+      const u = st.units.find(u => u.hp > 0 && u.x === x && u.y === y);
+      if (u) {
+        const chip = document.createElement("div");
+        chip.className = "chip-unit " + u.side + (u.acted && u.side === "ally" ? " acted" : "") + (u.boss ? " boss" : "");
+        chip.style.background = u.color;
+        chip.textContent = u.side === "npc" ? "動" : (u.pilotId ? u.name.slice(0, 1) : u.name.slice(0, 1));
+        chip.title = u.name + "／" + u.unitName + " HP" + u.hp;
+        cell.appendChild(chip);
+        if (u.side !== "npc") {
+          const bar = document.createElement("div"); bar.className = "mini-hp";
+          const i = document.createElement("i"); i.style.width = Math.max(0, u.hp / u.maxHp * 100) + "%";
+          bar.appendChild(i); cell.appendChild(bar);
+        }
+      }
+      cell.addEventListener("click", () => this.onTap(x, y));
+      this.el.appendChild(cell);
+    }
+  };
+  global.GridMap = GridMap;
+})(window);
+
+</script>
+<script>
+"use strict";
+/* Battle部品: 簡略戦闘（マップ上の数字ポップ）と横画面用戦闘シーン */
+(function (global) {
+  // 簡略: マップのセル上にダメージ数字をポップ表示する
+  function showPop(gridEl, st, ev) {
+    return new Promise(resolve => {
+      const w = st.stage.terrain[0].length;
+      const idx = ev.defY * w + ev.defX;
+      const cell = gridEl.children[idx];
+      if (!cell) { resolve(); return; }
+      const pop = document.createElement("div");
+      pop.className = "dmg-pop";
+      pop.textContent = ev.type === "heal" ? "+" + ev.amount : (ev.hit ? "-" + ev.dmg : "MISS");
+      if (ev.killed) pop.textContent += " 撃墜!";
+      cell.appendChild(pop);
+      setTimeout(() => { pop.remove(); resolve(); }, 650);
+    });
+  }
+  async function playSimplified(gridEl, st, events) {
+    for (const ev of events) {
+      if (ev.type === "attack" || ev.type === "heal") await showPop(gridEl, st, ev);
+    }
+  }
+  // 横画面用シーン: 左右対峙・HPバー・セリフ・スキップ可の簡易アニメーション
+  function playScene(atkU, defU, events, firstForecast) {
+    return new Promise(resolve => {
+      const ov = document.createElement("div");
+      ov.className = "battle-scene";
+      const main = events.find(e => e.type === "attack");
+      const counter = events.filter(e => e.type === "attack")[1];
+      ov.innerHTML =
+        "<div class='bs-sky'><div class='bs-quote'></div>" +
+        "<div class='bs-unit bs-left'><div class='bs-sprite' style='background:" + atkU.color + "'>" + atkU.name + "</div><div class='bs-name'>" + atkU.unitName + "</div></div>" +
+        "<div class='bs-unit bs-right'><div class='bs-sprite' style='background:" + defU.color + "'>" + defU.name + "</div><div class='bs-name'>" + defU.unitName + "</div></div>" +
+        "<div class='bs-bars'><div>HP " + atkU.hp + "/" + atkU.maxHp + "</div><div>HP " + defU.hp + "/" + defU.maxHp + "</div></div></div>" +
+        "<button class='bs-skip'>スキップ ≫</button>";
+      document.body.appendChild(ov);
+      const quote = ov.querySelector(".bs-quote");
+      const left = ov.querySelector(".bs-left"), right = ov.querySelector(".bs-right");
+      let done = false;
+      const finish = () => { if (!done) { done = true; ov.remove(); resolve(); } };
+      ov.querySelector(".bs-skip").addEventListener("click", finish);
+      const steps = [];
+      if (main) steps.push({ el: left, foe: right, ev: main, who: atkU });
+      if (counter) steps.push({ el: right, foe: left, ev: counter, who: defU });
+      let i = 0;
+      function next() {
+        if (i >= steps.length) { setTimeout(finish, 500); return; }
+        const s = steps[i++];
+        quote.textContent = s.who.name + "「" + s.ev.weapon + "！」 " + (s.ev.hit ? s.ev.dmg + "ダメージ" : "回避された");
+        s.el.classList.add("bs-dash");
+        setTimeout(() => { s.el.classList.remove("bs-dash"); if (s.ev.hit) { s.foe.classList.add("bs-shake"); setTimeout(() => s.foe.classList.remove("bs-shake"), 350); } setTimeout(next, 450); }, 350);
+      }
+      next();
+      setTimeout(finish, 6000); // 安全弁
+    });
+  }
+  global.BattleView = { playSimplified, playScene };
+})(window);
+
+</script>
+<script>
+"use strict";
+/* あおびー大戦 エンジン: 移動・戦闘計算・予測・敵AI・勝敗・育成・セーブ
+   ブラウザでは window.SRPGEngine、Nodeでは module.exports として動く。 */
+(function (global) {
+  const TERRAIN = {
+    ".": { name: "平地", cost: 1, evade: 0, def: 1.0 },
+    P: { name: "参道", cost: 1, evade: 0, def: 1.0 },
+    G: { name: "歯車フロア", cost: 1, evade: 0, def: 1.0 },
+    F: { name: "森", cost: 2, evade: 15, def: 1.0 },
+    V: { name: "村・建物", cost: 1, evade: 10, def: 1.0, heal: true },
+    R: { name: "川", cost: 3, evade: 0, def: 1.0 },
+    W: { name: "水上", cost: 3, evade: 0, def: 1.0 },
+    L: { name: "灯り", cost: 1, evade: 5, def: 1.0, lamp: true },
+    X: { name: "障害物", cost: Infinity, evade: 0, def: 1.0 }
+  };
+  function terrainAt(stage, x, y) {
+    if (x < 0 || y < 0 || y >= stage.terrain.length || x >= stage.terrain[0].length) return TERRAIN.X;
+    return TERRAIN[stage.terrain[y][x]] || TERRAIN["."];
+  }
+  function terrainChar(stage, x, y) { return stage.terrain[y][x]; }
+  function dist(a, b) { return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function createRun(data) {
+    const run = { funds: 0, cleared: 0, pilots: {}, mods: {}, parts: {}, hoshiLearned: {} };
+    for (const pid of Object.keys(data.pilots.pilots)) {
+      run.pilots[pid] = { level: 1, exp: 0, kills: 0, hp: 0, atk: 0, aim: 0, eva: 0 };
+      run.hoshiLearned[pid] = data.pilots.pilots[pid].hoshi.slice();
+    }
+    for (const uid of Object.keys(data.units.units)) {
+      run.mods[uid] = { kaizou: 0 };              // インターミッション後付け用: 改造段階（全0）
+      run.parts[uid] = [null, null];              // 強化パーツ枠（2枠・空）
+    }
+    return run;
+  }
+
+  let uidSeq = 1;
+  function allyUnit(data, run, spec) {
+    const p = data.pilots.pilots[spec.pilot], u = data.units.units[p.unit], g = run.pilots[spec.pilot];
+    return {
+      uid: uidSeq++, side: "ally", pilotId: spec.pilot, unitId: p.unit,
+      name: p.name, unitName: u.name, color: p.color, x: spec.x, y: spec.y,
+      maxHp: u.hp + g.hp, hp: u.hp + g.hp, maxEn: u.en, en: u.en,
+      move: u.move, armor: u.armor, aim: p.aim + g.aim, eva: p.eva + g.eva, atk: p.atk + g.atk,
+      weapons: u.weapons, maxSp: p.sp, sp: p.sp, morale: 100, level: g.level,
+      acted: false, boss: false, flags: {}
+    };
+  }
+  function enemyUnit(data, spec, stageId) {
+    const u = data.units.units[spec.unit];
+    const lv = stageId; // 敵の強さは面番号に連動
+    return {
+      uid: uidSeq++, side: "enemy", pilotId: null, unitId: spec.unit,
+      name: u.name, unitName: u.name, color: u.color, x: spec.x, y: spec.y,
+      maxHp: u.hp + (lv - 1) * 120, hp: u.hp + (lv - 1) * 120, maxEn: u.en, en: u.en,
+      move: u.move, armor: u.armor + (lv - 1) * 20, aim: (u.aim || 95) + (lv - 1) * 2, eva: (u.eva || 90), atk: 100 + (lv - 1) * 6,
+      weapons: u.weapons, maxSp: 0, sp: 0, morale: 100, level: lv,
+      acted: false, boss: !!spec.boss, flags: {}
+    };
+  }
+  function startStage(data, run, stageIdx) {
+    const stage = data.stages.stages[stageIdx];
+    const st = {
+      data, run, stage, stageIdx, turn: 1, phase: "player", result: null,
+      units: [], log: [], pendingDialog: null, rustStorm: false, bossHalfShown: false, medal: false
+    };
+    for (const a of stage.allies) st.units.push(allyUnit(data, run, a));
+    for (const e of stage.enemies) st.units.push(enemyUnit(data, e, stage.id));
+    for (const n of stage.npcs || []) {
+      const u = data.units.units[n.unit];
+      st.units.push({ uid: uidSeq++, side: "npc", pilotId: null, unitId: n.unit, name: u.name, unitName: u.name, color: u.color, x: n.x, y: n.y, maxHp: u.hp, hp: u.hp, maxEn: 0, en: 0, move: u.move, armor: u.armor, aim: 0, eva: u.eva, atk: 0, weapons: [], maxSp: 0, sp: 0, morale: 100, level: 1, acted: false, boss: false, flags: {} });
+    }
+    return st;
+  }
+  function unitAt(st, x, y) { return st.units.find(u => u.hp > 0 && u.x === x && u.y === y) || null; }
+  function living(st, side) { return st.units.filter(u => u.hp > 0 && u.side === side); }
+
+  function computeMoveRange(st, unit) {
+    const maxCost = unit.move + (unit.flags.kasoku || 0);
+    const key = (x, y) => x + "," + y;
+    const cost = new Map([[key(unit.x, unit.y), 0]]);
+    const q = [{ x: unit.x, y: unit.y, c: 0 }];
+    while (q.length) {
+      const cur = q.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = cur.x + dx, ny = cur.y + dy;
+        if (nx < 0 || ny < 0 || ny >= st.stage.terrain.length || nx >= st.stage.terrain[0].length) continue;
+        const t = terrainAt(st.stage, nx, ny);
+        if (!isFinite(t.cost)) continue;
+        const occ = unitAt(st, nx, ny);
+        if (occ && occ.side === "enemy" && unit.side !== "enemy") continue;
+        if (occ && occ.side !== "enemy" && unit.side === "enemy") continue;
+        const nc = cur.c + t.cost;
+        if (nc > maxCost) continue;
+        if (cost.has(key(nx, ny)) && cost.get(key(nx, ny)) <= nc) continue;
+        cost.set(key(nx, ny), nc); q.push({ x: nx, y: ny, c: nc });
+      }
+    }
+    const tiles = [];
+    for (const [k, c] of cost) {
+      const [x, y] = k.split(",").map(Number);
+      const occ = unitAt(st, x, y);
+      if (!occ || occ === unit) tiles.push({ x, y, cost: c });
+    }
+    return tiles;
+  }
+  function reachableSet(st, sx, sy, movePoints, side) {
+    // テスト用: 障害物のみ考慮した到達可能性（敵味方の占有は無視、地形コストは歩数換算で上限なし・到達可否のみ）
+    const seen = new Set([sx + "," + sy]); const q = [{ x: sx, y: sy }];
+    while (q.length) {
+      const cur = q.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = cur.x + dx, ny = cur.y + dy;
+        if (nx < 0 || ny < 0 || ny >= st.stage.terrain.length || nx >= st.stage.terrain[0].length) continue;
+        if (!isFinite(terrainAt(st.stage, nx, ny).cost)) continue;
+        const k = nx + "," + ny;
+        if (!seen.has(k)) { seen.add(k); q.push({ x: nx, y: ny }); }
+      }
+    }
+    return seen;
+  }
+
+  function fogPenalty(st, atk, def) {
+    if (!st.stage.fog) return 0;
+    const lamps = [];
+    st.stage.terrain.forEach((row, y) => { [...row].forEach((c, x) => { if (c === "L") lamps.push({ x, y }); }); });
+    const near = u => lamps.some(l => Math.abs(l.x - u.x) + Math.abs(l.y - u.y) <= (st.stage.lampRadius || 2));
+    return (near(atk) || near(def)) ? 0 : 30;
+  }
+  function hitRate(st, atk, def, w, stance) {
+    let h = w.hit + atk.aim - def.eva - terrainAt(st.stage, def.x, def.y).evade;
+    h -= fogPenalty(st, atk, def);
+    if (atk.flags.shuuchuu) h += 30;
+    if (def.flags.shuuchuu) h -= 30;
+    if (stance === "evade") h -= 30;
+    if (atk.flags.hicchu) h = 100;
+    if (def.flags.hirameki) h = 0;
+    return clamp(h, 5, 100);
+  }
+  function damage(st, atk, def, w, stance) {
+    let d = w.power + atk.atk * 5 - def.armor;
+    d = Math.round(d * terrainAt(st.stage, def.x, def.y).def);
+    if (st.rustStorm && atk.side === "enemy") d = Math.round(d * 1.1);
+    if (stance === "defend") d = Math.round(d / 2);
+    if (def.flags.fukutsu) d = Math.round(d / 2);
+    return Math.max(50, d);
+  }
+  function canUseWeapon(st, atk, def, w) {
+    const d = dist(atk, def);
+    return d >= w.min && d <= w.max && atk.en >= (w.en || 0) && atk.morale >= (w.morale || 0) && !w.heal;
+  }
+  function chooseStance(st, atk, def) {
+    // 防御側AI: 期待被害が最小になる 反撃/防御/回避 を選ぶ
+    const options = ["counter", "defend", "evade"];
+    let best = "defend", bestScore = Infinity;
+    for (const s of options) {
+      const w = def.weapons.filter(cw => canUseWeapon(st, def, atk, cw))[0];
+      if (s === "counter" && !w) continue;
+      const hit = hitRate(st, atk, def, atk._w, s) / 100;
+      const taken = damage(st, atk, def, atk._w, s) * hit;
+      let dealt = 0;
+      if (s === "counter" && w) dealt = damage(st, def, atk, w, null) * (hitRate(st, def, atk, w, null) / 100);
+      const score = taken - dealt * 0.7;
+      if (score < bestScore) { bestScore = score; best = s; }
+    }
+    return best;
+  }
+  function forecast(st, atk, def, wIdx) {
+    const w = atk.weapons[wIdx]; atk._w = w;
+    const stance = chooseStance(st, atk, def);
+    const f = { weapon: w, hit: hitRate(st, atk, def, w, stance), dmg: damage(st, atk, def, w, stance), stance, counter: null };
+    if (stance === "counter") {
+      const cw = def.weapons.filter(x => canUseWeapon(st, def, atk, x))[0];
+      if (cw) f.counter = { weapon: cw, hit: hitRate(st, def, atk, cw, null), dmg: damage(st, def, atk, cw, null) };
+    }
+    delete atk._w;
+    return f;
+  }
+  function gainExp(st, unit, amount, rng) {
+    if (unit.side !== "ally") return;
+    const g = st.run.pilots[unit.pilotId];
+    g.exp += amount;
+    while (g.exp >= 100) {
+      g.exp -= 100; g.level++; g.hp += 150; g.atk += 6; g.aim += 2; g.eva += 2;
+      unit.level = g.level; unit.maxHp += 150; unit.hp = Math.min(unit.maxHp, unit.hp + 150);
+      st.log.push({ type: "levelup", unit: unit.name, level: g.level });
+    }
+  }
+  function doAttack(st, atk, def, w, stance, rng, events) {
+    const hit = hitRate(st, atk, def, w, stance);
+    const roll = Math.floor(rng() * 100);
+    const isHit = roll < hit;
+    let dmg = 0, killed = false;
+    atk.en -= (w.en || 0);
+    if (isHit) {
+      dmg = damage(st, atk, def, w, stance);
+      def.hp -= dmg;
+      def.morale = Math.min(150, def.morale + 3);
+      if (def.hp <= 0) { def.hp = 0; killed = true; }
+    }
+    atk.morale = Math.min(150, atk.morale + 5 + (killed ? 8 : 0));
+    events.push({ type: "attack", atk: atk.name, def: def.name, weapon: w.name, hit: isHit, hitRate: hit, dmg, killed, defHp: def.hp, atkX: atk.x, atkY: atk.y, defX: def.x, defY: def.y });
+    if (atk.side === "ally" && def.side === "enemy") {
+      let exp = isHit ? 20 : 8;
+      if (killed) {
+        exp += 40; st.run.funds += Math.round(def.maxHp / 8);
+        st.run.pilots[atk.pilotId].kills++;
+      }
+      if (atk.level < def.level) exp = Math.round(exp * (1 + 0.3 * (def.level - atk.level))); // 追いつき補正
+      gainExp(st, atk, exp, rng);
+    }
+    if (killed && atk.side === "enemy" && def.side === "ally") { /* 味方撃墜 */ }
+    return killed;
+  }
+  function resolveCombat(st, atk, def, wIdx, rng) {
+    rng = rng || Math.random;
+    const w = atk.weapons[wIdx]; atk._w = w;
+    const stance = chooseStance(st, atk, def);
+    delete atk._w;
+    const events = [];
+    const defKilled = doAttack(st, atk, def, w, stance, rng, events);
+    if (!defKilled && stance === "counter") {
+      const cw = def.weapons.filter(x => canUseWeapon(st, def, atk, x))[0];
+      if (cw) doAttack(st, def, atk, cw, null, rng, events);
+    }
+    atk.flags.hicchu = false; atk.flags.shuuchuu = false;
+    def.flags.hirameki = false; def.flags.fukutsu = false;
+    checkBossHalf(st, events);
+    updateResult(st);
+    return events;
+  }
+  function checkBossHalf(st, events) {
+    const boss = st.units.find(u => u.boss && u.side === "enemy");
+    if (boss && !st.bossHalfShown && boss.hp > 0 && boss.hp <= boss.maxHp / 2 && st.stage.bossHalf) {
+      st.bossHalfShown = true; st.pendingDialog = st.stage.bossHalf;
+      events.push({ type: "bosshalf" });
+    }
+  }
+  function healAction(st, atk, target, wIdx, rng) {
+    const w = atk.weapons[wIdx];
+    const amount = w.power + atk.atk * 3;
+    target.hp = Math.min(target.maxHp, target.hp + amount);
+    const events = [{ type: "heal", atk: atk.name, def: target.name, weapon: w.name, amount, defHp: target.hp, defX: target.x, defY: target.y }];
+    if (atk.side === "ally") gainExp(st, atk, 15, rng || Math.random);
+    return events;
+  }
+  function applyHoshi(st, unit, cmdId, target) {
+    const master = st.data.pilots.hoshiCommands[cmdId];
+    if (!master || unit.sp < master.sp) return false;
+    unit.sp -= master.sp;
+    const t = target || unit;
+    switch (cmdId) {
+      case "hicchu": unit.flags.hicchu = true; break;
+      case "hirameki": unit.flags.hirameki = true; break;
+      case "fukutsu": unit.flags.fukutsu = true; break;
+      case "konjou": unit.hp = Math.min(unit.maxHp, unit.hp + Math.round(unit.maxHp * 0.3)); break;
+      case "kasoku": unit.flags.kasoku = 3; break;
+      case "shuuchuu": unit.flags.shuuchuu = true; break;
+      case "ouen": t.morale = Math.min(150, t.morale + 20); break;
+      case "gekirei": t.sp = Math.min(t.maxSp, t.sp + 15); break;
+    }
+    return true;
+  }
+  function bestWeaponVs(st, atk, def) {
+    let best = -1, bestScore = -1;
+    atk.weapons.forEach((w, i) => {
+      if (!canUseWeapon(st, atk, def, w)) return;
+      atk._w = w;
+      const stance = chooseStance(st, atk, def);
+      const score = damage(st, atk, def, w, stance) * (hitRate(st, atk, def, w, stance) / 100);
+      delete atk._w;
+      if (score > bestScore) { bestScore = score; best = i; }
+    });
+    return best;
+  }
+  function enemyPhase(st, rng) {
+    rng = rng || Math.random;
+    const events = [];
+    for (const e of living(st, "enemy")) {
+      if (st.result) break;
+      if (e.hp <= 0) continue;
+      let targets = living(st, "ally");
+      if (st.stage.loseNpc) targets = targets.concat(living(st, "npc"));
+      if (!targets.length) break;
+      // NPC（動物）は味方より優先度を下げる（距離+3のペナルティ）。近くに味方がいればそちらを狙う
+      targets.sort((a, b) => (dist(e, a) + (a.side === "npc" ? 3 : 0)) - (dist(e, b) + (b.side === "npc" ? 3 : 0)));
+      const target = targets[0];
+      // 移動: 目標に最も近づけるマスへ
+      const tiles = computeMoveRange(st, e);
+      let bestTile = { x: e.x, y: e.y }, bestD = dist(e, target);
+      for (const t of tiles) {
+        const d = Math.abs(t.x - target.x) + Math.abs(t.y - target.y);
+        const ev = terrainAt(st.stage, t.x, t.y).evade;
+        if (d < bestD || (d === bestD && ev > terrainAt(st.stage, bestTile.x, bestTile.y).evade)) { bestD = d; bestTile = t; }
+      }
+      e.x = bestTile.x; e.y = bestTile.y;
+      const wi = bestWeaponVs(st, e, target);
+      if (wi >= 0) {
+        const evs = resolveCombat(st, e, target, wi, rng);
+        events.push(...evs);
+      }
+      e.acted = true;
+      updateResult(st);
+    }
+    return events;
+  }
+  function npcPhase(st, rng) {
+    rng = rng || Math.random;
+    for (const n of living(st, "npc")) {
+      const enemies = living(st, "enemy");
+      if (!enemies.length) break;
+      const tiles = computeMoveRange(st, n);
+      let best = { x: n.x, y: n.y }, bestScore = -1;
+      for (const t of tiles.concat([{ x: n.x, y: n.y }])) {
+        if (unitAt(st, t.x, t.y) && unitAt(st, t.x, t.y) !== n) continue;
+        const md = Math.min(...enemies.map(e => Math.abs(e.x - t.x) + Math.abs(e.y - t.y)));
+        if (md > bestScore) { bestScore = md; best = t; }
+      }
+      n.x = best.x; n.y = best.y;
+    }
+  }
+  function startPlayerPhase(st) {
+    st.turn++;
+    if (st.stage.turnLimit && st.turn > st.stage.turnLimit) { st.result = "lose"; st.loseReason = "制限ターンを超えた"; return; }
+    for (const u of st.units) { u.acted = false; u.flags.kasoku = 0; }
+    for (const u of living(st, "ally")) {
+      if (terrainAt(st.stage, u.x, u.y).heal) u.hp = Math.min(u.maxHp, u.hp + Math.round(u.maxHp * 0.1));
+    }
+    const evs = (st.stage.reinforce || []).concat(st.stage.events || []);
+    for (const ev of evs) {
+      if (ev.turn === st.turn) {
+        for (const e of ev.enemies) st.units.push(enemyUnit(st.data, e, st.stage.id));
+        if (ev.rustStorm) st.rustStorm = true;
+        if (ev.lines) st.pendingDialog = ev.lines;
+      }
+    }
+    st.phase = "player";
+  }
+  function updateResult(st) {
+    if (st.result) return;
+    const allies = living(st, "ally");
+    const aobee = st.units.find(u => u.pilotId === "aobee");
+    if (!allies.length || (aobee && aobee.hp <= 0)) { st.result = "lose"; st.loseReason = "あおびーの撃墜／全滅"; return; }
+    if (st.stage.loseNpc && !living(st, "npc").length) { st.result = "lose"; st.loseReason = "動物が全てやられた"; return; }
+    const enemies = living(st, "enemy");
+    if (st.stage.winType === "boss") {
+      const boss = st.units.find(u => u.boss && u.side === "enemy");
+      if (boss && boss.hp <= 0) st.result = "win";
+    } else if (!enemies.length) st.result = "win";
+    if (st.result === "win") st.medal = st.turn <= (st.stage.medalTurns || 99);
+  }
+  function buildSave(run) {
+    return { version: 1, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned };
+  }
+  function saveRun(storage, run) { storage.setItem("aobee-taisen-save-v1", JSON.stringify(buildSave(run))); }
+  function loadRun(storage, data) {
+    const raw = storage.getItem("aobee-taisen-save-v1");
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (s.version !== 1) return null;
+    const run = createRun(data);
+    run.funds = s.funds || 0; run.cleared = s.cleared || 0;
+    for (const pid of Object.keys(run.pilots)) if (s.pilots && s.pilots[pid]) run.pilots[pid] = s.pilots[pid];
+    for (const uid of Object.keys(run.mods)) {
+      if (s.mods && s.mods[uid]) run.mods[uid] = s.mods[uid];
+      if (s.parts && s.parts[uid]) run.parts[uid] = s.parts[uid];
+    }
+    for (const pid of Object.keys(run.hoshiLearned)) if (s.hoshiLearned && s.hoshiLearned[pid]) run.hoshiLearned[pid] = s.hoshiLearned[pid];
+    return run;
+  }
+  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, gainExp };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  global.SRPGEngine = api;
+})(typeof window !== "undefined" ? window : globalThis);
+
+</script>
+<script>window.__EMBED_DATA={"pilots": {"hoshiCommands": {"fukutsu": {"desc": "次の被ダメージが半分になる", "name": "不屈", "sp": 10}, "gekirei": {"desc": "味方1人のSPを+15する", "name": "激励", "sp": 15}, "hicchu": {"desc": "次の攻撃が必ず命中する", "name": "必中", "sp": 15}, "hirameki": {"desc": "次の被攻撃を必ず回避する", "name": "ひらめき", "sp": 10}, "kasoku": {"desc": "このターンの移動力が+3", "name": "加速", "sp": 10}, "konjou": {"desc": "自分のHPを30%回復する", "name": "根性", "sp": 15}, "ouen": {"desc": "味方1人の気力を+20する", "name": "応援", "sp": 10}, "shuuchuu": {"desc": "このターン命中・回避が+30", "name": "集中", "sp": 10}}, "pilots": {"aobee": {"aim": 112, "atk": 105, "color": "#38bdf8", "eva": 108, "hoshi": ["hicchu", "hirameki"], "name": "あおびー", "sp": 45, "unit": "gearstar"}, "galdo": {"aim": 100, "atk": 118, "color": "#d97706", "eva": 88, "hoshi": ["fukutsu", "konjou"], "name": "ガルド", "sp": 40, "unit": "galdon"}, "marmi": {"aim": 102, "atk": 88, "color": "#f472b6", "eva": 100, "hoshi": ["ouen", "gekirei"], "name": "マーミ", "sp": 48, "unit": "ovenmarmi"}, "minori": {"aim": 100, "atk": 108, "color": "#facc15", "eva": 92, "hoshi": ["fukutsu", "ouen"], "name": "みのり", "sp": 40, "unit": "moomoo"}, "mio": {"aim": 110, "atk": 100, "color": "#a78bfa", "eva": 104, "hoshi": ["shuuchuu", "gekirei"], "name": "ミオ", "sp": 50, "unit": "hoshifune"}, "poco": {"aim": 108, "atk": 96, "color": "#4ade80", "eva": 124, "hoshi": ["kasoku", "shuuchuu"], "name": "ポコ", "sp": 42, "unit": "pocodash"}}}, "units": {"units": {"animal": {"aim": 0, "armor": 200, "color": "#fef3c7", "en": 0, "eva": 60, "hp": 500, "move": 2, "name": "まきばの動物", "npc": true, "weapons": []}, "bannin": {"aim": 108, "armor": 1000, "color": "#78716c", "en": 80, "eva": 95, "hp": 3400, "move": 0, "name": "番人コグ", "weapons": [{"en": 0, "hit": 75, "max": 1, "min": 1, "name": "番人の腕", "power": 1500}]}, "banninkai": {"aim": 112, "armor": 1050, "color": "#57534e", "en": 90, "eva": 98, "hp": 3800, "move": 3, "name": "番人コグ・改", "weapons": [{"en": 0, "hit": 75, "max": 1, "min": 1, "name": "番人の腕・改", "power": 1600}, {"en": 10, "hit": 70, "max": 3, "min": 2, "name": "コグ投げ", "power": 1300}]}, "cog": {"aim": 95, "armor": 800, "color": "#94a3b8", "en": 50, "eva": 90, "hp": 1800, "move": 4, "name": "サビつきコグ", "weapons": [{"en": 0, "hit": 80, "max": 1, "min": 1, "name": "コグラッシュ", "power": 1100}]}, "cogair": {"aim": 98, "armor": 750, "color": "#7dd3fc", "en": 60, "eva": 105, "hp": 1700, "move": 5, "name": "空賊コグ", "weapons": [{"en": 0, "hit": 80, "max": 2, "min": 1, "name": "プロペラカッター", "power": 1150}]}, "cogsea": {"aim": 96, "armor": 850, "color": "#2dd4bf", "en": 50, "eva": 88, "hp": 2000, "move": 4, "name": "水上コグ", "weapons": [{"en": 0, "hit": 78, "max": 1, "min": 1, "name": "スクリューアタック", "power": 1200}]}, "fuusha": {"aim": 104, "armor": 950, "color": "#a16207", "en": 80, "eva": 80, "hp": 3600, "move": 0, "name": "大風車機", "weapons": [{"en": 0, "hit": 72, "max": 2, "min": 1, "name": "風車ブレード", "power": 1500}]}, "galdon": {"armor": 1250, "color": "#b45309", "en": 100, "hp": 4500, "move": 4, "name": "ガルドン", "weapons": [{"en": 0, "hit": 70, "max": 1, "min": 1, "name": "工房アーム", "power": 1750}, {"en": 0, "hit": 80, "max": 3, "min": 2, "name": "リベット砲", "power": 1250}, {"en": 0, "heal": true, "hit": 100, "max": 3, "min": 1, "name": "修理", "power": 1200}]}, "ganzou": {"aim": 118, "armor": 1280, "color": "#475569", "en": 120, "eva": 92, "hp": 4800, "move": 4, "name": "ガンジョウ改", "weapons": [{"en": 0, "hit": 78, "max": 1, "min": 1, "name": "剛腕パンチ", "power": 1600}, {"en": 10, "hit": 75, "max": 3, "min": 2, "name": "重装キャノン", "power": 1380}]}, "gearstar": {"armor": 1000, "color": "#38bdf8", "en": 150, "hp": 3200, "move": 5, "name": "ギアスター", "weapons": [{"en": 0, "hit": 85, "max": 1, "min": 1, "name": "歯車アタック", "power": 1350}, {"en": 10, "hit": 80, "max": 4, "min": 2, "name": "ほしビーム", "power": 1500}, {"en": 30, "hit": 75, "max": 1, "min": 1, "morale": 120, "name": "スターフィーバー", "power": 2200}]}, "hoshifune": {"armor": 900, "color": "#a78bfa", "en": 130, "hp": 2800, "move": 5, "name": "ホシフネ", "weapons": [{"en": 0, "hit": 85, "max": 3, "min": 1, "name": "星灯りの矢", "power": 1250}, {"en": 15, "hit": 80, "max": 4, "min": 2, "name": "星時計の祈り", "power": 1600}]}, "karakuri": {"aim": 110, "armor": 1100, "color": "#b91c1c", "en": 100, "eva": 90, "hp": 4200, "move": 0, "name": "からくり人形", "weapons": [{"en": 0, "hit": 75, "max": 1, "min": 1, "name": "からくりパンチ", "power": 1600}, {"en": 10, "hit": 70, "max": 3, "min": 2, "name": "歯車ミサイル", "power": 1400}]}, "moomoo": {"armor": 1150, "color": "#eab308", "en": 110, "hp": 4000, "move": 4, "name": "モーモータンク", "weapons": [{"en": 0, "hit": 78, "max": 1, "min": 1, "name": "モーモータックル", "power": 1500}, {"en": 0, "heal": true, "hit": 100, "max": 2, "min": 1, "name": "ミルクスプラッシュ", "power": 900}]}, "ovenmarmi": {"armor": 850, "color": "#f9a8d4", "en": 120, "hp": 2600, "move": 5, "name": "オーブンマーミ", "weapons": [{"en": 0, "hit": 85, "max": 1, "min": 1, "name": "ローリングピン", "power": 1050}, {"en": 0, "heal": true, "hit": 100, "max": 3, "min": 1, "name": "焼きたてパン", "power": 1300}]}, "pocodash": {"armor": 800, "color": "#4ade80", "en": 110, "hp": 2400, "move": 7, "name": "ポコダッシュ", "weapons": [{"en": 0, "hit": 85, "max": 4, "min": 2, "name": "どんぐりショット", "power": 1150}, {"en": 0, "hit": 90, "max": 1, "min": 1, "name": "スピンアタック", "power": 1250}]}, "yuragi": {"aim": 102, "armor": 880, "color": "#c084fc", "en": 70, "eva": 100, "hp": 2100, "move": 4, "name": "ゆらぎコグ", "weapons": [{"en": 0, "hit": 80, "max": 1, "min": 1, "name": "ゆらぎタッチ", "power": 1200}]}, "yuragiboss": {"aim": 110, "armor": 980, "color": "#9333ea", "en": 90, "eva": 102, "hp": 3300, "move": 4, "name": "ゆらぎコグ・長", "weapons": [{"en": 0, "hit": 80, "max": 1, "min": 1, "name": "ゆらぎクラッシュ", "power": 1450}, {"en": 10, "hit": 75, "max": 3, "min": 2, "name": "ゆらぎ波", "power": 1300}]}}}, "stages": {"stages": [{"allies": [{"pilot": "aobee", "x": 5, "y": 7}, {"pilot": "galdo", "x": 4, "y": 8}, {"pilot": "marmi", "x": 6, "y": 8}, {"pilot": "poco", "x": 7, "y": 7}], "bossHalf": [["warubee", "ふ、ふっ…まだまだこれからだよ？"], ["aobee", "からくり人形が弱ってきた。あと少しだよ"]], "clear": [["aobee", "制御歯車が戻った。祭りは再開できるよ"], ["galdo", "ほんまに助かったわい。…けど、わるびーの背後に誰かおる気がするんじゃ"], ["aobee", "次はその相手も止めてみせるよ"]], "enemies": [{"unit": "cog", "x": 2, "y": 5}, {"unit": "cog", "x": 9, "y": 5}, {"unit": "cog", "x": 4, "y": 3}, {"unit": "cog", "x": 7, "y": 3}, {"unit": "bannin", "x": 5, "y": 2}, {"boss": true, "unit": "karakuri", "x": 6, "y": 0}], "id": 1, "intro": [["aobee", "祭りの日なのに、大歯車の制御歯車が盗まれたよ"], ["marmi", "暴走したからくり機体が、村に近づいてきています"], ["aobee", "みんなは祭り用機体に乗って。村はぼくたちが守るよ。あおびーに任せてよ！"], ["warubee", "ふ、ふっ…止められるものなら止めてみなよ？"]], "loseNpc": false, "medalTurns": 6, "reinforce": [{"enemies": [{"unit": "cog", "x": 0, "y": 4}, {"unit": "cog", "x": 11, "y": 4}], "lines": [["poco", "増援だ！ 西と東から来るよ"]], "turn": 3}], "terrain": ["....GGGG....", "..F..VV..F..", "..F..VV..F..", ".FF......RR.", "....V.....R.", "..F....F....", ".....FF.....", "..F.......F.", "....VVVV...."], "title": "止まった村を守れ！", "winType": "boss"}, {"allies": [{"pilot": "aobee", "x": 5, "y": 7}, {"pilot": "galdo", "x": 3, "y": 8}, {"pilot": "marmi", "x": 6, "y": 8}, {"pilot": "poco", "x": 8, "y": 7}, {"pilot": "minori", "x": 4, "y": 7}], "bossHalf": [["minori", "大風車機が弱ってきたよ。動物たちも無事だよ"]], "clear": [["minori", "ありがとう。動物たちも牧場も、みんな無事だよ"], ["aobee", "地方歯車は取り戻したよ。でも、止まった場所はここだけじゃないみたいだね"]], "enemies": [{"unit": "cog", "x": 2, "y": 3}, {"unit": "cog", "x": 9, "y": 3}, {"unit": "cogair", "x": 1, "y": 1}, {"unit": "cog", "x": 10, "y": 2}, {"boss": true, "unit": "fuusha", "x": 6, "y": 0}], "id": 2, "intro": [["minori", "大風車の歯車が抜かれて、風車が暴走しているの。動物たちが逃げ回っているよ"], ["aobee", "動物たちを守りながら、大風車機を止めるよ"], ["marmi", "動物が全てやられたら終わりです。気をつけて"]], "loseNpc": true, "medalTurns": 5, "npcs": [{"unit": "animal", "x": 5, "y": 4}, {"unit": "animal", "x": 6, "y": 4}, {"unit": "animal", "x": 5, "y": 5}], "terrain": ["....GGGG....", "..F..GG..F..", ".....XX.....", ".FF......FF.", "....V..V....", "..F......F..", ".....FF.....", "..F.......F.", "....VVVV...."], "title": "牧場の大暴走", "winType": "boss"}, {"allies": [{"pilot": "aobee", "x": 5, "y": 7}, {"pilot": "galdo", "x": 4, "y": 8}, {"pilot": "marmi", "x": 6, "y": 8}, {"pilot": "poco", "x": 7, "y": 7}, {"pilot": "minori", "x": 3, "y": 8}], "bossHalf": [["aobee", "番人コグ・改が弱ってきた。灯りの近くなら命中も安定するよ"]], "clear": [["aobee", "霧が晴れてきた。神殿はもうすぐだよ"], ["mio", "よく来たね。星時計が止まってしまったの。力を貸してほしい"]], "enemies": [{"unit": "cog", "x": 3, "y": 3}, {"unit": "cog", "x": 8, "y": 4}, {"unit": "yuragi", "x": 2, "y": 2}, {"unit": "yuragi", "x": 9, "y": 2}, {"boss": true, "unit": "banninkai", "x": 6, "y": 0}], "fog": true, "id": 3, "intro": [["aobee", "神殿への参道は霧でいっぱいだね"], ["galdo", "霧の中じゃ攻撃が当たりにくい。灯りのマスの近くで戦うんじゃ"], ["aobee", "灯りを目印に進むよ"]], "lampRadius": 2, "loseNpc": false, "medalTurns": 6, "terrain": ["....GGGG....", "..F.PP...F..", ".F..PLP..F..", "...PP..FF...", ".F..L..PP...", "..FF...PLP..", "....PP...F..", "..F..PP..F..", "....VVVV...."], "title": "参道の霧", "winType": "boss"}, {"allies": [{"pilot": "aobee", "x": 5, "y": 7}, {"pilot": "galdo", "x": 4, "y": 8}, {"pilot": "marmi", "x": 6, "y": 8}, {"pilot": "poco", "x": 7, "y": 7}, {"pilot": "minori", "x": 3, "y": 8}, {"pilot": "mio", "x": 5, "y": 6}], "bossHalf": [["mio", "ゆらぎコグの長が弱ってきたよ。星時計まであと少し"]], "clear": [["mio", "星時計が動き出した。ありがとう、あおびー"], ["aobee", "これで神殿は大丈夫だよ。ぼくはミオと一緒に、残りの歯車を探しに行くよ"]], "enemies": [{"unit": "yuragi", "x": 3, "y": 3}, {"unit": "yuragi", "x": 8, "y": 3}, {"unit": "yuragi", "x": 4, "y": 2}, {"unit": "yuragi", "x": 7, "y": 2}, {"boss": true, "unit": "yuragiboss", "x": 6, "y": 0}], "id": 4, "intro": [["mio", "星時計が止まったままでは、神殿の時が進まないの"], ["aobee", "ゆらぎコグを全部倒せば、星時計は直るかな"], ["mio", "10ターン以内に頼むね。時計の歯車が錆び切ってしまう前に"]], "loseNpc": false, "medalTurns": 6, "terrain": ["....GGGG....", "..F.GGGG.F..", "....V..V....", ".FF......FF.", "....L..L....", "..F..VV..F..", ".....FF.....", "..F.......F.", "....VVVV...."], "title": "星時計は止まらない", "turnLimit": 10, "winType": "all"}, {"allies": [{"pilot": "aobee", "x": 5, "y": 7}, {"pilot": "galdo", "x": 4, "y": 8}, {"pilot": "marmi", "x": 6, "y": 8}, {"pilot": "poco", "x": 7, "y": 7}, {"pilot": "minori", "x": 3, "y": 8}, {"pilot": "mio", "x": 5, "y": 6}], "bossHalf": [["ganzou", "ほう…やるな。だが、ここからが本気だ"], ["aobee", "ガンジョウが弱ってきた。錆嵐に気をつけて進むよ"]], "clear": [["ganzou", "今日のところは退く。だが大停止は止まらんぞ"], ["aobee", "ラストワークス…。歯車を止めようとする相手の名前が、やっと分かったよ"]], "enemies": [{"unit": "cog", "x": 3, "y": 3}, {"unit": "cog", "x": 8, "y": 2}, {"unit": "cogair", "x": 2, "y": 1}, {"unit": "cogsea", "x": 10, "y": 3}, {"unit": "cogsea", "x": 11, "y": 5}, {"boss": true, "unit": "ganzou", "x": 6, "y": 0}], "events": [{"enemies": [{"unit": "cog", "x": 0, "y": 4}, {"unit": "cog", "x": 11, "y": 7}], "lines": [["aobee", "錆嵐が来たよ。敵の攻撃が強くなっている。気をつけて"]], "rustStorm": true, "turn": 3}], "id": 5, "intro": [["aobee", "港町に錆嵐が近づいているよ"], ["ganzou", "我はラストワークス大隊長ガンジョウ。歯車は止めさせてもらう"], ["aobee", "初めて見る強い相手だ。考えて戦うよ"]], "loseNpc": false, "medalTurns": 8, "terrain": ["....GGGG.WWW", "..F..VV..FWW", "..F..VV...WW", ".FF.......W.", "....V.....WW", "..F....F..W.", ".....FF.....", "..F.......F.", "....VVVV...."], "title": "港町の錆嵐", "winType": "boss"}]}};</script>
+<script>
+"use strict";
+/* あおびー大戦 序盤縦切り: 画面遷移と入力の glue */
+const E = window.SRPGEngine;
+let DATA = null, run = null, st = null, stageIdx = 0;
+let sel = null; // {unit, mode, preMove, weaponIdx, hoshiCmd}
+let busy = false;
+const settings = { anim: localStorage.getItem("aobee-taisen-anim") !== "off" };
+const $ = id => document.getElementById(id);
+const panel = new Panel($("panel"));
+const grid = new GridMap($("grid"), onTapCell);
+
+async function boot() {
+  const pilots = window.__EMBED_DATA.pilots, units = window.__EMBED_DATA.units, stages = window.__EMBED_DATA.stages;
+  DATA = { pilots, units, stages };
+  refreshTitle();
+}
+function refreshTitle() {
+  const saved = E.loadRun(localStorage, DATA);
+  $("btn-continue").disabled = !saved;
+  $("btn-anim").textContent = "戦闘アニメ（横画面）: " + (settings.anim ? "ON" : "OFF");
+  const ss = $("stage-select");
+  if (saved && saved.cleared > 0) {
+    ss.classList.remove("hidden"); ss.innerHTML = "";
+    const label = document.createElement("div");
+    label.style.cssText = "color:#94a3b8;font-size:12px;margin-top:6px";
+    label.textContent = "面を選んで始める（育成は引き継ぎます）";
+    ss.appendChild(label);
+    for (let i = 0; i <= Math.min(saved.cleared, DATA.stages.stages.length - 1); i++) {
+      const b = document.createElement("button"); b.className = "sub";
+      b.textContent = "第" + (i + 1) + "面 " + DATA.stages.stages[i].title;
+      b.style.marginTop = "6px";
+      b.addEventListener("click", () => { run = saved; startStage(i); });
+      ss.appendChild(b);
+    }
+  } else ss.classList.add("hidden");
+}
+$("btn-new").addEventListener("click", () => { run = E.createRun(DATA); startStage(0); });
+$("btn-continue").addEventListener("click", () => {
+  const saved = E.loadRun(localStorage, DATA);
+  if (saved) { run = saved; startStage(Math.min(saved.cleared, DATA.stages.stages.length - 1)); }
+});
+$("btn-anim").addEventListener("click", () => {
+  settings.anim = !settings.anim;
+  localStorage.setItem("aobee-taisen-anim", settings.anim ? "on" : "off");
+  refreshTitle();
+});
+$("btn-title").addEventListener("click", () => {
+  if (run) E.saveRun(localStorage, run);
+  $("app").classList.add("hidden"); $("title-screen").classList.remove("hidden"); refreshTitle();
+});
+$("btn-phase").addEventListener("click", () => { if (!busy && st && !st.result) enemyTurn(); });
+
+function isLandscape() { return window.innerWidth > window.innerHeight; }
+function setOrientation() { document.body.classList.toggle("landscape", isLandscape()); }
+window.addEventListener("resize", setOrientation);
+
+async function startStage(idx) {
+  stageIdx = idx; sel = null;
+  st = E.startStage(DATA, run, idx);
+  $("title-screen").classList.add("hidden"); $("app").classList.remove("hidden");
+  setOrientation();
+  E.saveRun(localStorage, run);
+  render();
+  if (st.stage.intro) await showDialog(st.stage.intro);
+  render();
+}
+function objectiveText() {
+  let t = st.stage.winType === "boss" ? "目的: ボスの撃破" : "目的: 敵の全滅";
+  if (st.stage.loseNpc) t += "／動物を守る";
+  if (st.stage.turnLimit) t += "／" + st.stage.turnLimit + "ターン以内";
+  if (st.stage.fog) t += "／霧: 灯りの近く以外は命中-30";
+  if (st.rustStorm) t += "／錆嵐: 敵攻撃+10%";
+  return t;
+}
+function render() {
+  if (!st) return;
+  $("hd-stage").textContent = "第" + st.stage.id + "面 " + st.stage.title;
+  $("hd-turn").textContent = "TURN " + st.turn;
+  $("hd-obj").textContent = objectiveText();
+  $("hd-funds").textContent = "歯車コイン " + run.funds;
+  let moveTiles = [], attackTiles = [];
+  if (sel && sel.mode === "select") moveTiles = E.computeMoveRange(st, sel.unit);
+  if (sel && sel.mode === "target") attackTiles = targetTiles();
+  if (sel && sel.mode === "healTarget") attackTiles = healTargetTiles();
+  if (sel && sel.mode === "hoshiTarget") attackTiles = E.living(st, "ally").map(u => ({ x: u.x, y: u.y }));
+  grid.setHighlights(moveTiles, attackTiles);
+  grid.render(st);
+  renderPanel();
+}
+function targetTiles() {
+  const u = sel.unit, w = u.weapons[sel.weaponIdx];
+  return E.living(st, "enemy").filter(e => { const d = E.dist(u, e); return d >= w.min && d <= w.max; }).map(e => ({ x: e.x, y: e.y }));
+}
+function healWeapons(u) { return u.weapons.map((w, i) => ({ w, i })).filter(x => x.w.heal); }
+function healTargetTiles() {
+  const u = sel.unit, w = u.weapons[sel.weaponIdx];
+  return E.living(st, "ally").filter(a => { const d = E.dist(u, a); return d >= w.min && d <= w.max; }).map(a => ({ x: a.x, y: a.y }));
+}
+function attackWeaponsVsAny(u) {
+  return u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal && u.en >= (x.w.en || 0) && u.morale >= (x.w.morale || 0) &&
+    E.living(st, "enemy").some(e => { const d = E.dist(u, e); return d >= x.w.min && d <= x.w.max; }));
+}
+function renderPanel() {
+  if (st.result) return renderResultPanel();
+  if (!sel) {
+    panel.show("<h3>味方フェイズ (TURN " + st.turn + ")</h3><div class='stat'>味方ユニットをタップして選択。移動→武器→予測→攻撃の順に進みます。ほしコマンドはSPを消費します。</div>");
+    return;
+  }
+  const u = sel.unit;
+  let html = panel.unitCard(u);
+  if (sel.mode === "select") {
+    html += "<div class='stat'>青いマスをタップで移動。その場に留まる場合は自分のマスをタップ。</div>";
+    panel.show(html);
+    addHoshiButtons(u, "select");
+    panel.buttons([{ label: "待機する", onClick: () => endUnitAction() }]);
+  } else if (sel.mode === "moved") {
+    panel.show(html + "<div class='stat'>コマンドを選んでください。</div>");
+    const items = [];
+    if (attackWeaponsVsAny(u).length) items.push({ label: "攻撃", cls: "primary", onClick: () => { sel.mode = "weapon"; render(); } });
+    if (healWeapons(u).length && healTargetTilesFor(u).length) items.push({ label: "回復・修理", onClick: () => { sel.mode = "healWeapon"; render(); } });
+    items.push({ label: "移動をキャンセル", onClick: cancelMove });
+    items.push({ label: "待機する", onClick: () => endUnitAction() });
+    panel.buttons(items);
+    addHoshiButtons(u, "moved");
+  } else if (sel.mode === "weapon") {
+    panel.show(html + "<div class='stat'>武器を選んでください。</div>");
+    panel.buttons(attackWeaponsVsAny(u).map(x => ({
+      label: x.w.name + " (威力" + x.w.power + " 命中" + x.w.hit + " 射程" + x.w.min + "-" + x.w.max + (x.w.en ? " EN" + x.w.en : "") + ")",
+      onClick: () => { sel.weaponIdx = x.i; sel.mode = "target"; render(); }
+    })).concat([{ label: "もどる", onClick: () => { sel.mode = "moved"; render(); } }]));
+  } else if (sel.mode === "target") {
+    panel.show(html + "<div class='stat'>赤いマスの敵をタップすると戦闘予測が出ます。</div>");
+    panel.buttons([{ label: "もどる", onClick: () => { sel.mode = "weapon"; render(); } }]);
+  } else if (sel.mode === "forecast") {
+    const f = sel.forecast, d = sel.target;
+    let tbl = "<h3>戦闘予測</h3><table><tr><th></th><th>" + u.name + "</th><th>" + d.name + "</th></tr>" +
+      "<tr><td>武器</td><td>" + f.weapon.name + "</td><td>" + (f.counter ? f.counter.weapon.name : "―") + "</td></tr>" +
+      "<tr><td>ダメージ</td><td>" + f.dmg + "</td><td>" + (f.counter ? f.counter.dmg : "―") + "</td></tr>" +
+      "<tr><td>命中</td><td>" + f.hit + "%</td><td>" + (f.counter ? f.counter.hit + "%" : "―") + "</td></tr></table>" +
+      "<div class='stat'>敵の対応: " + ({ counter: "反撃", defend: "防御（ダメージ半減）", evade: "回避（命中-30）" })[f.stance] + " ／ 撃墜で歯車コイン+" + Math.round(d.maxHp / 8) + "</div>";
+    panel.show(tbl);
+    panel.buttons([
+      { label: "たたかう", cls: "primary", onClick: doPlayerAttack },
+      { label: "もどる", onClick: () => { sel.mode = "target"; render(); } }
+    ]);
+  } else if (sel.mode === "healWeapon") {
+    panel.show(html + "<div class='stat'>回復・修理の方法を選んでください。</div>");
+    panel.buttons(healWeapons(u).map(x => ({
+      label: x.w.name + " (回復" + x.w.power + " 射程" + x.w.min + "-" + x.w.max + ")",
+      onClick: () => { sel.weaponIdx = x.i; sel.mode = "healTarget"; render(); }
+    })).concat([{ label: "もどる", onClick: () => { sel.mode = "moved"; render(); } }]));
+  } else if (sel.mode === "healTarget") {
+    panel.show(html + "<div class='stat'>赤いマスの味方をタップで回復・修理します。</div>");
+    panel.buttons([{ label: "もどる", onClick: () => { sel.mode = "healWeapon"; render(); } }]);
+  } else if (sel.mode === "hoshiTarget") {
+    panel.show(html + "<div class='stat'>対象の味方をタップしてください。</div>");
+    panel.buttons([{ label: "やめる", onClick: () => { sel.mode = sel.prevMode; render(); } }]);
+  }
+}
+function healTargetTilesFor(u) {
+  return healWeapons(u).flatMap(x => {
+    const w = x.w;
+    return E.living(st, "ally").filter(a => { const d = E.dist(u, a); return d >= w.min && d <= w.max; });
+  });
+}
+function addHoshiButtons(u, mode) {
+  const cmds = (run.hoshiLearned[u.pilotId] || []).map(id => ({ id, m: DATA.pilots.hoshiCommands[id] })).filter(x => x.m);
+  if (!cmds.length) return;
+  panel.buttons(cmds.map(x => ({
+    label: "ほし: " + x.m.name + " (SP" + x.m.sp + ") " + x.m.desc,
+    disabled: u.sp < x.m.sp,
+    onClick: () => {
+      if (x.id === "ouen" || x.id === "gekirei") { sel.hoshiCmd = x.id; sel.prevMode = mode; sel.mode = "hoshiTarget"; render(); }
+      else { E.applyHoshi(st, u, x.id, u); render(); }
+    }
+  })));
+}
+function onTapCell(x, y) {
+  if (busy || !st || st.result || st.phase !== "player") return;
+  const tapped = E.unitAt(st, x, y);
+  if (!sel) {
+    if (tapped && tapped.side === "ally" && !tapped.acted) {
+      sel = { unit: tapped, mode: "select", preMove: { x: tapped.x, y: tapped.y } };
+      render();
+    } else if (tapped) {
+      panel.show(panel.unitCard(tapped) + "<div class='stat'>" + (tapped.side === "enemy" ? "敵ユニット" : tapped.side === "npc" ? "守る対象" : "行動済み") + "</div>");
+    }
+    return;
+  }
+  const u = sel.unit;
+  if (sel.mode === "select") {
+    const tiles = E.computeMoveRange(st, u);
+    if (tiles.some(t => t.x === x && t.y === y)) {
+      u.x = x; u.y = y; sel.mode = "moved"; render();
+    } else if (tapped && tapped.side === "ally" && tapped !== u && !tapped.acted) {
+      sel = { unit: tapped, mode: "select", preMove: { x: tapped.x, y: tapped.y } }; render();
+    }
+    return;
+  }
+  if (sel.mode === "target") {
+    if (tapped && tapped.side === "enemy" && targetTiles().some(t => t.x === x && t.y === y)) {
+      sel.target = tapped; sel.forecast = E.forecast(st, u, tapped, sel.weaponIdx); sel.mode = "forecast"; render();
+    }
+    return;
+  }
+  if (sel.mode === "healTarget") {
+    if (tapped && tapped.side === "ally" && healTargetTiles().some(t => t.x === x && t.y === y)) doHeal(tapped);
+    return;
+  }
+  if (sel.mode === "hoshiTarget") {
+    if (tapped && tapped.side === "ally") {
+      E.applyHoshi(st, u, sel.hoshiCmd, tapped);
+      sel.mode = sel.prevMode; render();
+    }
+    return;
+  }
+}
+function cancelMove() {
+  sel.unit.x = sel.preMove.x; sel.unit.y = sel.preMove.y;
+  sel.mode = "select"; render();
+}
+function endUnitAction() {
+  sel.unit.acted = true; sel = null; render(); checkEnd();
+}
+async function doPlayerAttack() {
+  busy = true;
+  const u = sel.unit, d = sel.target;
+  const events = E.resolveCombat(st, u, d, sel.weaponIdx, Math.random);
+  const useScene = isLandscape() && settings.anim;
+  if (useScene) await BattleView.playScene(u, d, events);
+  else await BattleView.playSimplified($("grid"), st, events);
+  sel = null; u.acted = true; busy = false;
+  render();
+  await afterAction();
+}
+async function doHeal(target) {
+  busy = true;
+  const u = sel.unit;
+  const events = E.healAction(st, u, target, sel.weaponIdx, Math.random);
+  await BattleView.playSimplified($("grid"), st, events);
+  sel = null; u.acted = true; busy = false;
+  render();
+  await afterAction();
+}
+async function afterAction() {
+  if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; await showDialog(d); }
+  checkEnd(); render();
+}
+function checkEnd() { /* 結果は renderResultPanel が st.result を見て表示する */ }
+async function enemyTurn() {
+  busy = true; sel = null;
+  st.phase = "enemy"; render();
+  const events = E.enemyPhase(st, Math.random);
+  await BattleView.playSimplified($("grid"), st, events);
+  if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; await showDialog(d); }
+  if (!st.result) {
+    E.npcPhase(st, Math.random);
+    E.startPlayerPhase(st);
+    if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; render(); await showDialog(d); }
+  }
+  busy = false;
+  render();
+  if (st.result) await handleResult();
+}
+function renderResultPanel() {
+  if (st.result === "win") {
+    run.cleared = Math.max(run.cleared, stageIdx + 1);
+    E.saveRun(localStorage, run);
+    panel.show("<h3>面クリア！</h3><div class='stat'>" + st.turn + "ターンでクリア" +
+      (st.medal ? " ／ ほし勲章 獲得！" : "（ほし勲章は" + st.stage.medalTurns + "ターン以内）") +
+      "<br>歯車コイン: " + run.funds + "</div>");
+    const items = [];
+    if (stageIdx + 1 < DATA.stages.stages.length) items.push({ label: "次の面へ", cls: "primary", onClick: () => startStage(stageIdx + 1) });
+    items.push({ label: "タイトルへ", onClick: () => $("btn-title").click() });
+    panel.buttons(items);
+    if (!st._clearShown) { st._clearShown = true; if (st.stage.clear) showDialog(st.stage.clear); }
+  } else {
+    E.saveRun(localStorage, run);
+    panel.show("<h3>敗北…</h3><div class='stat'>" + (st.loseReason || "") + "<br>獲得した経験値と歯車コインは引き継がれます。育成して再挑戦できます。</div>");
+    panel.buttons([
+      { label: "リトライ（育成引継ぎ）", cls: "primary", onClick: () => startStage(stageIdx) },
+      { label: "タイトルへ", onClick: () => $("btn-title").click() }
+    ]);
+  }
+}
+async function handleResult() { render(); }
+boot();
+
+</script>
+</body></html>
