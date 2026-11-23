@@ -1,8 +1,8 @@
 "use strict";
 /* Dialog部品: 会話ウィンドウ。lines = [[who, text], ...] を順に表示し、終わったら resolve する */
 (function (global) {
-  const NAMES = { aobee: "あおびー", warubee: "わるびー", galdo: "ガルド", marmi: "マーミ", poco: "ポコ", minori: "みのり", mio: "ミオ", ganzou: "ガンジョウ" };
-  const COLORS = { aobee: "#38bdf8", warubee: "#e879f9", galdo: "#d97706", marmi: "#f472b6", poco: "#4ade80", minori: "#facc15", mio: "#a78bfa", ganzou: "#94a3b8" };
+  const NAMES = { aobee: "あおびー", warubee: "わるびー", galdo: "ガルド", marmi: "マーミ", poco: "ポコ", minori: "みのり", mio: "ミオ", ganzou: "ガンジョウ", tia: "ティア", seira: "セイラ", rocco: "ロッコ", mist: "ミスト", granz: "グランツ" };
+  const COLORS = { aobee: "#38bdf8", warubee: "#e879f9", galdo: "#d97706", marmi: "#f472b6", poco: "#4ade80", minori: "#facc15", mio: "#a78bfa", ganzou: "#94a3b8", tia: "#7dd3fc", seira: "#38bdf8", rocco: "#fbbf24", mist: "#a5b4fc", granz: "#cbd5e1" };
   function showDialog(lines) {
     return new Promise(resolve => {
       const ov = document.createElement("div");
@@ -14,7 +14,9 @@
       function render() {
         if (i >= lines.length) { document.body.removeChild(ov); resolve(); return; }
         const [who, text] = lines[i];
-        box.innerHTML = "<div style='font-weight:700;color:" + (COLORS[who] || "#e2e8f0") + "'>" + (NAMES[who] || who) + "</div><div style='margin-top:4px;line-height:1.6'>" + text + "</div><div style='text-align:right;color:#64748b;font-size:11px'>タップで進む ▼</div>";
+        const face = (global.FACE_MAP || {})[who];
+        const faceHtml = face ? "<img src='" + (global.assetUrl ? global.assetUrl(face) : "assets/" + face) + "' alt='' style='width:64px;height:64px;border-radius:10px;object-fit:cover;object-position:top;flex:none;border:2px solid " + (COLORS[who] || "#475569") + "'>" : "";
+        box.innerHTML = "<div style='display:flex;gap:10px;align-items:flex-start'>" + faceHtml + "<div style='flex:1'><div style='font-weight:700;color:" + (COLORS[who] || "#e2e8f0") + "'>" + (NAMES[who] || who) + "</div><div style='margin-top:4px;line-height:1.6'>" + text + "</div></div></div><div style='text-align:right;color:#64748b;font-size:11px'>タップで進む ▼</div>";
       }
       ov.addEventListener("click", () => { i++; render(); });
       render();

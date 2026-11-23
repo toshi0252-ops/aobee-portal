@@ -12,6 +12,7 @@ body.landscape #panel {
   border-left: 2px solid #334155;
 }
 #panel h3 { margin: 2px 0 6px; font-size: 14px; }
+#panel .pc-face { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; object-position: top; float: left; margin: 0 8px 4px 0; }
 #panel .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
 #panel button {
   background: #1f2937; color: #e2e8f0; border: 1px solid #4b5563;

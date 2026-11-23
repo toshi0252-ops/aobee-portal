@@ -20,7 +20,9 @@
     const hpPct = Math.max(0, Math.round(u.hp / u.maxHp * 100));
     const enPct = u.maxEn ? Math.round(u.en / u.maxEn * 100) : 0;
     const spPct = u.maxSp ? Math.round(u.sp / u.maxSp * 100) : 0;
-    return "<h3>" + u.name + "／" + u.unitName + " Lv" + u.level + " 気力" + u.morale + "</h3>" +
+    const face = u.pilotId && (global.FACE_MAP || {})[u.pilotId];
+    const faceHtml = face ? "<img class='pc-face' src='" + (global.assetUrl ? global.assetUrl(face) : "assets/" + face) + "' alt=''>" : "";
+    return faceHtml + "<h3>" + u.name + "／" + u.unitName + " Lv" + u.level + " 気力" + u.morale + "</h3>" +
       "<div class='stat'>HP " + u.hp + "/" + u.maxHp + "</div><div class='bar'><i style='width:" + hpPct + "%'></i></div>" +
       (u.maxEn ? "<div class='stat'>EN " + u.en + "/" + u.maxEn + "</div><div class='bar en'><i style='width:" + enPct + "%'></i></div>" : "") +
       (u.maxSp ? "<div class='stat'>SP " + u.sp + "/" + u.maxSp + "</div><div class='bar sp'><i style='width:" + spPct + "%'></i></div>" : "");

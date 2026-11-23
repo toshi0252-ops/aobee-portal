@@ -6,6 +6,10 @@ let sel = null; // {unit, mode, preMove, weaponIdx, hoshiCmd}
 let busy = false;
 const settings = { anim: localStorage.getItem("aobee-taisen-anim") !== "off" };
 const $ = id => document.getElementById(id);
+/* 素材マップ: 会話顔グラと戦闘シーンのユニット絵（プレビュー単一ファイル版では __IMG のデータURIを優先） */
+window.FACE_MAP = { aobee: "faces/aobee.jpg", warubee: "faces/warubee.jpg", galdo: "faces/galdo.jpg", marmi: "faces/marmi.jpg", poco: "faces/poco.jpg", minori: "faces/minori.jpg", mio: "faces/mio.jpg", ganzou: "chars/ganzou.jpg", seira: "chars/seira.jpg", mist: "chars/mist.jpg", tia: "chars/tia.jpg", rocco: "chars/rocco.jpg", granz: "chars/granz.jpg" };
+window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png" };
+window.assetUrl = p => (window.__IMG && window.__IMG[p]) || ("assets/" + p);
 const panel = new Panel($("panel"));
 const grid = new GridMap($("grid"), onTapCell);
 

@@ -46,10 +46,15 @@
         "<div class='bs-side'><div class='bs-hpname'>" + u.name + "／" + u.unitName + "</div>" +
         "<div class='bs-barwrap'><i style='width:" + Math.max(0, Math.round(cur / u.maxHp * 100)) + "%'></i></div>" +
         "<div class='bs-hptext'>HP " + cur + "/" + u.maxHp + "</div></div>";
+      const spriteHtml = u => {
+        const art = (global.UNIT_ART || {})[u.unitId];
+        if (art) return "<img class='bs-img' src='" + (global.assetUrl ? global.assetUrl(art) : "assets/" + art) + "' alt='" + u.unitName + "'>";
+        return "<div class='bs-sprite' style='background:" + u.color + "'>" + u.name + "</div>";
+      };
       ov.innerHTML =
         "<div class='bs-quote'></div>" +
-        "<div class='bs-unit bs-left'><div class='bs-sprite' style='background:" + atkU.color + "'>" + atkU.name + "</div><div class='bs-name'>" + atkU.unitName + "</div></div>" +
-        "<div class='bs-unit bs-right'><div class='bs-sprite' style='background:" + defU.color + "'>" + defU.name + "</div><div class='bs-name'>" + defU.unitName + "</div></div>" +
+        "<div class='bs-unit bs-left'>" + spriteHtml(atkU) + "<div class='bs-name'>" + atkU.unitName + "</div></div>" +
+        "<div class='bs-unit bs-right'>" + spriteHtml(defU) + "<div class='bs-name'>" + defU.unitName + "</div></div>" +
         "<div class='bs-bars'>" + barHtml(atkU, startAtk) + barHtml(defU, startDef) + "</div>" +
         "<button class='bs-skip'>スキップ ≫</button>";
       document.body.appendChild(ov);
