@@ -290,6 +290,7 @@ async function doHeal(target) {
 async function afterAction() {
   if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; await showDialog(d); }
   checkEnd(); render();
+  E.saveRun(localStorage, run); /* 育成・コインは行動ごとに自動セーブ（面の途中経過は除く） */
   await maybeAutoEnemyPhase();
 }
 function checkEnd() { /* 結果は renderResultPanel が st.result を見て表示する */ }
@@ -306,6 +307,7 @@ async function enemyTurn() {
   }
   busy = false;
   render();
+  E.saveRun(localStorage, run); /* ターン境界でも自動セーブ */
   if (st.result) await handleResult();
 }
 function renderResultPanel() {
@@ -361,7 +363,7 @@ function renderIntermission() {
   const stock = run.partStock || {};
   const face = window.FACE_MAP[pid];
   let h = "<div class='im-inner'>";
-  h += "<div class='im-head'><h2>インターミッション</h2><div class='im-funds'>歯車コイン: " + run.funds + "</div></div>";
+  h += "<div class='im-head'><h2>インターミッション</h2><div class='im-funds'>歯車コイン: " + run.funds + "</div></div><div class='stat' style='color:#94a3b8'>セーブは自動です（改造・購入・習得のたびに保存されます）。ボタンはありません。</div>";
   h += "<div class='im-topbtns'><button data-act='go' class='primary'>出撃（第" + DATA.stages.stages[imNext].id + "面「" + DATA.stages.stages[imNext].title + "」へ）</button><button data-act='title'>タイトルへ</button></div>";
   // ユニット選択タブ
   h += "<div class='im-tabs'>";
