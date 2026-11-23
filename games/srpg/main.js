@@ -11,6 +11,8 @@ window.FACE_MAP = { aobee: "faces/aobee.jpg", warubee: "faces/warubee.jpg", gald
 window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png" };
 window.assetUrl = p => (window.__IMG && window.__IMG[p]) || ("assets/" + p);
 window.TILE_ART = { ".": "tiles/plain.jpg", P: "tiles/path.jpg", G: "tiles/gear.jpg", F: "tiles/forest.jpg", V: "tiles/village.jpg", R: "tiles/river.jpg", W: "tiles/water.jpg", L: "tiles/lamp.jpg", X: "tiles/block.jpg" };
+/* マップ駒専用アイコン（顔・上半身を大きく切り出した視認性重視版） */
+window.UNIT_ICON = { gearstar: "icons/gearstar.png", galdon: "icons/gardon.png", ovenmarmi: "icons/oven-marmi.png", pocodash: "icons/poco-dash.png", moomoo: "icons/minori-unit.png", hoshifune: "icons/mio-unit.png", cog: "icons/sabi-cog.png", bannin: "icons/bannin-cog.png", karakuri: "icons/karakuri-boss.png" };
 const panel = new Panel($("panel"));
 const grid = new GridMap($("grid"), onTapCell);
 

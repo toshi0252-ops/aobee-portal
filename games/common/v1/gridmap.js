@@ -25,7 +25,7 @@
       if (this.attackTiles.has(k)) cell.classList.add("hl-attack");
       const u = st.units.find(u => u.hp > 0 && u.x === x && u.y === y);
       if (u) {
-        const art = (global.UNIT_ART || {})[u.unitId];
+        const art = (global.UNIT_ICON || {})[u.unitId] || (global.UNIT_ART || {})[u.unitId];
         if (art && u.side !== "npc") {
           const img = document.createElement("img");
           img.className = "chip-img " + u.side + (u.acted && u.side === "ally" ? " acted" : "") + (u.boss ? " boss" : "");
