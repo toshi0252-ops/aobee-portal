@@ -85,8 +85,9 @@
         "<div class='bs-hptext'>HP " + cur + "/" + u.maxHp + "</div></div>";
       const spriteHtml = u => {
         const art = (global.UNIT_ART || {})[u.unitId];
-        if (art) return "<img class='bs-img' src='" + (global.assetUrl ? global.assetUrl(art) : "assets/" + art) + "' alt='" + u.unitName + "'>";
-        return "<div class='bs-sprite' style='background:" + u.color + "'>" + u.name + "</div>";
+        // 待機モーション（浮遊）は内側の .bs-float に付ける。.bs-unit 側の dash/shake 等の transform と競合させないため
+        if (art) return "<div class='bs-float'><img class='bs-img' src='" + (global.assetUrl ? global.assetUrl(art) : "assets/" + art) + "' alt='" + u.unitName + "'></div>";
+        return "<div class='bs-float'><div class='bs-sprite' style='background:" + u.color + "'>" + u.name + "</div></div>";
       };
       ov.innerHTML =
         "<div class='bs-quote'></div>" +
@@ -100,6 +101,11 @@
       ov.appendChild(fxLayer);
       const quote = ov.querySelector(".bs-quote");
       const left = ov.querySelector(".bs-left"), right = ov.querySelector(".bs-right");
+      // 登場: 両ユニットが外側からスライドイン（約0.3秒。ステップ開始をその分遅らせて尺に収める）
+      if (left.animate) {
+        left.animate([{ transform: "translateX(-64px)", opacity: 0 }, { transform: "translateX(0)", opacity: 1 }], { duration: 300, easing: "ease-out" });
+        right.animate([{ transform: "translateX(64px)", opacity: 0 }, { transform: "translateX(0)", opacity: 1 }], { duration: 300, easing: "ease-out" });
+      }
       const sides = ov.querySelectorAll(".bs-side");
       const atkSide = sides[0], defSide = sides[1];
       let done = false;
@@ -122,28 +128,49 @@
         setTimeout(() => pop.remove(), 900);
       }
       /* ===== 武器種別エフェクト（DOM/CSSのみ） ===== */
-      function spriteRect(unitEl) {
+      function spriteEl(unitEl) { return unitEl.querySelector(".bs-img,.bs-sprite") || unitEl; }
+      // 絵が実際に描かれる矩形（fxLayer相対）。img は object-fit:contain のレターボックス分を
+      // naturalWidth/Height から割り出して内側に寄せる。読み込み前やスプライト代替表示では要素の箱そのもの
+      function contentRect(imgEl) {
         const lr = fxLayer.getBoundingClientRect();
-        const t = unitEl.querySelector(".bs-img,.bs-sprite") || unitEl;
-        const r = t.getBoundingClientRect();
-        return { left: r.left - lr.left, top: r.top - lr.top, w: r.width, h: r.height };
+        const r = imgEl.getBoundingClientRect();
+        const box = { left: r.left - lr.left, top: r.top - lr.top, w: r.width, h: r.height };
+        if (imgEl.tagName === "IMG" && imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) {
+          const scale = Math.min(box.w / imgEl.naturalWidth, box.h / imgEl.naturalHeight);
+          const cw = imgEl.naturalWidth * scale, ch = imgEl.naturalHeight * scale;
+          // object-position は既定の 50% 50%（CSSで変更していない）
+          return { left: box.left + (box.w - cw) / 2, top: box.top + (box.h - ch) / 2, w: cw, h: ch };
+        }
+        return box;
       }
+      function spriteRect(unitEl) { return contentRect(spriteEl(unitEl)); }
       function centerOf(unitEl) {
         const r = spriteRect(unitEl);
         return { x: r.left + r.w / 2, y: r.top + r.h / 2 };
       }
-      // ユニット絵の任意の割合位置（fx: 左0〜右1、fy: 上0〜下1）
+      // ユニット絵「内容」の任意の割合位置（fx: 左0〜右1、fy: 上0〜下1）
       function pointOf(unitEl, fx, fy) {
         const r = spriteRect(unitEl);
         return { x: r.left + r.w * fx, y: r.top + r.h * fy };
       }
-      // 発射点: 上半身（高さ約35%）、横は対象を向いた側の端
-      function launchPointOf(s) {
-        const foeC = centerOf(s.foe), myC = centerOf(s.el);
-        return pointOf(s.el, foeC.x >= myC.x ? .85 : .15, .35);
+      /* 砲口アンカー表（unitId → 絵の内容座標。xはPNG左端基準・yは上端基準、描かれている向きのまま）
+         味方は右向き・敵は左向きに描かれている前提で、発射はその向きの先端から出る */
+      const MUZZLE = {
+        gearstar: { x: .96, y: .50 },  // 突き出した腕の先端の発光部
+        gardon: { x: .97, y: .62 },    // 右側の大砲の砲口
+        pocodash: { x: .88, y: .42 },
+        hoshifune: { x: .85, y: .38 },
+        moomoo: { x: .88, y: .45 },
+        karakuri: { x: .06, y: .45 },  // 左向きの絵なので左端側
+        bannin: { x: .08, y: .40 }
+      };
+      // 発射点: ユニットごとの砲口アンカー（表に無ければ陣営の既定値）
+      function muzzlePointOf(s) {
+        const a = MUZZLE[s.who.unitId] || (s.who.side === "enemy" ? { x: .15, y: .42 } : { x: .85, y: .42 });
+        return pointOf(s.el, a.x, a.y);
       }
-      // 着弾点: 中心やや上（高さ約40%）
-      function impactPointOf(unitEl) { return pointOf(unitEl, .5, .4); }
+      // 着弾点: 対象の内容の中心やや上
+      function impactPointOf(unitEl) { return pointOf(unitEl, .5, .45); }
       function mk(cls, x, y) {
         const d = document.createElement("div");
         d.className = cls;
@@ -202,12 +229,20 @@
           anim(s, [{ transform: "translateY(6px)", opacity: 0 }, { opacity: 1, offset: .3 }, { transform: "translateY(-64px)", opacity: 0 }], { duration: 620, delay: i * 55, fill: "forwards" });
         }
       }
+      // 絵だけを横に小さく揺らす（反動・よろけ用。.bs-unit 側の dash/shake と競合しないよう絵要素に付ける）
+      function nudge(unitEl, dx, dur) {
+        const t = spriteEl(unitEl);
+        if (!t.animate) return;
+        t.animate([{ transform: "translateX(0)" }, { transform: "translateX(" + dx + "px)", offset: .3 }, { transform: "translateX(0)" }], { duration: dur || 300, easing: "ease-out" });
+      }
       // 攻撃モーションを発射し、着弾までのmsを返す（melee は呼び出し側の bs-dash が接近する）
-      // 発射点は上半身（高さ約35%・対象側の端）、着弾点は対象の中心やや上（高さ約40%）
+      // 発射点はユニットごとの砲口アンカー（絵の内容座標）、着弾点は対象の内容の中心やや上
       function launchFx(s, big) {
         const fx = s.ev.fx || "melee";
         if (fx === "melee") return 380;
-        const from = launchPointOf(s), foeI = impactPointOf(s.foe);
+        const from = muzzlePointOf(s), foeI = impactPointOf(s.foe);
+        // 射撃の反動: 対象と反対方向へ約10px下がって戻る
+        nudge(s.el, (foeI.x >= from.x ? -1 : 1) * 10, 300);
         const to = s.ev.hit ? foeI : { x: foeI.x, y: foeI.y - 48 }; // ミス時は対象の上へ外れる
         if (fx === "beam") {
           const dx = to.x - from.x, dy = to.y - from.y, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
@@ -249,6 +284,8 @@
       // 着弾時の共通演出: フラッシュ＋破片＋画面の揺れ（ダメージ比で大小）＋撃破時は大爆発と消滅
       function impactFx(s, big) {
         const foeC = impactPointOf(s.foe);
+        // 被弾のよろけ: 衝撃方向（攻撃側と反対）へ約6px押し出されて戻る
+        nudge(s.foe, (foeC.x >= centerOf(s.el).x ? 1 : -1) * 6, 280);
         s.foe.classList.add("bs-hitflash");
         setTimeout(() => s.foe.classList.remove("bs-hitflash"), 340);
         if (s.ev.fx === "beam") { starflash(foeC.x, foeC.y, big); rays(foeC.x, foeC.y, big ? 10 : 7, big); }
@@ -307,7 +344,7 @@
         quote.textContent = heals[0].atk + "「" + heals[0].weapon + "！」";
         healFx(right);
         setTimeout(finish, 1000);
-      } else next();
+      } else setTimeout(next, 300); // 登場スライドインを見せてから攻撃ステップへ
       setTimeout(finish, 9000); // 安全弁
     });
   }
