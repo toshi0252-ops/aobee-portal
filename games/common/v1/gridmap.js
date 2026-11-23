@@ -25,12 +25,22 @@
       if (this.attackTiles.has(k)) cell.classList.add("hl-attack");
       const u = st.units.find(u => u.hp > 0 && u.x === x && u.y === y);
       if (u) {
-        const chip = document.createElement("div");
-        chip.className = "chip-unit " + u.side + (u.acted && u.side === "ally" ? " acted" : "") + (u.boss ? " boss" : "");
-        chip.style.background = u.color;
-        chip.textContent = u.side === "npc" ? "動" : (u.pilotId ? u.name.slice(0, 1) : u.name.slice(0, 1));
-        chip.title = u.name + "／" + u.unitName + " HP" + u.hp;
-        cell.appendChild(chip);
+        const art = (global.UNIT_ART || {})[u.unitId];
+        if (art && u.side !== "npc") {
+          const img = document.createElement("img");
+          img.className = "chip-img " + u.side + (u.acted && u.side === "ally" ? " acted" : "") + (u.boss ? " boss" : "");
+          img.src = global.assetUrl ? global.assetUrl(art) : "assets/" + art;
+          img.alt = u.name;
+          img.title = u.name + "／" + u.unitName + " HP" + u.hp;
+          cell.appendChild(img);
+        } else {
+          const chip = document.createElement("div");
+          chip.className = "chip-unit " + u.side + (u.acted && u.side === "ally" ? " acted" : "") + (u.boss ? " boss" : "");
+          chip.style.background = u.color;
+          chip.textContent = u.side === "npc" ? "動" : u.name.slice(0, 1);
+          chip.title = u.name + "／" + u.unitName + " HP" + u.hp;
+          cell.appendChild(chip);
+        }
         if (u.side !== "npc") {
           const bar = document.createElement("div"); bar.className = "mini-hp";
           const i = document.createElement("i"); i.style.width = Math.max(0, u.hp / u.maxHp * 100) + "%";
