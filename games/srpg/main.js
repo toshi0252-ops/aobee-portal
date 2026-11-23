@@ -10,6 +10,7 @@ const $ = id => document.getElementById(id);
 window.FACE_MAP = { aobee: "faces/aobee.jpg", warubee: "faces/warubee.jpg", galdo: "faces/galdo.jpg", marmi: "faces/marmi.jpg", poco: "faces/poco.jpg", minori: "faces/minori.jpg", mio: "faces/mio.jpg", ganzou: "chars/ganzou.jpg", seira: "chars/seira.jpg", mist: "chars/mist.jpg", tia: "chars/tia.jpg", rocco: "chars/rocco.jpg", granz: "chars/granz.jpg" };
 window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png" };
 window.assetUrl = p => (window.__IMG && window.__IMG[p]) || ("assets/" + p);
+window.TILE_ART = { ".": "tiles/plain.jpg", P: "tiles/path.jpg", G: "tiles/gear.jpg", F: "tiles/forest.jpg", V: "tiles/village.jpg", R: "tiles/river.jpg", W: "tiles/water.jpg", L: "tiles/lamp.jpg", X: "tiles/block.jpg" };
 const panel = new Panel($("panel"));
 const grid = new GridMap($("grid"), onTapCell);
 

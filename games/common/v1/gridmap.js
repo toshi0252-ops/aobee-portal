@@ -18,6 +18,8 @@
       const cell = document.createElement("div");
       const ch = stage.terrain[y][x];
       cell.className = "cell " + (TERR_CLASS[ch] || "t-plain");
+      const tile = (global.TILE_ART || {})[ch];
+      if (tile) { cell.style.backgroundImage = "url(" + (global.assetUrl ? global.assetUrl(tile) : "assets/" + tile) + ")"; cell.style.backgroundSize = "cover"; cell.style.backgroundPosition = "center"; }
       const k = x + "," + y;
       if (this.moveTiles.has(k)) cell.classList.add("hl-move");
       if (this.attackTiles.has(k)) cell.classList.add("hl-attack");
