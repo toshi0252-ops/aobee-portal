@@ -24,6 +24,13 @@ async function boot() {
   refreshTitle();
 }
 function refreshTitle() {
+  if (!$("title-art")) {
+    const img = document.createElement("img");
+    img.id = "title-art"; img.alt = "";
+    img.src = assetUrl("events/opening.jpg");
+    img.style.cssText = "width:100%;max-width:560px;border-radius:12px;display:block;margin:0 auto 10px";
+    const ts = $("title-screen"); ts.insertBefore(img, ts.firstChild);
+  }
   const saved = E.loadRun(localStorage, DATA);
   $("btn-continue").disabled = !saved;
   $("btn-anim").textContent = "戦闘アニメ（横画面）: " + (settings.anim ? "ON" : "OFF");
@@ -64,6 +71,18 @@ function isLandscape() { return window.innerWidth > window.innerHeight; }
 function setOrientation() { document.body.classList.toggle("landscape", isLandscape()); }
 window.addEventListener("resize", setOrientation);
 
+/* イベント一枚絵を全画面で見せて、タップで進む */
+let artShown = false;
+function showEventArt(path, caption) {
+  return new Promise(res => {
+    const ov = document.createElement("div");
+    ov.style.cssText = "position:fixed;inset:0;background:#020617;z-index:70;display:flex;align-items:center;justify-content:center;cursor:pointer";
+    ov.innerHTML = "<img src='" + assetUrl(path) + "' alt='' style='max-width:100%;max-height:100%;object-fit:contain'><div style='position:absolute;left:0;right:0;bottom:0;padding:26px 14px 10px;background:linear-gradient(transparent,rgba(2,6,23,.88));color:#e2e8f0'><div style='font-weight:700'>" + caption + "</div><div style='text-align:right;color:#94a3b8;font-size:11px'>タップで進む ▼</div></div>";
+    ov.addEventListener("click", () => { document.body.removeChild(ov); res(); });
+    document.body.appendChild(ov);
+  });
+}
+
 async function startStage(idx) {
   stageIdx = idx; sel = null;
   st = E.startStage(DATA, run, idx);
@@ -71,6 +90,7 @@ async function startStage(idx) {
   setOrientation();
   E.saveRun(localStorage, run);
   render();
+  if (idx === 0 && !artShown) { artShown = true; await showEventArt("events/opening.jpg", "第1面「" + st.stage.title + "」 ― 祭りの朝"); }
   if (st.stage.intro) await showDialog(st.stage.intro);
   render();
 }
