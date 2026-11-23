@@ -251,6 +251,18 @@ function cancelMove() {
 }
 function endUnitAction() {
   sel.unit.acted = true; sel = null; render(); checkEnd();
+  maybeAutoEnemyPhase();
+}
+/* 全味方が行動済みなら、少し間を置いて自動で敵フェイズへ */
+let autoPhasePending = false;
+async function maybeAutoEnemyPhase() {
+  if (autoPhasePending || busy || !st || st.result || st.phase !== "player") return;
+  const allies = st.units.filter(u => u.side === "ally" && u.hp > 0);
+  if (!allies.length || !allies.every(u => u.acted)) return;
+  autoPhasePending = true;
+  await new Promise(r => setTimeout(r, 550));
+  autoPhasePending = false;
+  if (!busy && st && !st.result && st.phase === "player") await enemyTurn();
 }
 async function doPlayerAttack() {
   busy = true;
@@ -275,6 +287,7 @@ async function doHeal(target) {
 async function afterAction() {
   if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; await showDialog(d); }
   checkEnd(); render();
+  await maybeAutoEnemyPhase();
 }
 function checkEnd() { /* 結果は renderResultPanel が st.result を見て表示する */ }
 async function enemyTurn() {
