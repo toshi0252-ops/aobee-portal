@@ -52,10 +52,10 @@ body.landscape.panel-hidden #panel{display:none}
 .bs-barwrap i{display:block;height:100%;background:#22c55e;border-radius:4px;transition:width .6s ease}
 .bs-guard{filter:brightness(1.7)} .bs-evade{transform:translateX(-30px)}
 .bs-img{width:min(38vw,240px);max-height:200px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.45))}
-.chip-img{position:absolute;inset:2px;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:contain;pointer-events:none;filter:drop-shadow(0 0 3px rgba(56,189,248,.95)) drop-shadow(0 1px 1px rgba(0,0,0,.45))}
-.chip-img.enemy{filter:drop-shadow(0 0 3px rgba(239,68,68,.95)) drop-shadow(0 1px 1px rgba(0,0,0,.45))}
-.chip-img.boss{filter:drop-shadow(0 0 4px rgba(250,204,21,1)) drop-shadow(0 1px 1px rgba(0,0,0,.45))}
-.chip-img.acted{filter:grayscale(.75) brightness(.72)}
+.chip-img{position:absolute;inset:1px;width:calc(100% - 2px);height:calc(100% - 2px);object-fit:cover;object-position:top center;pointer-events:none;border-radius:7px;border:2px solid rgba(56,189,248,.95);background:rgba(10,28,50,.55);box-shadow:0 1px 3px rgba(0,0,0,.5)}
+.chip-img.enemy{border-color:rgba(239,68,68,.95);background:rgba(50,16,16,.55)}
+.chip-img.boss{border-color:#facc15;background:rgba(50,40,4,.55)}
+.chip-img.acted{filter:grayscale(.8) brightness(.68)}
 .bs-dmg{position:absolute;left:0;right:0;top:-26px;text-align:center;font-weight:900;font-size:19px;color:#fff;text-shadow:0 0 5px #000,0 2px 2px #000;animation:pop .9s ease-out;z-index:5}
 #log{font-size:11px;color:#94a3b8;max-height:90px;overflow-y:auto;line-height:1.5}
 </style></head><body>
