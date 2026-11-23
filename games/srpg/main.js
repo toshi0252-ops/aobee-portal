@@ -73,13 +73,26 @@ function refreshTitle() {
     label.style.cssText = "color:#94a3b8;font-size:12px;margin-top:6px";
     label.textContent = "面を選んで始める（育成は引き継ぎます）";
     ss.appendChild(label);
-    for (let i = 0; i <= Math.min(saved.cleared, DATA.stages.stages.length - 1); i++) {
-      const b = document.createElement("button"); b.className = "sub";
-      b.textContent = "第" + (i + 1) + "面 " + DATA.stages.stages[i].title;
-      b.style.marginTop = "6px";
-      b.addEventListener("click", () => { run = saved; startStage(i); });
-      ss.appendChild(b);
+    const unlockedSet = new Set([0, ...(saved.clearedStages || [])]);
+    for (const i of (saved.clearedStages || [])) {
+      const n = E.nextStageIndex(DATA, saved, i);
+      if (n >= 0) unlockedSet.add(n);
+      const s = DATA.stages.stages[i];
+      if (s && s.nextByRoute) { unlockedSet.add(s.nextByRoute.A); unlockedSet.add(s.nextByRoute.B); }
     }
+    [...unlockedSet].sort((a, b) => a - b).forEach(i => {
+      const s = DATA.stages.stages[i];
+      if (!s) return;
+      const b = document.createElement("button"); b.className = "sub";
+      b.textContent = "第" + s.id + "面 " + s.title + (s.route ? "（" + s.route + "ルート）" : "");
+      b.style.marginTop = "6px";
+      b.addEventListener("click", () => {
+        run = saved;
+        if (s.route && !run.route) { run.route = s.route; E.saveRun(localStorage, run); }
+        startStage(i);
+      });
+      ss.appendChild(b);
+    });
   } else ss.classList.add("hidden");
 }
 $("btn-new").addEventListener("click", () => { localStorage.removeItem(BKEY); run = E.createRun(DATA); startStage(0); });
@@ -96,7 +109,13 @@ $("btn-resume").addEventListener("click", () => {
 });
 $("btn-continue").addEventListener("click", () => {
   const saved = E.loadRun(localStorage, DATA);
-  if (saved) { run = saved; startStage(Math.min(saved.cleared, DATA.stages.stages.length - 1)); }
+  if (saved) {
+    run = saved;
+    const path = E.stagePath(DATA, run);
+    let idx = path.find(i => !(run.clearedStages || []).includes(i));
+    if (idx === undefined) idx = path[path.length - 1];
+    startStage(idx);
+  }
 });
 $("btn-anim").addEventListener("click", () => {
   settings.anim = !settings.anim;
@@ -139,7 +158,7 @@ async function startStage(idx) {
 }
 function objectiveText() {
   let t = st.stage.winType === "boss" ? "目的: ボスの撃破" : "目的: 敵の全滅";
-  if (st.stage.loseNpc) t += "／動物を守る";
+  if (st.stage.loseNpc) t += "／" + (st.stage.protectLabel || "動物") + "を守る";
   if (st.stage.turnLimit) t += "／" + st.stage.turnLimit + "ターン以内";
   if (st.stage.fog) t += "／霧: 灯りの近く以外は命中-30";
   if (st.rustStorm) t += "／錆嵐: 敵攻撃+10%";
@@ -362,15 +381,19 @@ async function enemyTurn() {
 function renderResultPanel() {
   if (st.result === "win") {
     run.cleared = Math.max(run.cleared, stageIdx + 1);
+    if (!run.clearedStages.includes(stageIdx)) run.clearedStages.push(stageIdx);
     E.saveRun(localStorage, run);
     panel.show("<h3>面クリア！</h3><div class='stat'>" + st.turn + "ターンでクリア" +
       (st.medal ? " ／ ほし勲章 獲得！" : "（ほし勲章は" + st.stage.medalTurns + "ターン以内）") +
       "<br>歯車コイン: " + run.funds + "</div>");
     const items = [];
-    if (stageIdx + 1 < DATA.stages.stages.length) items.push({
+    if (E.nextStageIndex(DATA, run, stageIdx) >= 0 || st.stage.nextByRoute) items.push({
       label: "次の面へ", cls: "primary", onClick: async () => {
         if (st.stage.after) await showDialog(st.stage.after); // 面間の物語
-        openIntermission(stageIdx + 1);                        // 整備・改造・買い物
+        if (st.stage.nextByRoute && !run.route) await chooseRoute(); // 第8面クリア後: ルート選択
+        const next = E.nextStageIndex(DATA, run, stageIdx);
+        if (next >= 0) openIntermission(next);                        // 整備・改造・買い物
+        else $("btn-title").click();
       }
     });
     items.push({ label: "タイトルへ", onClick: () => $("btn-title").click() });
@@ -391,13 +414,33 @@ async function handleResult() {
   render();
 }
 
+/* ===== ルート選択（第8面クリア後） ===== */
+function chooseRoute() {
+  return new Promise(resolve => {
+    const ov = $("route-overlay");
+    ov.classList.remove("hidden");
+    const done = (r) => {
+      run.route = r;
+      E.saveRun(localStorage, run);
+      ov.classList.add("hidden");
+      resolve(r);
+    };
+    $("btn-route-a").onclick = () => done("A");
+    $("btn-route-b").onclick = () => done("B");
+  });
+}
+
 /* ===== インターミッション画面 ===== */
 const MOD_LABEL = { hp: "HP", armor: "装甲", en: "EN", hit: "命中", power: "武器威力" };
 let imNext = 0, imPilot = null;
 function imPilots() {
   const seen = [];
-  for (let i = 0; i <= imNext && i < DATA.stages.stages.length; i++)
-    for (const a of DATA.stages.stages[i].allies) if (!seen.includes(a.pilot)) seen.push(a.pilot);
+  const idxs = new Set([...E.stagePath(DATA, run).filter(i => i <= imNext), ...(run.clearedStages || []), imNext]);
+  for (const i of idxs) {
+    const s = DATA.stages.stages[i];
+    if (!s) continue;
+    for (const a of s.allies) if (!seen.includes(a.pilot)) seen.push(a.pilot);
+  }
   return Object.keys(DATA.pilots.pilots).filter(pid => seen.includes(pid));
 }
 function openIntermission(nextIdx) {

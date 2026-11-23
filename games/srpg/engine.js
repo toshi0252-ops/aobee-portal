@@ -98,7 +98,7 @@
   }
 
   function createRun(data) {
-    const run = { funds: 0, cleared: 0, pilots: {}, mods: {}, parts: {}, hoshiLearned: {}, partStock: {} };
+    const run = { funds: 0, cleared: 0, pilots: {}, mods: {}, parts: {}, hoshiLearned: {}, partStock: {}, route: null, clearedStages: [] };
     for (const pid of Object.keys(data.pilots.pilots)) {
       run.pilots[pid] = { level: 1, exp: 0, kills: 0, hp: 0, atk: 0, aim: 0, eva: 0 };
       run.hoshiLearned[pid] = data.pilots.pilots[pid].hoshi.slice();
@@ -418,7 +418,7 @@
     const allies = living(st, "ally");
     const aobee = st.units.find(u => u.pilotId === "aobee");
     if (!allies.length || (aobee && aobee.hp <= 0)) { st.result = "lose"; st.loseReason = "あおびーの撃墜／全滅"; return; }
-    if (st.stage.loseNpc && !living(st, "npc").length) { st.result = "lose"; st.loseReason = "動物が全てやられた"; return; }
+    if (st.stage.loseNpc && !living(st, "npc").length) { st.result = "lose"; st.loseReason = st.stage.loseNpcText || "動物が全てやられた"; return; }
     const enemies = living(st, "enemy");
     if (st.stage.winType === "boss") {
       const boss = st.units.find(u => u.boss && u.side === "enemy");
@@ -426,8 +426,33 @@
     } else if (!enemies.length) st.result = "win";
     if (st.result === "win") st.medal = st.turn <= (st.stage.medalTurns || 99);
   }
+  /* ===== ルート分岐: 次の面の決定と周回経路 =====
+     stage.nextByRoute {A,B} がある面（第8面）は run.route で分岐する。route 未選択なら -1（選択UIを出す）。
+     stage.next が数値ならそのインデックス、-1 なら終端（続きは制作中）。どちらも無ければ線形に次へ。 */
+  function nextStageIndex(data, run, idx) {
+    const stages = data.stages.stages;
+    const s = stages[idx];
+    if (!s) return -1;
+    if (s.nextByRoute) {
+      if (!run || (run.route !== "A" && run.route !== "B")) return -1;
+      const n = s.nextByRoute[run.route];
+      return (typeof n === "number" && stages[n]) ? n : -1;
+    }
+    if (typeof s.next === "number") return (s.next >= 0 && stages[s.next]) ? s.next : -1;
+    return idx + 1 < stages.length ? idx + 1 : -1;
+  }
+  function stagePath(data, run) {
+    const path = [0];
+    let guard = 0;
+    while (guard++ < 100) {
+      const n = nextStageIndex(data, run, path[path.length - 1]);
+      if (n < 0) break;
+      path.push(n);
+    }
+    return path;
+  }
   function buildSave(run) {
-    return { version: 1, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned, partStock: run.partStock || {} };
+    return { version: 1, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned, partStock: run.partStock || {}, route: run.route || null, clearedStages: run.clearedStages || [] };
   }
   function saveRun(storage, run) { storage.setItem("aobee-taisen-save-v1", JSON.stringify(buildSave(run))); }
   function loadRun(storage, data) {
@@ -448,6 +473,13 @@
     }
     for (const pid of Object.keys(run.hoshiLearned)) if (s.hoshiLearned && s.hoshiLearned[pid]) run.hoshiLearned[pid] = s.hoshiLearned[pid];
     run.partStock = (s.partStock && typeof s.partStock === "object") ? s.partStock : {}; // 旧セーブ（partStockなし）は空で初期化
+    run.route = (s.route === "A" || s.route === "B") ? s.route : null; // 旧セーブ（routeなし）は未選択
+    run.clearedStages = Array.isArray(s.clearedStages)
+      ? s.clearedStages.filter(i => Number.isInteger(i) && i >= 0 && i < data.stages.stages.length) : [];
+    // 旧セーブ互換: clearedStages が無く cleared だけある場合は、線形分（第1〜8面=インデックス0〜7）をクリア済みに移行
+    if (!run.clearedStages.length && run.cleared > 0) {
+      for (let i = 0; i < Math.min(run.cleared, 8); i++) run.clearedStages.push(i);
+    }
     return run;
   }
   /* ===== 中断セーブ: 面の途中の戦況（st）の保存・復元 =====
@@ -501,7 +533,7 @@
     if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
     return st;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
