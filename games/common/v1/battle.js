@@ -122,12 +122,28 @@
         setTimeout(() => pop.remove(), 900);
       }
       /* ===== 武器種別エフェクト（DOM/CSSのみ） ===== */
-      function centerOf(unitEl) {
+      function spriteRect(unitEl) {
         const lr = fxLayer.getBoundingClientRect();
         const t = unitEl.querySelector(".bs-img,.bs-sprite") || unitEl;
         const r = t.getBoundingClientRect();
-        return { x: r.left - lr.left + r.width / 2, y: r.top - lr.top + r.height / 2 };
+        return { left: r.left - lr.left, top: r.top - lr.top, w: r.width, h: r.height };
       }
+      function centerOf(unitEl) {
+        const r = spriteRect(unitEl);
+        return { x: r.left + r.w / 2, y: r.top + r.h / 2 };
+      }
+      // ユニット絵の任意の割合位置（fx: 左0〜右1、fy: 上0〜下1）
+      function pointOf(unitEl, fx, fy) {
+        const r = spriteRect(unitEl);
+        return { x: r.left + r.w * fx, y: r.top + r.h * fy };
+      }
+      // 発射点: 上半身（高さ約35%）、横は対象を向いた側の端
+      function launchPointOf(s) {
+        const foeC = centerOf(s.foe), myC = centerOf(s.el);
+        return pointOf(s.el, foeC.x >= myC.x ? .85 : .15, .35);
+      }
+      // 着弾点: 中心やや上（高さ約40%）
+      function impactPointOf(unitEl) { return pointOf(unitEl, .5, .4); }
       function mk(cls, x, y) {
         const d = document.createElement("div");
         d.className = cls;
@@ -159,6 +175,23 @@
         setTimeout(() => b.remove(), 560);
         smoke(x - 20, y - 8, 64, .95); smoke(x + 24, y + 4, 52, .85); smoke(x, y - 26, 44, .8);
       }
+      // ビーム着弾点の閃光（金〜水色の星らしい閃光）
+      function starflash(x, y, big) {
+        const size = big ? 190 : 130;
+        const f = mk("fx-starflash", x, y);
+        f.style.width = f.style.height = size + "px";
+        f.style.marginLeft = f.style.marginTop = (-size / 2) + "px";
+        setTimeout(() => f.remove(), 420);
+      }
+      // 着弾点から短い光条が放射状に広がって消える
+      function rays(x, y, n, big) {
+        for (let i = 0; i < n; i++) {
+          const r = mk("fx-ray", x, y);
+          const ang = Math.random() * Math.PI * 2;
+          r.style.width = ((big ? 78 : 54) * (0.6 + Math.random() * 0.7)) + "px";
+          anim(r, [{ transform: "rotate(" + ang + "rad) scaleX(.2)", opacity: 1 }, { transform: "rotate(" + ang + "rad) scaleX(1)", opacity: 0 }], { duration: 300 + Math.random() * 140, fill: "forwards" });
+        }
+      }
       function healFx(unitEl) {
         const c = centerOf(unitEl);
         unitEl.classList.add("bs-healglow");
@@ -170,17 +203,28 @@
         }
       }
       // 攻撃モーションを発射し、着弾までのmsを返す（melee は呼び出し側の bs-dash が接近する）
+      // 発射点は上半身（高さ約35%・対象側の端）、着弾点は対象の中心やや上（高さ約40%）
       function launchFx(s, big) {
         const fx = s.ev.fx || "melee";
         if (fx === "melee") return 380;
-        const from = centerOf(s.el), foeC = centerOf(s.foe);
-        const to = s.ev.hit ? foeC : { x: foeC.x, y: foeC.y - 48 }; // ミス時は対象の上へ外れる
+        const from = launchPointOf(s), foeI = impactPointOf(s.foe);
+        const to = s.ev.hit ? foeI : { x: foeI.x, y: foeI.y - 48 }; // ミス時は対象の上へ外れる
         if (fx === "beam") {
           const dx = to.x - from.x, dy = to.y - from.y, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
           const b = mk("fx-beam" + (big ? " big" : ""), from.x, from.y);
           b.style.width = len + "px";
-          anim(b, [{ transform: "rotate(" + ang + "rad) scaleX(0)", opacity: 1 }, { transform: "rotate(" + ang + "rad) scaleX(1)", opacity: 1, offset: .35 }, { transform: "rotate(" + ang + "rad) scaleX(1)", opacity: 0 }], { duration: 430, fill: "forwards" });
-          return 300;
+          b.innerHTML = "<i class='glow'></i><i class='mid'></i><i class='core'></i>";
+          // 伸びる → 一瞬太く輝く → 消える
+          anim(b, [{ transform: "rotate(" + ang + "rad) scale(0,.4)", opacity: 1 }, { transform: "rotate(" + ang + "rad) scale(1,1)", opacity: 1, offset: .3 }, { transform: "rotate(" + ang + "rad) scale(1,1.5)", opacity: 1, offset: .5 }, { transform: "rotate(" + ang + "rad) scale(1,1)", opacity: 1, offset: .7 }, { transform: "rotate(" + ang + "rad) scale(1,.7)", opacity: 0 }], { duration: 450, fill: "forwards" });
+          const fl = mk("fx-beamflash" + (big ? " big" : ""), from.x, from.y);
+          setTimeout(() => fl.remove(), 300);
+          if (big) {
+            const sf = document.createElement("div");
+            sf.className = "fx-screenflash";
+            fxLayer.appendChild(sf);
+            setTimeout(() => sf.remove(), 460);
+          }
+          return 210; // 伸び切って太く輝く頃に着弾させる
         }
         if (fx === "gun") {
           const m = mk("fx-muzzle", from.x, from.y);
@@ -204,9 +248,10 @@
       }
       // 着弾時の共通演出: フラッシュ＋破片＋画面の揺れ（ダメージ比で大小）＋撃破時は大爆発と消滅
       function impactFx(s, big) {
-        const foeC = centerOf(s.foe);
+        const foeC = impactPointOf(s.foe);
         s.foe.classList.add("bs-hitflash");
         setTimeout(() => s.foe.classList.remove("bs-hitflash"), 340);
+        if (s.ev.fx === "beam") { starflash(foeC.x, foeC.y, big); rays(foeC.x, foeC.y, big ? 10 : 7, big); }
         if (s.ev.killed) { boom(foeC.x, foeC.y, big); burst(foeC.x, foeC.y, big ? 26 : 20, big ? 130 : 105); }
         else burst(foeC.x, foeC.y, big ? 16 : 10, big ? 95 : 68);
         const ratio = s.foeU.maxHp ? s.ev.dmg / s.foeU.maxHp : 0;
