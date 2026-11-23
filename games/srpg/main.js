@@ -6,6 +6,29 @@ let sel = null; // {unit, mode, preMove, weaponIdx, hoshiCmd}
 let busy = false;
 const settings = { anim: localStorage.getItem("aobee-taisen-anim") !== "off" };
 const $ = id => document.getElementById(id);
+/* 中断セーブ（面の途中の戦況）の保存キー。run のセーブ（E.saveRun）とは別に持つ */
+const BKEY = "aobee-srpg-battle-v1";
+function saveAll() {
+  if (run) E.saveRun(localStorage, run);
+  if (st && !st.result) {
+    try { localStorage.setItem(BKEY, JSON.stringify(E.serializeState(st))); } catch (e) { /* 保存失敗時は中断セーブなしで続行 */ }
+  } else if (st) {
+    localStorage.removeItem(BKEY); // 勝敗が確定した戦況は再開対象にしない
+  }
+}
+function loadBattleSave() {
+  if (!DATA) return null;
+  try {
+    const raw = localStorage.getItem(BKEY);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    if (!s || typeof s !== "object") return null;
+    if (!Number.isInteger(s.stageIdx) || s.stageIdx < 0 || s.stageIdx >= DATA.stages.stages.length) return null;
+    if (!Array.isArray(s.units) || !s.units.length) return null;
+    if (!Number.isInteger(s.turn) || s.turn < 1) return null;
+    return s;
+  } catch (e) { return null; } // 壊れた保存内容では再開ボタンを出さない
+}
 /* 素材マップ: 会話顔グラと戦闘シーンのユニット絵（プレビュー単一ファイル版では __IMG のデータURIを優先） */
 window.FACE_MAP = { aobee: "faces/aobee.jpg", warubee: "faces/warubee.jpg", galdo: "faces/galdo.jpg", marmi: "faces/marmi.jpg", poco: "faces/poco.jpg", minori: "faces/minori.jpg", mio: "faces/mio.jpg", ganzou: "chars/ganzou.jpg", seira: "chars/seira.jpg", mist: "chars/mist.jpg", tia: "chars/tia.jpg", rocco: "chars/rocco.jpg", granz: "chars/granz.jpg" };
 window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png" };
@@ -36,6 +59,12 @@ function refreshTitle() {
   }
   const saved = E.loadRun(localStorage, DATA);
   $("btn-continue").disabled = !saved;
+  const bs = loadBattleSave();
+  const rb = $("btn-resume");
+  if (bs && saved) {
+    rb.classList.remove("hidden");
+    rb.textContent = "つづきから（第" + DATA.stages.stages[bs.stageIdx].id + "面 ターン" + bs.turn + "）";
+  } else rb.classList.add("hidden");
   $("btn-anim").textContent = "戦闘アニメ（横画面）: " + (settings.anim ? "ON" : "OFF");
   const ss = $("stage-select");
   if (saved && saved.cleared > 0) {
@@ -53,7 +82,18 @@ function refreshTitle() {
     }
   } else ss.classList.add("hidden");
 }
-$("btn-new").addEventListener("click", () => { run = E.createRun(DATA); startStage(0); });
+$("btn-new").addEventListener("click", () => { localStorage.removeItem(BKEY); run = E.createRun(DATA); startStage(0); });
+$("btn-resume").addEventListener("click", () => {
+  const savedRun = E.loadRun(localStorage, DATA);
+  const bs = loadBattleSave();
+  if (!savedRun || !bs) { refreshTitle(); return; }
+  run = savedRun;
+  st = E.restoreState(DATA, run, bs);
+  stageIdx = st.stageIdx; sel = null; busy = false;
+  $("title-screen").classList.add("hidden"); $("app").classList.remove("hidden");
+  setOrientation();
+  render(); // 再開直後は味方フェイズ（restoreState が phase を味方側に固定）
+});
 $("btn-continue").addEventListener("click", () => {
   const saved = E.loadRun(localStorage, DATA);
   if (saved) { run = saved; startStage(Math.min(saved.cleared, DATA.stages.stages.length - 1)); }
@@ -91,7 +131,7 @@ async function startStage(idx) {
   st = E.startStage(DATA, run, idx);
   $("title-screen").classList.add("hidden"); $("app").classList.remove("hidden");
   setOrientation();
-  E.saveRun(localStorage, run);
+  saveAll(); // 面開始時点の戦況も中断セーブに残す
   render();
   if (idx === 0 && !artShown) { artShown = true; await showEventArt("events/opening.jpg", "第1面「" + st.stage.title + "」 ― 祭りの朝"); }
   if (st.stage.intro) await showDialog(st.stage.intro);
@@ -136,7 +176,8 @@ function attackWeaponsVsAny(u) {
 function renderPanel() {
   if (st.result) return renderResultPanel();
   if (!sel) {
-    panel.show("<h3>味方フェイズ (TURN " + st.turn + ")</h3><div class='stat'>味方ユニットをタップして選択。移動→武器→予測→攻撃の順に進みます。ほしコマンドはSPを消費します。</div>");
+    panel.show("<h3>味方フェイズ (TURN " + st.turn + ")</h3><div class='stat'>味方ユニットをタップして選択。移動→武器→予測→攻撃の順に進みます。ほしコマンドはSPを消費します。</div><div class='row'><button id='btn-suspend'>中断してタイトルへ</button></div>");
+    $("btn-suspend").addEventListener("click", suspendToTitle);
     return;
   }
   const u = sel.unit;
@@ -189,6 +230,13 @@ function renderPanel() {
     panel.show(html + "<div class='stat'>対象の味方をタップしてください。</div>");
     panel.buttons([{ label: "やめる", onClick: () => { sel.mode = sel.prevMode; render(); } }]);
   }
+}
+/* 戦況を中断セーブしてタイトルへ戻る（run は継続状態のまま） */
+function suspendToTitle() {
+  if (!st || st.result) return;
+  saveAll();
+  sel = null;
+  $("app").classList.add("hidden"); $("title-screen").classList.remove("hidden"); refreshTitle();
 }
 function healTargetTilesFor(u) {
   return healWeapons(u).flatMap(x => {
@@ -290,7 +338,7 @@ async function doHeal(target) {
 async function afterAction() {
   if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; await showDialog(d); }
   checkEnd(); render();
-  E.saveRun(localStorage, run); /* 育成・コインは行動ごとに自動セーブ（面の途中経過は除く） */
+  saveAll(); /* 育成・コイン＋戦況を行動ごとに自動セーブ */
   await maybeAutoEnemyPhase();
 }
 function checkEnd() { /* 結果は renderResultPanel が st.result を見て表示する */ }
@@ -307,7 +355,7 @@ async function enemyTurn() {
   }
   busy = false;
   render();
-  E.saveRun(localStorage, run); /* ターン境界でも自動セーブ */
+  saveAll(); /* ターン境界でも自動セーブ（戦況つき） */
   if (st.result) await handleResult();
 }
 function renderResultPanel() {
@@ -336,7 +384,11 @@ function renderResultPanel() {
     ]);
   }
 }
-async function handleResult() { render(); }
+async function handleResult() {
+  localStorage.removeItem(BKEY); // 勝敗が確定したら中断セーブは破棄する
+  if (run) E.saveRun(localStorage, run);
+  render();
+}
 
 /* ===== インターミッション画面 ===== */
 const MOD_LABEL = { hp: "HP", armor: "装甲", en: "EN", hit: "命中", power: "武器威力" };

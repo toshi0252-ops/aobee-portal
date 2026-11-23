@@ -450,7 +450,58 @@
     run.partStock = (s.partStock && typeof s.partStock === "object") ? s.partStock : {}; // 旧セーブ（partStockなし）は空で初期化
     return run;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  /* ===== 中断セーブ: 面の途中の戦況（st）の保存・復元 =====
+     st のうち保存対象はデータのみ（data/run/stage への参照、result、pendingDialog、loseReason、log は含めない）。
+     ステージ固有フラグは現行では st 直下の rustStorm / bossHalfShown / medal。
+     st.flags / st.firedEvents / st.protectIds は現行エンジンでは未使用だが、将来の追加に備えて存在すれば一緒に保存する。 */
+  function deepCopyPlain(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
+  function serializeState(st) {
+    const units = st.units.map(u => {
+      const c = deepCopyPlain(u); // uid/side/pilotId/unitId/name/x/y/hp/maxHp/en/level/acted/weapons/flags 等の全動的フィールド
+      delete c._w; // 戦闘予測用の一時フィールドは保存しない
+      return c;
+    });
+    const flags = {
+      rustStorm: !!st.rustStorm,       // 錆嵐適用済み（第5面）
+      bossHalfShown: !!st.bossHalfShown, // ボス半減会話の表示済み
+      medal: !!st.medal
+    };
+    if (st.flags && typeof st.flags === "object") flags.extra = deepCopyPlain(st.flags);
+    const out = {
+      version: 1,
+      stageIdx: st.stageIdx,
+      turn: st.turn,
+      phase: st.phase,
+      units,
+      flags
+    };
+    if (st.firedEvents) out.firedEvents = Array.isArray(st.firedEvents) ? st.firedEvents.slice() : Array.from(st.firedEvents);
+    if (st.protectIds) out.protectIds = deepCopyPlain(st.protectIds);
+    return out;
+  }
+  function restoreState(data, run, saved) {
+    const stage = data.stages.stages[saved.stageIdx];
+    const units = deepCopyPlain(saved.units || []);
+    let maxUid = 0;
+    for (const u of units) {
+      delete u._w;
+      if (typeof u.uid === "number" && u.uid > maxUid) maxUid = u.uid;
+    }
+    if (maxUid >= uidSeq) uidSeq = maxUid + 1; // 復元後に来る増援の uid が復元ユニットと衝突しないように進める
+    const fl = saved.flags || {};
+    const pick = k => (fl[k] !== undefined ? fl[k] : saved[k]); // flags ネスト形式を正とし、直下形式も受ける
+    const st = {
+      data, run, stage, stageIdx: saved.stageIdx,
+      turn: saved.turn || 1, phase: "player", result: null, // 再開直後は味方フェイズ（エンジン表記は "player"）
+      units, log: [], pendingDialog: null,
+      rustStorm: !!pick("rustStorm"), bossHalfShown: !!pick("bossHalfShown"), medal: !!pick("medal")
+    };
+    if (fl.extra) st.flags = deepCopyPlain(fl.extra);
+    if (saved.firedEvents) st.firedEvents = new Set(saved.firedEvents);
+    if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
+    return st;
+  }
+  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
