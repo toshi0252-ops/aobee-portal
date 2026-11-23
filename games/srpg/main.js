@@ -302,6 +302,7 @@ function cancelMove() {
 }
 function endUnitAction() {
   sel.unit.acted = true; sel = null; render(); checkEnd();
+  saveAll(); /* 待機・ほし等の行動終了でも中断セーブを更新する */
   maybeAutoEnemyPhase();
 }
 /* 全味方が行動済みなら、少し間を置いて自動で敵フェイズへ */
