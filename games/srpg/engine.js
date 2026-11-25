@@ -10,6 +10,7 @@
     V: { name: "村・建物", cost: 1, evade: 10, def: 1.0, heal: true },
     R: { name: "川", cost: 3, evade: 0, def: 1.0 },
     W: { name: "水上", cost: 3, evade: 0, def: 1.0 },
+    S: { name: "砂地", cost: 2, evade: 0, def: 1.0 },
     L: { name: "灯り", cost: 1, evade: 5, def: 1.0, lamp: true },
     X: { name: "障害物", cost: Infinity, evade: 0, def: 1.0 }
   };
@@ -441,6 +442,18 @@
     if (typeof s.next === "number") return (s.next >= 0 && stages[s.next]) ? s.next : -1;
     return idx + 1 < stages.length ? idx + 1 : -1;
   }
+  /* 導入会話の実効行列: stage.introByRoute {at, A, B} がある面（第14面）は、
+     run.route に応じた到着者台詞を at の位置に差し込んで返す（route 未確定時は A 扱い）。 */
+  function stageIntroLines(stage, run) {
+    const lines = (stage.intro || []).slice();
+    if (stage.introByRoute) {
+      const r = run && run.route === "B" ? "B" : "A";
+      const ins = stage.introByRoute[r] || stage.introByRoute.A || [];
+      const at = typeof stage.introByRoute.at === "number" ? stage.introByRoute.at : lines.length;
+      lines.splice(at, 0, ...ins);
+    }
+    return lines;
+  }
   function stagePath(data, run) {
     const path = [0];
     let guard = 0;
@@ -533,7 +546,7 @@
     if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
     return st;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);

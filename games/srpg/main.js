@@ -153,7 +153,8 @@ async function startStage(idx) {
   saveAll(); // 面開始時点の戦況も中断セーブに残す
   render();
   if (idx === 0 && !artShown) { artShown = true; await showEventArt("events/opening.jpg", "第1面「" + st.stage.title + "」 ― 祭りの朝"); }
-  if (st.stage.intro) await showDialog(st.stage.intro);
+  const introLines = E.stageIntroLines(st.stage, run); // 第14面はルート別台詞を差し込んだ実効行列
+  if (introLines.length) await showDialog(introLines);
   render();
 }
 function objectiveText() {
