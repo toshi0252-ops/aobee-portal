@@ -75,4 +75,28 @@ assert.equal(state.get('aobee_temple_manual_slots_v1'),legacyBank);
 assert.equal(state.get('aobee_star_temple_ch1_v029'),legacyAuto);
 assert.equal(JSON.parse(state.get('auto')).enemy[0].hp,2);
 assert.equal(ctx.migrate().slots[1].data.enemy[0].hp,2);
+// Developer controls are absent from normal UI and require seven title taps.
+for (const id of ['recoveryDebug','recoveryTitleDebug','recoveryDebugTab'])
+  assert.ok(recovery.includes('id="'+id+'" type="button" hidden'));
+assert.ok(recovery.includes("if(tab==='debug'&&!debugEnabled)return false"));
+assert.ok(recovery.includes('async function jump(id){if(!debugEnabled)return false'));
+let click, now=100, opens=0;
+const debugNodes=new Map();
+const debug$=id=>{
+  if(!debugNodes.has(id))debugNodes.set(id,{hidden:true,style:{display:'block'},querySelector:()=>({addEventListener:(_event,fn)=>click=fn})});
+  return debugNodes.get(id);
+};
+const hiddenCtx=vm.createContext({$:debug$,Date:{now:()=>now},toast(){},open(){opens++;}});
+vm.runInContext('let debugEnabled=false,debugTaps=0,debugStarted=0;'+recovery.match(/const debugTitle=[^\n]+/)[0],hiddenCtx);
+for(let i=0;i<6;i++){now+=100;click();}
+assert.equal(opens,0);
+assert.equal(debug$('recoveryDebug').hidden,true);
+now+=100;click();
+assert.equal(opens,1);
+assert.equal(debug$('recoveryDebug').hidden,false);
+for(let i=0;i<7;i++){now+=100;click();}
+assert.equal(debug$('recoveryDebug').hidden,true);
+for(let i=0;i<6;i++){now+=100;click();}
+now+=6000;click();
+assert.equal(debug$('recoveryDebug').hidden,true,'slow taps do not unlock');
 console.log('v43: new/legacy saves, manual slot, invalid-state protection, modal freeze, safe resume OK');
