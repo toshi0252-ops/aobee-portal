@@ -1,0 +1,16 @@
+/* Layout independent of content flow; both controls are viewport anchored. */
+html,body{width:100%;height:100%;overflow:hidden;overscroll-behavior:none}
+body>h1,body>p{display:none}
+#game{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(calc(100vw - 140px),calc(100dvh * 16 / 9));max-width:none;margin:0;z-index:1}
+#padzone{z-index:3;inset:0 55% 0 0}
+#pad{left:max(12px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom));width:clamp(80px,25dvh,112px);height:clamp(80px,25dvh,112px)}
+#pad:before{width:75%;height:75%}
+#attack{position:fixed;z-index:10;right:max(12px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));width:clamp(64px,21dvh,88px);height:clamp(64px,21dvh,88px);font-size:18px;pointer-events:auto;display:grid;place-items:center;border:2px solid #efd99d}
+#reset{position:fixed;z-index:10;right:max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));padding:0 9px;min-height:36px;font-size:13px}
+#intro{z-index:6}#intro h2{margin:0 0 6px}#intro p{display:block;margin:5px}#start{min-height:44px}
+#rotate{display:none}
+#interact{position:fixed;z-index:10;right:max(12px,env(safe-area-inset-right));bottom:calc(max(14px,env(safe-area-inset-bottom)) + clamp(64px,21dvh,88px) + 9px);width:clamp(64px,21dvh,88px);height:42px;font-size:14px}
+#notice{position:absolute;bottom:8px;left:8px;right:8px;padding:7px 12px;border-radius:8px;background:#102828e8;color:#fff3cc;text-align:center;min-height:30px;font-size:clamp(12px,2.5vw,16px);pointer-events:none}#notice:empty{display:none}
+@media(orientation:portrait){#interact{display:none!important}}
+@media(orientation:portrait){#game,#padzone,#attack,#reset{display:none!important}#rotate{position:fixed;inset:0;display:grid;place-content:center;text-align:center;gap:8px;font-size:20px;background:#102828;z-index:20}}
+
