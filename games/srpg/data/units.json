@@ -63,6 +63,48 @@
     }
    ]
   },
+  "bousouboss": {
+   "aim": 105,
+   "armor": 1250,
+   "color": "#991b1b",
+   "en": 120,
+   "eva": 75,
+   "hp": 5400,
+   "move": 3,
+   "name": "大型暴走機",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 76,
+     "max": 1,
+     "min": 1,
+     "name": "暴走アーム",
+     "power": 1700
+    },
+    {
+     "en": 10,
+     "fx": "missile",
+     "hit": 72,
+     "max": 3,
+     "min": 2,
+     "name": "瓦礫投げ",
+     "power": 1400
+    }
+   ]
+  },
+  "citizen": {
+   "aim": 0,
+   "armor": 200,
+   "color": "#fef9c3",
+   "en": 0,
+   "eva": 60,
+   "hp": 600,
+   "move": 3,
+   "name": "市民",
+   "npc": true,
+   "weapons": []
+  },
   "cog": {
    "aim": 95,
    "armor": 800,
@@ -123,6 +165,45 @@
      "min": 1,
      "name": "スクリューアタック",
      "power": 1200
+    }
+   ]
+  },
+  "fortress": {
+   "aim": 118,
+   "armor": 1200,
+   "color": "#dc2626",
+   "en": 150,
+   "eva": 70,
+   "hp": 5200,
+   "move": 0,
+   "name": "空中要塞",
+   "weapons": [
+    {
+     "en": 15,
+     "fx": "gun",
+     "hit": 75,
+     "max": 6,
+     "min": 3,
+     "name": "要塞主砲",
+     "power": 1600
+    },
+    {
+     "en": 10,
+     "fx": "missile",
+     "hit": 80,
+     "max": 5,
+     "min": 2,
+     "name": "対空ミサイル",
+     "power": 1350
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 85,
+     "max": 2,
+     "min": 1,
+     "name": "防御機銃",
+     "power": 1100
     }
    ]
   },
@@ -370,6 +451,66 @@
     }
    ]
   },
+  "kuutei": {
+   "aim": 102,
+   "armor": 800,
+   "color": "#38bdf8",
+   "en": 70,
+   "eva": 100,
+   "hp": 2000,
+   "move": 5,
+   "name": "空挺コグ",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 82,
+     "max": 2,
+     "min": 1,
+     "name": "空挺カッター",
+     "power": 1250
+    },
+    {
+     "en": 10,
+     "fx": "missile",
+     "hit": 78,
+     "max": 3,
+     "min": 2,
+     "name": "降下ミサイル",
+     "power": 1200
+    }
+   ]
+  },
+  "kuuteiboss": {
+   "aim": 112,
+   "armor": 950,
+   "color": "#0284c7",
+   "en": 100,
+   "eva": 105,
+   "hp": 3400,
+   "move": 5,
+   "name": "空挺隊長機",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 82,
+     "max": 2,
+     "min": 1,
+     "name": "空挺カッター・改",
+     "power": 1450
+    },
+    {
+     "en": 10,
+     "fx": "missile",
+     "hit": 78,
+     "max": 3,
+     "min": 2,
+     "name": "隊長ミサイル",
+     "power": 1350
+    }
+   ]
+  },
   "kuzokuboss": {
    "aim": 106,
    "armor": 950,
@@ -397,6 +538,45 @@
      "min": 2,
      "name": "空賊ミサイル",
      "power": 1250
+    }
+   ]
+  },
+  "mistral": {
+   "aim": 125,
+   "armor": 950,
+   "color": "#a5b4fc",
+   "en": 130,
+   "eva": 108,
+   "hp": 3600,
+   "move": 5,
+   "name": "ミストラル",
+   "weapons": [
+    {
+     "en": 15,
+     "fx": "gun",
+     "hit": 85,
+     "max": 6,
+     "min": 3,
+     "name": "霧越しの狙撃",
+     "power": 1550
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 90,
+     "max": 5,
+     "min": 2,
+     "name": "ミストライフル",
+     "power": 1350
+    },
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "ミストナイフ",
+     "power": 1000
     }
    ]
   },
@@ -516,6 +696,66 @@
     }
    ]
   },
+  "sajou": {
+   "aim": 100,
+   "armor": 900,
+   "color": "#d97706",
+   "en": 60,
+   "eva": 85,
+   "hp": 2300,
+   "move": 4,
+   "name": "砂上機",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "砂上クロー",
+     "power": 1300
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 78,
+     "max": 3,
+     "min": 2,
+     "name": "サンドブラスト",
+     "power": 1200
+    }
+   ]
+  },
+  "sajouboss": {
+   "aim": 108,
+   "armor": 1000,
+   "color": "#b45309",
+   "en": 90,
+   "eva": 88,
+   "hp": 3400,
+   "move": 4,
+   "name": "砂上機隊長機",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "砂上クロー・改",
+     "power": 1500
+    },
+    {
+     "en": 10,
+     "fx": "gun",
+     "hit": 75,
+     "max": 4,
+     "min": 2,
+     "name": "砂嵐砲",
+     "power": 1400
+    }
+   ]
+  },
   "seirabrig": {
    "armor": 1050,
    "color": "#60a5fa",
@@ -555,6 +795,66 @@
    "name": "補給船",
    "npc": true,
    "weapons": []
+  },
+  "shuei": {
+   "aim": 104,
+   "armor": 1050,
+   "color": "#94a3b8",
+   "en": 70,
+   "eva": 85,
+   "hp": 2600,
+   "move": 3,
+   "name": "守衛機",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 78,
+     "max": 1,
+     "min": 1,
+     "name": "守衛アーム",
+     "power": 1400
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 75,
+     "max": 3,
+     "min": 2,
+     "name": "守衛キャノン",
+     "power": 1300
+    }
+   ]
+  },
+  "shueiboss": {
+   "aim": 112,
+   "armor": 1150,
+   "color": "#64748b",
+   "en": 100,
+   "eva": 88,
+   "hp": 3800,
+   "move": 3,
+   "name": "守衛機・長",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 78,
+     "max": 1,
+     "min": 1,
+     "name": "守衛アーム・改",
+     "power": 1550
+    },
+    {
+     "en": 10,
+     "fx": "gun",
+     "hit": 75,
+     "max": 4,
+     "min": 2,
+     "name": "連装キャノン",
+     "power": 1450
+    }
+   ]
   },
   "sniper": {
    "aim": 115,
@@ -699,6 +999,36 @@
      "min": 2,
      "name": "砦の大砲",
      "power": 1300
+    }
+   ]
+  },
+  "tsuigekiboss": {
+   "aim": 114,
+   "armor": 1100,
+   "color": "#e11d48",
+   "en": 110,
+   "eva": 100,
+   "hp": 4000,
+   "move": 5,
+   "name": "追撃隊長機",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "追撃ブレード",
+     "power": 1550
+    },
+    {
+     "en": 10,
+     "fx": "gun",
+     "hit": 75,
+     "max": 4,
+     "min": 2,
+     "name": "追撃キャノン",
+     "power": 1400
     }
    ]
   },
