@@ -30,6 +30,16 @@
      "min": 1,
      "name": "番人の腕",
      "power": 1500
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 70,
+     "max": 3,
+     "min": 2,
+     "name": "見張り弾",
+     "power": 750,
+     "counterOnly": true
     }
    ]
   },
@@ -123,6 +133,16 @@
      "min": 1,
      "name": "コグラッシュ",
      "power": 1100
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 70,
+     "max": 3,
+     "min": 2,
+     "name": "サビ弾",
+     "power": 600,
+     "counterOnly": true
     }
    ]
   },
@@ -166,6 +186,16 @@
      "min": 1,
      "name": "スクリューアタック",
      "power": 1200
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 70,
+     "max": 3,
+     "min": 2,
+     "name": "水しぶきショット",
+     "power": 650,
+     "counterOnly": true
     }
    ]
   },
@@ -1341,6 +1371,16 @@
      "min": 1,
      "name": "ゆらぎタッチ",
      "power": 1200
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 65,
+     "max": 3,
+     "min": 2,
+     "name": "ゆらぎ弾",
+     "power": 700,
+     "counterOnly": true
     }
    ]
   },

@@ -322,16 +322,24 @@
     if (!partner) return false;
     return dist(atk, partner) <= (w.combo.range || 4);
   }
-  function canUseWeapon(st, atk, def, w) {
+  function canUseWeapon(st, atk, def, w, forCounter) {
     const d = dist(atk, def);
-    return d >= w.min && d <= w.max && atk.en >= (w.en || 0) && atk.morale >= (w.morale || 0) && !w.heal && !w.supply && comboPartnerOk(st, atk, w);
+    // counterOnly の武器（汎用敵の反撃用副兵装）は、自分から撃ちには行かず反撃でのみ使う
+    return d >= w.min && d <= w.max && atk.en >= (w.en || 0) && atk.morale >= (w.morale || 0) && !w.heal && !w.supply && (!w.counterOnly || forCounter) && comboPartnerOk(st, atk, w);
   }
   function chooseStance(st, atk, def) {
-    // 防御側AI: 期待被害が最小になる 反撃/防御/回避 を選ぶ
+    // 敵の防御側: 反撃できる武器があるなら基本は反撃する（スパロボ系の標準挙動）。
+    // ただし、この一撃の期待被害で落ちる見込みの時だけ、下の期待値計算で守りの手を選ぶ。
+    const counterWeapon = def.weapons.filter(cw => canUseWeapon(st, def, atk, cw, true))[0];
+    if (def.side === "enemy" && counterWeapon) {
+      const expTaken = damage(st, atk, def, atk._w, "counter") * (hitRate(st, atk, def, atk._w, "counter") / 100);
+      if (expTaken < def.hp) return "counter";
+    }
+    // 防御側AI（味方の防御側はこちらが基本）: 期待被害と反撃の期待値を天秤にかけて選ぶ
     const options = ["counter", "defend", "evade"];
     let best = "defend", bestScore = Infinity;
     for (const s of options) {
-      const w = def.weapons.filter(cw => canUseWeapon(st, def, atk, cw))[0];
+      const w = def.weapons.filter(cw => canUseWeapon(st, def, atk, cw, true))[0];
       if (s === "counter" && !w) continue;
       const hit = hitRate(st, atk, def, atk._w, s) / 100;
       const taken = damage(st, atk, def, atk._w, s) * hit;
@@ -347,7 +355,7 @@
     const stance = chooseStance(st, atk, def);
     const f = { weapon: w, hit: hitRate(st, atk, def, w, stance), dmg: damage(st, atk, def, w, stance), stance, counter: null };
     if (stance === "counter") {
-      const cw = def.weapons.filter(x => canUseWeapon(st, def, atk, x))[0];
+      const cw = def.weapons.filter(x => canUseWeapon(st, def, atk, x, true))[0];
       if (cw) f.counter = { weapon: cw, hit: hitRate(st, def, atk, cw, null), dmg: damage(st, def, atk, cw, null) };
     }
     delete atk._w;
@@ -397,7 +405,7 @@
     const events = [];
     const defKilled = doAttack(st, atk, def, w, stance, rng, events);
     if (!defKilled && stance === "counter") {
-      const cw = def.weapons.filter(x => canUseWeapon(st, def, atk, x))[0];
+      const cw = def.weapons.filter(x => canUseWeapon(st, def, atk, x, true))[0];
       if (cw) doAttack(st, def, atk, cw, null, rng, events);
     }
     atk.flags.hicchu = false; atk.flags.shuuchuu = false;
