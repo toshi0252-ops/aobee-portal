@@ -1,7 +1,7 @@
 "use strict";
 /* GridMap部品: マップ描画・範囲ハイライト・タップ判定 */
 (function (global) {
-  const TERR_CLASS = { ".": "t-plain", P: "t-path", G: "t-gear", F: "t-forest", V: "t-village", R: "t-river", W: "t-water", L: "t-lamp", X: "t-block" };
+  const TERR_CLASS = { ".": "t-plain", P: "t-path", G: "t-gear", F: "t-forest", V: "t-village", R: "t-river", W: "t-water", S: "t-sand", L: "t-lamp", D: "t-block", X: "t-block" };
   function GridMap(el, onTap) {
     this.el = el; this.onTap = onTap;
     this.moveTiles = new Map(); this.attackTiles = new Set();
@@ -16,7 +16,8 @@
     this.el.style.gridTemplateColumns = "repeat(" + w + ",1fr)";
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const cell = document.createElement("div");
-      const ch = stage.terrain[y][x];
+      let ch = stage.terrain[y][x];
+      if (ch === "D" && st.gateOpen) ch = "P"; // 開いた砦の門は通路として描く
       cell.className = "cell " + (TERR_CLASS[ch] || "t-plain");
       const tile = (global.TILE_ART || {})[ch];
       if (tile) { cell.style.backgroundImage = "url(" + (global.assetUrl ? global.assetUrl(tile) : "assets/" + tile) + ")"; cell.style.backgroundSize = "cover"; cell.style.backgroundPosition = "center"; }

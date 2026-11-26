@@ -134,6 +134,7 @@
    "eva": 105,
    "hp": 1700,
    "move": 5,
+   "moveType": "air",
    "name": "空賊コグ",
    "weapons": [
     {
@@ -553,6 +554,7 @@
    "eva": 105,
    "hp": 3400,
    "move": 5,
+   "moveType": "air",
    "name": "空挺隊長機",
    "weapons": [
     {
@@ -1093,6 +1095,7 @@
    "en": 110,
    "hp": 2300,
    "move": 7,
+   "moveType": "air",
    "name": "テルキャリー",
    "weapons": [
     {
@@ -1112,6 +1115,16 @@
      "min": 2,
      "name": "特急便",
      "power": 1250
+    },
+    {
+     "en": 0,
+     "fx": "heal",
+     "hit": 100,
+     "max": 1,
+     "min": 1,
+     "name": "補給",
+     "power": 0,
+     "supply": true
     }
    ]
   },

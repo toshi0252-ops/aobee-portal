@@ -12,6 +12,7 @@
     W: { name: "水上", cost: 3, evade: 0, def: 1.0 },
     S: { name: "砂地", cost: 2, evade: 0, def: 1.0 },
     L: { name: "灯り", cost: 1, evade: 5, def: 1.0, lamp: true },
+    D: { name: "砦の門", cost: Infinity, evade: 0, def: 1.0 },
     X: { name: "障害物", cost: Infinity, evade: 0, def: 1.0 }
   };
   function terrainAt(stage, x, y) {
@@ -19,6 +20,22 @@
     return TERRAIN[stage.terrain[y][x]] || TERRAIN["."];
   }
   function terrainChar(stage, x, y) { return stage.terrain[y][x]; }
+  /* 移動コスト（st の状態を加味）: 砦の門（D）は閉じている間は通行不可、開門後はコスト1 */
+  function moveCostAt(st, x, y) {
+    const ch = terrainChar(st.stage, x, y);
+    if (ch === "D") return st.gateOpen ? 1 : Infinity;
+    const t = TERRAIN[ch];
+    return t ? t.cost : 1;
+  }
+  /* 戦闘で使う地形補正: 飛行ユニットは地形の回避・防御補正を受けない（平地扱い） */
+  function terrainBonusFor(st, unit) {
+    if (unit && unit.moveType === "air") return { evade: 0, def: 1.0 };
+    return terrainAt(st.stage, unit.x, unit.y);
+  }
+  function isWaterAt(st, unit) {
+    const c = terrainChar(st.stage, unit.x, unit.y);
+    return c === "W" || c === "R";
+  }
   function dist(a, b) { return Math.abs(a.x - b.x) + Math.abs(a.y - b.y); }
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
@@ -125,7 +142,7 @@
       uid: uidSeq++, side: "ally", pilotId: spec.pilot, unitId: p.unit,
       name: p.name, unitName: u.name, color: p.color, x: spec.x, y: spec.y,
       maxHp: u.hp + g.hp + b.hp, hp: u.hp + g.hp + b.hp, maxEn: u.en + b.en, en: u.en + b.en,
-      move: u.move + b.move, armor: u.armor + b.armor, aim: p.aim + g.aim + b.hit, eva: p.eva + g.eva, atk: p.atk + g.atk,
+      move: u.move + b.move, moveType: u.moveType || "land", armor: u.armor + b.armor, aim: p.aim + g.aim + b.hit, eva: p.eva + g.eva, atk: p.atk + g.atk,
       weapons: u.weapons.map(w => Object.assign({}, w, { power: w.power + b.power })), maxSp: p.sp, sp: p.sp, morale: 100, level: g.level,
       acted: false, boss: false, flags: {}
     };
@@ -137,7 +154,7 @@
       uid: uidSeq++, side: "enemy", pilotId: null, unitId: spec.unit,
       name: u.name, unitName: u.name, color: u.color, x: spec.x, y: spec.y,
       maxHp: u.hp + (lv - 1) * 120, hp: u.hp + (lv - 1) * 120, maxEn: u.en, en: u.en,
-      move: u.move, armor: u.armor + (lv - 1) * 20, aim: (u.aim || 95) + (lv - 1) * 2, eva: (u.eva || 90), atk: 100 + (lv - 1) * 6,
+      move: u.move, moveType: u.moveType || "land", armor: u.armor + (lv - 1) * 20, aim: (u.aim || 95) + (lv - 1) * 2, eva: (u.eva || 90), atk: 100 + (lv - 1) * 6,
       weapons: u.weapons, maxSp: 0, sp: 0, morale: 100, level: lv,
       acted: false, boss: !!spec.boss, flags: {}
     };
@@ -145,18 +162,69 @@
     if (spec.shieldedBy) unit.shieldedBy = spec.shieldedBy;
     return unit;
   }
-  function startStage(data, run, stageIdx) {
+  /* ===== 出撃枠選択: ロスター／固定／参加不可／枠数 =====
+     ロスター = その時点で加入済みの全員。加入判定は「周回経路（stagePath）上でこの面までに
+     allies として登場するパイロット」＋「この面の allies」＋「クリア済み面の allies」
+     （面セレクトで別ルート面や EX を遊ぶ場合の保険）。stage.unavailable の者は除く。
+     stage.deployFixed（固定メンバー）と stage.deployLimit（出撃枠数）はデータ側で持つ。
+     既定選択は従来の allies そのもの（何も変えなければ従来と完全に同じ編成・配置になる）。 */
+  function deployInfo(data, run, stageIdx) {
+    const stage = data.stages.stages[stageIdx];
+    const unavailable = (stage.unavailable || []).slice();
+    const order = [];
+    const addFrom = s => { if (!s) return; for (const a of s.allies || []) if (!order.includes(a.pilot)) order.push(a.pilot); };
+    const path = stagePath(data, run || { route: null, clearedStages: [] });
+    const pos = path.indexOf(stageIdx);
+    if (pos >= 0) for (let i = 0; i <= pos; i++) addFrom(data.stages.stages[path[i]]);
+    addFrom(stage);
+    for (const ci of (run && run.clearedStages) || []) addFrom(data.stages.stages[ci]);
+    const roster = order.filter(pid => data.pilots.pilots[pid] && !unavailable.includes(pid));
+    const fixed = (stage.deployFixed || ["aobee"]).filter(pid => roster.includes(pid));
+    const limit = stage.deployLimit || stage.allies.length;
+    const def = stage.allies.map(a => a.pilot).filter(pid => roster.includes(pid));
+    for (const pid of fixed) if (!def.includes(pid)) def.push(pid);
+    return {
+      roster, fixed, unavailable, limit,
+      defaultSelection: def.slice(0, Math.max(limit, fixed.length)),
+      slots: stage.allies.map(a => ({ x: a.x, y: a.y }))
+    };
+  }
+  /* 選択をサニタイズする: ロスター外・重複を除き、固定メンバーを必ず含め、枠数で打ち切る */
+  function sanitizeSelection(info, selection) {
+    const sel = info.fixed.slice();
+    for (const pid of selection || []) {
+      if (info.roster.includes(pid) && !sel.includes(pid) && sel.length < info.limit) sel.push(pid);
+    }
+    return sel;
+  }
+  function startStage(data, run, stageIdx, selection) {
     const stage = data.stages.stages[stageIdx];
     const st = {
       data, run, stage, stageIdx, turn: 1, phase: "player", result: null,
       units: [], log: [], pendingDialog: null, rustStorm: false, bossHalfShown: false, medal: false,
-      fogActive: !!stage.fog, coreChoice: null, sealProgress: 0, pendingChoice: null
+      fogActive: !!stage.fog, coreChoice: null, sealProgress: 0, pendingChoice: null, gateOpen: false
     };
-    for (const a of stage.allies) st.units.push(allyUnit(data, run, a));
+    let specs = stage.allies;
+    if (selection) {
+      // 配置位置は allies の座標（スロット）を、選択メンバーへ allies の並び順優先で割り当てる
+      const info = deployInfo(data, run, stageIdx);
+      const sel = sanitizeSelection(info, selection);
+      const allyOrder = stage.allies.map(a => a.pilot);
+      sel.sort((a, b) => {
+        const ia = allyOrder.includes(a) ? allyOrder.indexOf(a) : 1000 + info.roster.indexOf(a);
+        const ib = allyOrder.includes(b) ? allyOrder.indexOf(b) : 1000 + info.roster.indexOf(b);
+        return ia - ib;
+      });
+      specs = sel.map((pid, i) => {
+        const slot = info.slots[Math.min(i, info.slots.length - 1)];
+        return { pilot: pid, x: slot.x, y: slot.y };
+      });
+    }
+    for (const a of specs) st.units.push(allyUnit(data, run, a));
     for (const e of stage.enemies) st.units.push(enemyUnit(data, e, stageLevel(stage)));
     for (const n of stage.npcs || []) {
       const u = data.units.units[n.unit];
-      st.units.push({ uid: uidSeq++, side: "npc", pilotId: null, unitId: n.unit, name: u.name, unitName: u.name, color: u.color, x: n.x, y: n.y, maxHp: u.hp, hp: u.hp, maxEn: 0, en: 0, move: u.move, armor: u.armor, aim: 0, eva: u.eva, atk: 0, weapons: [], maxSp: 0, sp: 0, morale: 100, level: 1, acted: false, boss: false, flags: {} });
+      st.units.push({ uid: uidSeq++, side: "npc", pilotId: null, unitId: n.unit, name: u.name, unitName: u.name, color: u.color, x: n.x, y: n.y, maxHp: u.hp, hp: u.hp, maxEn: 0, en: 0, move: u.move, moveType: u.moveType || "land", armor: u.armor, aim: 0, eva: u.eva, atk: 0, weapons: [], maxSp: 0, sp: 0, morale: 100, level: 1, acted: false, boss: false, flags: {} });
     }
     return st;
   }
@@ -173,12 +241,13 @@
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nx = cur.x + dx, ny = cur.y + dy;
         if (nx < 0 || ny < 0 || ny >= st.stage.terrain.length || nx >= st.stage.terrain[0].length) continue;
-        const t = terrainAt(st.stage, nx, ny);
-        if (!isFinite(t.cost)) continue;
+        let step = moveCostAt(st, nx, ny);
+        if (unit.moveType === "air") step = isFinite(step) ? 1 : Infinity; // 飛行: 地形コストを無視（壁と閉じた門は越えられない）
+        if (!isFinite(step)) continue;
         const occ = unitAt(st, nx, ny);
         if (occ && occ.side === "enemy" && unit.side !== "enemy") continue;
         if (occ && occ.side !== "enemy" && unit.side === "enemy") continue;
-        const nc = cur.c + t.cost;
+        const nc = cur.c + step;
         if (nc > maxCost) continue;
         if (cost.has(key(nx, ny)) && cost.get(key(nx, ny)) <= nc) continue;
         cost.set(key(nx, ny), nc); q.push({ x: nx, y: ny, c: nc });
@@ -200,7 +269,7 @@
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nx = cur.x + dx, ny = cur.y + dy;
         if (nx < 0 || ny < 0 || ny >= st.stage.terrain.length || nx >= st.stage.terrain[0].length) continue;
-        if (!isFinite(terrainAt(st.stage, nx, ny).cost)) continue;
+        if (!isFinite(moveCostAt(st, nx, ny))) continue;
         const k = nx + "," + ny;
         if (!seen.has(k)) { seen.add(k); q.push({ x: nx, y: ny }); }
       }
@@ -216,7 +285,7 @@
     return (near(atk) || near(def)) ? 0 : 30;
   }
   function hitRate(st, atk, def, w, stance) {
-    let h = w.hit + atk.aim - def.eva - terrainAt(st.stage, def.x, def.y).evade;
+    let h = w.hit + atk.aim - def.eva - terrainBonusFor(st, def).evade;
     h -= fogPenalty(st, atk, def);
     if (atk.flags.shuuchuu) h += 30;
     if (def.flags.shuuchuu) h -= 30;
@@ -233,8 +302,11 @@
   function damage(st, atk, def, w, stance) {
     if (isShielded(st, def)) return 0;
     let d = w.power + atk.atk * 5 - def.armor;
-    d = Math.round(d * terrainAt(st.stage, def.x, def.y).def);
+    d = Math.round(d * terrainBonusFor(st, def).def);
     if (st.rustStorm && atk.side === "enemy") d = Math.round(d * 1.1);
+    // セイラブリッグの水上ボーナス: 水上（W）・川（R）にいる時、与ダメージ+10%／被ダメージ-10%
+    if (atk.unitId === "seirabrig" && isWaterAt(st, atk)) d = Math.round(d * 1.1);
+    if (def.unitId === "seirabrig" && isWaterAt(st, def)) d = Math.round(d * 0.9);
     if (stance === "defend") d = Math.round(d / 2);
     if (def.flags.fukutsu) d = Math.round(d / 2);
     return Math.max(50, d);
@@ -249,7 +321,7 @@
   }
   function canUseWeapon(st, atk, def, w) {
     const d = dist(atk, def);
-    return d >= w.min && d <= w.max && atk.en >= (w.en || 0) && atk.morale >= (w.morale || 0) && !w.heal && comboPartnerOk(st, atk, w);
+    return d >= w.min && d <= w.max && atk.en >= (w.en || 0) && atk.morale >= (w.morale || 0) && !w.heal && !w.supply && comboPartnerOk(st, atk, w);
   }
   function chooseStance(st, atk, def) {
     // 防御側AI: 期待被害が最小になる 反撃/防御/回避 を選ぶ
@@ -329,9 +401,20 @@
     def.flags.hirameki = false; def.flags.fukutsu = false;
     checkBossHalf(st, events);
     checkFogDevice(st, events);
+    checkGate(st, events);
     checkCoreChoice(st, events);
     updateResult(st);
     return events;
+  }
+  /* 砦の門（第9A面）: ボス（砦の守備隊長）を撃破すると門が開き、門タイルが通行可能になる */
+  function checkGate(st, events) {
+    if (!st.stage.gate || st.gateOpen) return;
+    const boss = st.units.find(u => u.boss && u.side === "enemy");
+    if (boss && boss.hp <= 0) {
+      st.gateOpen = true;
+      if (st.stage.gateOpenLines) st.pendingDialog = st.stage.gateOpenLines;
+      if (events) events.push({ type: "gateopen" });
+    }
   }
   function checkBossHalf(st, events) {
     const boss = st.units.find(u => u.boss && u.side === "enemy");
@@ -392,6 +475,15 @@
     const amount = w.power + atk.atk * 3;
     target.hp = Math.min(target.maxHp, target.hp + amount);
     const events = [{ type: "heal", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: w.power, amount, defHp: target.hp, defX: target.x, defY: target.y }];
+    if (atk.side === "ally") gainExp(st, atk, 15, rng || Math.random);
+    return events;
+  }
+  /* 補給（テルキャリー）: 対象の味方1機のENを全回復させる。HPは回復しない。気力変動なし */
+  function supplyAction(st, atk, target, wIdx, rng) {
+    const w = atk.weapons[wIdx];
+    const amount = Math.max(0, target.maxEn - target.en);
+    target.en = target.maxEn;
+    const events = [{ type: "supply", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: 0, amount, defEn: target.en, defX: target.x, defY: target.y }];
     if (atk.side === "ally") gainExp(st, atk, 15, rng || Math.random);
     return events;
   }
@@ -627,7 +719,8 @@
       medal: !!st.medal,
       fogActive: st.fogActive !== undefined ? !!st.fogActive : !!st.stage.fog, // 霧の残存状態（第22面: 装置破壊で晴れる）
       coreChoice: st.coreChoice || null, // 第24面のコア選択（済の場合）
-      sealProgress: st.sealProgress || 0 // 「止める」選択時の書き換え作業の進捗
+      sealProgress: st.sealProgress || 0, // 「止める」選択時の書き換え作業の進捗
+      gateOpen: !!st.gateOpen // 砦の門の開門状態（第9A面）
     };
     if (st.flags && typeof st.flags === "object") flags.extra = deepCopyPlain(st.flags);
     const out = {
@@ -659,14 +752,15 @@
       units, log: [], pendingDialog: null,
       rustStorm: !!pick("rustStorm"), bossHalfShown: !!pick("bossHalfShown"), medal: !!pick("medal"),
       fogActive: pick("fogActive") !== undefined ? !!pick("fogActive") : !!stage.fog,
-      coreChoice: pick("coreChoice") || null, sealProgress: pick("sealProgress") || 0, pendingChoice: null
+      coreChoice: pick("coreChoice") || null, sealProgress: pick("sealProgress") || 0, pendingChoice: null,
+      gateOpen: !!pick("gateOpen")
     };
     if (fl.extra) st.flags = deepCopyPlain(fl.extra);
     if (saved.firedEvents) st.firedEvents = new Set(saved.firedEvents);
     if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
     return st;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  const api = { TERRAIN, terrainAt, terrainChar, moveCostAt, terrainBonusFor, dist, createRun, startStage, deployInfo, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, supplyAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, checkGate, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
