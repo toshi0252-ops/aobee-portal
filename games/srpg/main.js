@@ -4,7 +4,8 @@ const E = window.SRPGEngine;
 let DATA = null, run = null, st = null, stageIdx = 0;
 let sel = null; // {unit, mode, preMove, weaponIdx, hoshiCmd}
 let busy = false;
-const settings = { anim: localStorage.getItem("aobee-taisen-anim") !== "off" };
+const settings = { anim: localStorage.getItem("aobee-taisen-anim") !== "off", sound: localStorage.getItem("aobee-taisen-sound") !== "off" };
+window.SRPG_SFX_ON = settings.sound; // battle.js の効果音（爆発音）の ON/OFF
 const $ = id => document.getElementById(id);
 /* 中断セーブ（面の途中の戦況）の保存キー。run のセーブ（E.saveRun）とは別に持つ */
 const BKEY = "aobee-srpg-battle-v1";
@@ -72,6 +73,7 @@ function refreshTitle() {
     rb.textContent = "つづきから（" + (bsStage.ex ? "EX面" : "第" + bsStage.id + "面") + " ターン" + bs.turn + "）";
   } else rb.classList.add("hidden");
   $("btn-anim").textContent = "戦闘アニメ（横画面）: " + (settings.anim ? "ON" : "OFF");
+  $("btn-sound").textContent = "効果音: " + (settings.sound ? "ON" : "OFF");
   // 本編クリア済み表示（EX面の解放通知）
   let banner = $("clear-banner");
   if (!banner) {
@@ -169,6 +171,12 @@ $("btn-continue").addEventListener("click", () => {
 $("btn-anim").addEventListener("click", () => {
   settings.anim = !settings.anim;
   localStorage.setItem("aobee-taisen-anim", settings.anim ? "on" : "off");
+  refreshTitle();
+});
+$("btn-sound").addEventListener("click", () => {
+  settings.sound = !settings.sound;
+  localStorage.setItem("aobee-taisen-sound", settings.sound ? "on" : "off");
+  window.SRPG_SFX_ON = settings.sound;
   refreshTitle();
 });
 $("btn-panel").addEventListener("click", () => document.body.classList.toggle("panel-hidden"));
