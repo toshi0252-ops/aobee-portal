@@ -49,6 +49,11 @@ async function boot() {
   DATA = { pilots, units, stages, parts };
   refreshTitle();
 }
+function fmtDate(ts) {
+  const d = new Date(ts);
+  const p = n => String(n).padStart(2, "0");
+  return (d.getMonth() + 1) + "/" + d.getDate() + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
 function refreshTitle() {
   if (!$("title-art")) {
     const img = document.createElement("img");
@@ -78,6 +83,34 @@ function refreshTitle() {
   const gameCleared = !!(saved && saved.gameCleared);
   banner.textContent = gameCleared ? "★ 本編クリア済み ★ 隠しEX面「祭りのあとで」が解放されています" : "";
   banner.classList.toggle("hidden", !gameCleared);
+  // 手動セーブスロットからの再開（スロットがある時だけ出す）
+  let slotBox = $("slot-loads");
+  if (!slotBox) {
+    slotBox = document.createElement("div");
+    slotBox.id = "slot-loads";
+    $("title-screen").insertBefore(slotBox, $("stage-select"));
+  }
+  slotBox.innerHTML = "";
+  for (let slot = 1; slot <= E.SAVE_SLOTS; slot++) {
+    const info = E.saveSlotInfo(localStorage, slot);
+    if (!info) continue;
+    const b = document.createElement("button");
+    b.className = "sub";
+    b.style.marginTop = "6px";
+    b.textContent = "スロット" + slot + "からつづける（" + (info.gameCleared ? "本編クリア済み" : info.clearedCount + "面クリア") + (info.savedAt ? "／" + fmtDate(info.savedAt) : "") + "）";
+    b.addEventListener("click", () => {
+      const loaded = E.loadRunFromSlot(localStorage, DATA, slot);
+      if (!loaded) { refreshTitle(); return; }
+      run = loaded;
+      E.saveRun(localStorage, run);
+      localStorage.removeItem(BKEY);
+      const path = E.stagePath(DATA, run);
+      let idx = path.find(i => !(run.clearedStages || []).includes(i));
+      if (idx === undefined) idx = path[path.length - 1];
+      startStage(idx);
+    });
+    slotBox.appendChild(b);
+  }
   const ss = $("stage-select");
   if (saved && saved.cleared > 0) {
     ss.classList.remove("hidden"); ss.innerHTML = "";
@@ -594,8 +627,16 @@ function renderIntermission() {
   const stock = run.partStock || {};
   const face = window.FACE_MAP[pid];
   let h = "<div class='im-inner'>";
-  h += "<div class='im-head'><h2>インターミッション</h2><div class='im-funds'>歯車コイン: " + run.funds + "</div></div><div class='stat' style='color:#94a3b8'>セーブは自動です（改造・購入・習得のたびに保存されます）。ボタンはありません。</div>";
+  h += "<div class='im-head'><h2>インターミッション</h2><div class='im-funds'>歯車コイン: " + run.funds + "</div></div>";
   h += "<div class='im-topbtns'><button data-act='go' class='primary'>出撃（第" + DATA.stages.stages[imNext].id + "面「" + DATA.stages.stages[imNext].title + "」へ）</button><button data-act='title'>タイトルへ</button></div>";
+  // 手動セーブスロット（3つ）。自動セーブとは別に、好きな時点を残せる
+  h += "<div class='im-sec'><h3>セーブスロット（手動・3つ）</h3><table>";
+  for (let slot = 1; slot <= E.SAVE_SLOTS; slot++) {
+    const info = E.saveSlotInfo(localStorage, slot);
+    const label = info ? (info.gameCleared ? "本編クリア済み" : info.clearedCount + "面クリア") + "／コイン " + info.funds + (info.savedAt ? "／" + fmtDate(info.savedAt) : "") : "（空）";
+    h += "<tr><td>スロット" + slot + "</td><td>" + label + "</td><td><button data-act='slotsave' data-slot='" + slot + "'>ここにセーブ</button></td><td>" + (info ? "<button data-act='slotload' data-slot='" + slot + "'>ロード</button>" : "") + "</td></tr>";
+  }
+  h += "</table><div class='stat' style='color:#94a3b8'>セーブは自動でも行われます（改造・購入・習得のたび）。スロットは残しておきたい時点を手動で保存する用です。ロードすると今の進行はスロットの内容に置き換わります。</div></div>";
   // ユニット選択タブ
   h += "<div class='im-tabs'>";
   for (const tp of imPilots()) {
@@ -665,6 +706,23 @@ function imAction(d) {
   const uid = DATA.pilots.pilots[imPilot].unit;
   if (d.act === "go") { closeIntermission(); startStage(imNext); return; }
   if (d.act === "title") { closeIntermission(); $("btn-title").click(); return; }
+  if (d.act === "slotload") {
+    const loaded = E.loadRunFromSlot(localStorage, DATA, Number(d.slot));
+    if (!loaded) { renderIntermission(); return; }
+    run = loaded;
+    E.saveRun(localStorage, run); // 「つづきから」と足並みを揃える
+    localStorage.removeItem(BKEY); // 別 run の戦況スナップショットは破棄する
+    const path = E.stagePath(DATA, run);
+    let idx = path.find(i => !(run.clearedStages || []).includes(i));
+    if (idx === undefined) { // 全面クリア済みなら EX（後日談）、なければ最終面
+      const exIdx = DATA.stages.stages.findIndex(s => s.ex);
+      idx = (run.gameCleared && exIdx >= 0) ? exIdx : path[path.length - 1];
+    }
+    imPilot = null;
+    openIntermission(idx);
+    return;
+  }
+  if (d.act === "slotsave") E.saveRunToSlot(localStorage, run, Number(d.slot));
   if (d.act === "tab") imPilot = d.pilot;
   else if (d.act === "mod") E.buyMod(run, uid, d.track);
   else if (d.act === "buy") E.buyPart(run, DATA, d.part);

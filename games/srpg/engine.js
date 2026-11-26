@@ -689,6 +689,34 @@
     if (!raw) return null;
     const s = JSON.parse(raw);
     if (s.version !== 1) return null;
+    return parseRunSave(data, s);
+  }
+  /* 手動セーブスロット（3つ）: インターミッション等から任意の時点を残すための保存。
+     中身は自動セーブと同じ形式（version 1）に savedAt を付けたもの。自動セーブとは独立に持つ。 */
+  const SAVE_SLOTS = 3;
+  function saveSlotKey(slot) { return "aobee-taisen-save-slot" + slot; }
+  function saveRunToSlot(storage, run, slot) {
+    const s = buildSave(run);
+    s.savedAt = Date.now();
+    storage.setItem(saveSlotKey(slot), JSON.stringify(s));
+  }
+  function loadRunFromSlot(storage, data, slot) {
+    const raw = storage.getItem(saveSlotKey(slot));
+    if (!raw) return null;
+    let s;
+    try { s = JSON.parse(raw); } catch (e) { return null; }
+    if (!s || s.version !== 1) return null;
+    return parseRunSave(data, s);
+  }
+  function saveSlotInfo(storage, slot) {
+    const raw = storage.getItem(saveSlotKey(slot));
+    if (!raw) return null;
+    let s;
+    try { s = JSON.parse(raw); } catch (e) { return null; }
+    if (!s || s.version !== 1) return null;
+    return { clearedCount: (Array.isArray(s.clearedStages) ? s.clearedStages.length : (s.cleared || 0)), funds: s.funds || 0, route: (s.route === "A" || s.route === "B") ? s.route : null, gameCleared: !!s.gameCleared, savedAt: s.savedAt || null };
+  }
+  function parseRunSave(data, s) {
     const run = createRun(data);
     run.funds = s.funds || 0; run.cleared = s.cleared || 0;
     for (const pid of Object.keys(run.pilots)) if (s.pilots && s.pilots[pid]) run.pilots[pid] = s.pilots[pid];
@@ -771,7 +799,7 @@
     if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
     return st;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, moveCostAt, terrainBonusFor, dist, createRun, startStage, deployInfo, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, supplyAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, checkGate, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  const api = { TERRAIN, terrainAt, terrainChar, moveCostAt, terrainBonusFor, dist, createRun, startStage, deployInfo, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, supplyAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, SAVE_SLOTS, saveRunToSlot, loadRunFromSlot, saveSlotInfo, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, checkGate, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
