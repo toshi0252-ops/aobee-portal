@@ -544,7 +544,8 @@
      "name": "降下ミサイル",
      "power": 1200
     }
-   ]
+   ],
+   "moveType": "air"
   },
   "kuuteiboss": {
    "aim": 112,
