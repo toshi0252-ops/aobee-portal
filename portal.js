@@ -3,6 +3,7 @@ const games=[
  ['あおびー牧場','のんびり\n牧場時間','くらし','あおびーの牧場で、自分のペースで遊ぼう。','aobee_farm_v48_soil_water.html?v=ui49','#3a967b','#a2df9b'],
  ['あおびー RPG','星を忘れた\n世界へ','RPG','星と記憶をめぐる、あおびーたちの物語。','rpg/index.html','#5058a4','#aba4df'],
  ['あおびーと失われた歯車','歯車を、\n取りもどせ！','RPG','止まった大歯車と7つの星歯をめぐる、全14章の大冒険。','grand/index.html','#3570a8','#ffe066'],
+ ['あおびー大戦 〜星の歯車〜','世界を、\n回し直せ！','シミュレーション','止まった世界をめぐる全24面＋EXの戦記。12機を育てて戦う、スパロボ風SLG。','games/srpg/index.html','#b3541e','#ffd166'],
  ['あおびー GRAND PRIX','走り出せ、\nグランプリ！','レース','あおびーとレースに挑戦しよう。','aobee_grand_prix_v41_portal.html','#ed8451','#ffd38a'],
  ['AOBEE MIX POWER','MIX\nPOWER!','バラエティ','あおびーのMIX POWERを楽しもう。','AOBEE_MIX_POWER_v2.32_4GAUGE.html','#bb65b4','#f2abd5'],
  ['あおびーの雑学クイズ！','ひらめきの\n時間！','クイズ','雑学クイズで、知っていることも新しい発見も。','aobee_quiz_v126_timer_gauge_motion_fix.html','#c19333','#f7d97e'],
