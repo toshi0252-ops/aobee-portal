@@ -99,7 +99,7 @@
   }
 
   function createRun(data) {
-    const run = { funds: 0, cleared: 0, pilots: {}, mods: {}, parts: {}, hoshiLearned: {}, partStock: {}, route: null, clearedStages: [] };
+    const run = { funds: 0, cleared: 0, pilots: {}, mods: {}, parts: {}, hoshiLearned: {}, partStock: {}, route: null, clearedStages: [], gameCleared: false, coreChoice: null };
     for (const pid of Object.keys(data.pilots.pilots)) {
       run.pilots[pid] = { level: 1, exp: 0, kills: 0, hp: 0, atk: 0, aim: 0, eva: 0 };
       run.hoshiLearned[pid] = data.pilots.pilots[pid].hoshi.slice();
@@ -111,6 +111,12 @@
     return run;
   }
 
+  /* 敵ユニットの強さスケールに使う面レベル。通常は面番号（stage.id）だが、
+     id が数値でない面（EX面）は stage.enemyLevel を使う。 */
+  function stageLevel(stage) {
+    if (stage && typeof stage.enemyLevel === "number") return stage.enemyLevel;
+    return (stage && typeof stage.id === "number") ? stage.id : 1;
+  }
   let uidSeq = 1;
   function allyUnit(data, run, spec) {
     const p = data.pilots.pilots[spec.pilot], u = data.units.units[p.unit], g = run.pilots[spec.pilot];
@@ -126,8 +132,8 @@
   }
   function enemyUnit(data, spec, stageId) {
     const u = data.units.units[spec.unit];
-    const lv = stageId; // 敵の強さは面番号に連動
-    return {
+    const lv = stageId; // 敵の強さは面レベル（stageLevel）に連動
+    const unit = {
       uid: uidSeq++, side: "enemy", pilotId: null, unitId: spec.unit,
       name: u.name, unitName: u.name, color: u.color, x: spec.x, y: spec.y,
       maxHp: u.hp + (lv - 1) * 120, hp: u.hp + (lv - 1) * 120, maxEn: u.en, en: u.en,
@@ -135,15 +141,19 @@
       weapons: u.weapons, maxSp: 0, sp: 0, morale: 100, level: lv,
       acted: false, boss: !!spec.boss, flags: {}
     };
+    // バリア守護（第24面サビのコア等）: 指定ユニットが生存している間はダメージを受けない
+    if (spec.shieldedBy) unit.shieldedBy = spec.shieldedBy;
+    return unit;
   }
   function startStage(data, run, stageIdx) {
     const stage = data.stages.stages[stageIdx];
     const st = {
       data, run, stage, stageIdx, turn: 1, phase: "player", result: null,
-      units: [], log: [], pendingDialog: null, rustStorm: false, bossHalfShown: false, medal: false
+      units: [], log: [], pendingDialog: null, rustStorm: false, bossHalfShown: false, medal: false,
+      fogActive: !!stage.fog, coreChoice: null, sealProgress: 0, pendingChoice: null
     };
     for (const a of stage.allies) st.units.push(allyUnit(data, run, a));
-    for (const e of stage.enemies) st.units.push(enemyUnit(data, e, stage.id));
+    for (const e of stage.enemies) st.units.push(enemyUnit(data, e, stageLevel(stage)));
     for (const n of stage.npcs || []) {
       const u = data.units.units[n.unit];
       st.units.push({ uid: uidSeq++, side: "npc", pilotId: null, unitId: n.unit, name: u.name, unitName: u.name, color: u.color, x: n.x, y: n.y, maxHp: u.hp, hp: u.hp, maxEn: 0, en: 0, move: u.move, armor: u.armor, aim: 0, eva: u.eva, atk: 0, weapons: [], maxSp: 0, sp: 0, morale: 100, level: 1, acted: false, boss: false, flags: {} });
@@ -199,7 +209,7 @@
   }
 
   function fogPenalty(st, atk, def) {
-    if (!st.stage.fog) return 0;
+    if (!(st.fogActive !== undefined ? st.fogActive : st.stage.fog)) return 0;
     const lamps = [];
     st.stage.terrain.forEach((row, y) => { [...row].forEach((c, x) => { if (c === "L") lamps.push({ x, y }); }); });
     const near = u => lamps.some(l => Math.abs(l.x - u.x) + Math.abs(l.y - u.y) <= (st.stage.lampRadius || 2));
@@ -215,7 +225,13 @@
     if (def.flags.hirameki) h = 0;
     return clamp(h, 5, 100);
   }
+  /* バリア守護中か: def.shieldedBy で指定されたユニットが生存している間は無敵 */
+  function isShielded(st, def) {
+    if (!def.shieldedBy) return false;
+    return st.units.some(u => u !== def && u.side === def.side && u.unitId === def.shieldedBy && u.hp > 0);
+  }
   function damage(st, atk, def, w, stance) {
+    if (isShielded(st, def)) return 0;
     let d = w.power + atk.atk * 5 - def.armor;
     d = Math.round(d * terrainAt(st.stage, def.x, def.y).def);
     if (st.rustStorm && atk.side === "enemy") d = Math.round(d * 1.1);
@@ -223,9 +239,17 @@
     if (def.flags.fukutsu) d = Math.round(d / 2);
     return Math.max(50, d);
   }
+  /* 合体攻撃の使用条件: w.combo {partner: 相方ユニットID, range: 許容距離} がある武器は、
+     相方が生存し、攻撃側から range 以内にいる時だけ使える（スターギア・クロス等）。 */
+  function comboPartnerOk(st, atk, w) {
+    if (!w || !w.combo) return true;
+    const partner = st.units.find(u => u.side === atk.side && u.uid !== atk.uid && u.unitId === w.combo.partner && u.hp > 0);
+    if (!partner) return false;
+    return dist(atk, partner) <= (w.combo.range || 4);
+  }
   function canUseWeapon(st, atk, def, w) {
     const d = dist(atk, def);
-    return d >= w.min && d <= w.max && atk.en >= (w.en || 0) && atk.morale >= (w.morale || 0) && !w.heal;
+    return d >= w.min && d <= w.max && atk.en >= (w.en || 0) && atk.morale >= (w.morale || 0) && !w.heal && comboPartnerOk(st, atk, w);
   }
   function chooseStance(st, atk, def) {
     // 防御側AI: 期待被害が最小になる 反撃/防御/回避 を選ぶ
@@ -304,6 +328,8 @@
     atk.flags.hicchu = false; atk.flags.shuuchuu = false;
     def.flags.hirameki = false; def.flags.fukutsu = false;
     checkBossHalf(st, events);
+    checkFogDevice(st, events);
+    checkCoreChoice(st, events);
     updateResult(st);
     return events;
   }
@@ -312,7 +338,54 @@
     if (boss && !st.bossHalfShown && boss.hp > 0 && boss.hp <= boss.maxHp / 2 && st.stage.bossHalf) {
       st.bossHalfShown = true; st.pendingDialog = st.stage.bossHalf;
       events.push({ type: "bosshalf" });
+      // 第22面: ボス半減で霧の発生源が弱まり霧が晴れる（台本の bossHalf 台詞に対応）
+      if (st.stage.fogClearOnBossHalf && st.fogActive) st.fogActive = false;
     }
+  }
+  /* 霧の発生装置（第22面）: 装置ユニットを破壊すると霧が晴れる */
+  function checkFogDevice(st, events) {
+    if (!st.fogActive || !st.stage.fogDeviceUnit) return;
+    const dev = st.units.find(u => u.side === "enemy" && u.unitId === st.stage.fogDeviceUnit);
+    if (dev && dev.hp <= 0) {
+      st.fogActive = false;
+      if (st.stage.fogClearLines) st.pendingDialog = st.stage.fogClearLines;
+      events.push({ type: "fogclear" });
+    }
+  }
+  /* ===== 第24面: サビのコアへの選択（止める／壊す） =====
+     stage.coreChoice {triggerUnit, coreUnit, lines, stopLines, destroyLines, destroyReinforce, sealTurns, sealLines}
+     triggerUnit（グランツ／ラストギア）を倒すと選択が発生する。コアは shieldedBy で守られ、
+     グランツを倒すまでダメージを受けないため、順序は常に「決着→選択→後半」になる。 */
+  function checkCoreChoice(st, events) {
+    const spec = st.stage.coreChoice;
+    if (!spec || st.coreChoice || st.pendingChoice) return;
+    const trig = st.units.find(u => u.side === "enemy" && u.unitId === spec.triggerUnit);
+    const core = st.units.find(u => u.side === "enemy" && u.unitId === spec.coreUnit);
+    if (trig && trig.hp <= 0 && core && core.hp > 0) {
+      st.pendingChoice = spec.id || "core";
+      if (events) events.push({ type: "choice", id: st.pendingChoice });
+    }
+  }
+  function applyCoreChoice(st, run, choice) {
+    const spec = st.stage.coreChoice;
+    if (!spec || st.coreChoice) return false;
+    if (choice !== "stop" && choice !== "destroy") return false;
+    st.coreChoice = choice;
+    st.pendingChoice = null;
+    if (run) run.coreChoice = choice; // エンディング台詞の出し分け用に run へ保存
+    const core = st.units.find(u => u.side === "enemy" && u.unitId === spec.coreUnit);
+    if (choice === "stop") {
+      // 「止める」: コアは攻撃をやめ（受動化）、隣接した味方が制御の書き換え作業を進める
+      if (core) core.passive = true;
+      st.sealProgress = 0;
+      st.pendingDialog = spec.stopLines || null;
+    } else {
+      // 「壊す」: コアが防衛反応を起こし、守護機が増援として現れる（後半の敵配置が変わる）
+      for (const e of spec.destroyReinforce || []) st.units.push(enemyUnit(st.data, e, stageLevel(st.stage)));
+      st.pendingDialog = spec.destroyLines || null;
+    }
+    updateResult(st);
+    return true;
   }
   function healAction(st, atk, target, wIdx, rng) {
     const w = atk.weapons[wIdx];
@@ -357,6 +430,7 @@
     for (const e of living(st, "enemy")) {
       if (st.result) break;
       if (e.hp <= 0) continue;
+      if (e.passive) { e.acted = true; continue; } // 受動化したユニット（止めるを選んだコア）は行動しない
       let targets = living(st, "ally");
       if (st.stage.loseNpc) targets = targets.concat(living(st, "npc"));
       if (!targets.length) break;
@@ -407,11 +481,26 @@
     const evs = (st.stage.reinforce || []).concat(st.stage.events || []);
     for (const ev of evs) {
       if (ev.turn === st.turn) {
-        for (const e of ev.enemies) st.units.push(enemyUnit(st.data, e, st.stage.id));
+        for (const e of ev.enemies) st.units.push(enemyUnit(st.data, e, stageLevel(st.stage)));
         if (ev.rustStorm) st.rustStorm = true;
         if (ev.lines) st.pendingDialog = ev.lines;
       }
     }
+    // 「止める」選択時: コアに隣接した味方がいれば制御の書き換え作業が1段階進む
+    const spec = st.stage.coreChoice;
+    if (spec && st.coreChoice === "stop" && !st.result) {
+      const core = st.units.find(u => u.side === "enemy" && u.unitId === spec.coreUnit);
+      if (core && core.hp > 0 && living(st, "ally").some(a => dist(a, core) <= 1)) {
+        st.sealProgress = (st.sealProgress || 0) + 1;
+        if (st.sealProgress >= (spec.sealTurns || 2)) {
+          st.result = "win"; // コアを止めた＝決着（コアは無事なまま）
+          st.medal = st.turn <= (st.stage.medalTurns || 99);
+        } else if (spec.sealLines) {
+          st.pendingDialog = spec.sealLines;
+        }
+      }
+    }
+    checkCoreChoice(st, null); // 中断復元などで選択発生を取りこぼした場合の再発火
     st.phase = "player";
   }
   function updateResult(st) {
@@ -424,6 +513,10 @@
     if (st.stage.winType === "boss") {
       const boss = st.units.find(u => u.boss && u.side === "enemy");
       if (boss && boss.hp <= 0) st.result = "win";
+    } else if (st.stage.winType === "bosses") {
+      // 分割出撃面（第20面）: ボス格が複数いる場合は全員の撃破で勝利
+      const bosses = st.units.filter(u => u.boss && u.side === "enemy");
+      if (bosses.length && bosses.every(b => b.hp <= 0)) st.result = "win";
     } else if (!enemies.length) st.result = "win";
     if (st.result === "win") st.medal = st.turn <= (st.stage.medalTurns || 99);
   }
@@ -454,6 +547,26 @@
     }
     return lines;
   }
+  /* 面間会話（エンディング）の実効行列: stage.afterByChoice {at, stop, destroy} がある面（第24面）は、
+     run.coreChoice（未選択時は stop 扱い）に応じた台詞を at の位置に差し込んで返す。 */
+  function stageAfterLines(stage, run) {
+    const lines = (stage.after || []).slice();
+    if (stage.afterByChoice) {
+      const c = run && run.coreChoice === "destroy" ? "destroy" : "stop";
+      const ins = stage.afterByChoice[c] || stage.afterByChoice.stop || [];
+      const at = typeof stage.afterByChoice.at === "number" ? stage.afterByChoice.at : lines.length;
+      lines.splice(at, 0, ...ins);
+    }
+    return lines;
+  }
+  /* 面クリアの run への反映（main の結果表示とテストで共用）。何度呼んでも結果は同じ。
+     stage.final（第24面）をクリアすると run.gameCleared が立ち、EX面が解放される。 */
+  function applyStageClear(run, stageIdx, stage) {
+    run.cleared = Math.max(run.cleared || 0, stageIdx + 1);
+    if (!Array.isArray(run.clearedStages)) run.clearedStages = [];
+    if (!run.clearedStages.includes(stageIdx)) run.clearedStages.push(stageIdx);
+    if (stage && stage.final) run.gameCleared = true;
+  }
   function stagePath(data, run) {
     const path = [0];
     let guard = 0;
@@ -465,7 +578,7 @@
     return path;
   }
   function buildSave(run) {
-    return { version: 1, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned, partStock: run.partStock || {}, route: run.route || null, clearedStages: run.clearedStages || [] };
+    return { version: 1, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned, partStock: run.partStock || {}, route: run.route || null, clearedStages: run.clearedStages || [], gameCleared: !!run.gameCleared, coreChoice: run.coreChoice || null };
   }
   function saveRun(storage, run) { storage.setItem("aobee-taisen-save-v1", JSON.stringify(buildSave(run))); }
   function loadRun(storage, data) {
@@ -487,6 +600,8 @@
     for (const pid of Object.keys(run.hoshiLearned)) if (s.hoshiLearned && s.hoshiLearned[pid]) run.hoshiLearned[pid] = s.hoshiLearned[pid];
     run.partStock = (s.partStock && typeof s.partStock === "object") ? s.partStock : {}; // 旧セーブ（partStockなし）は空で初期化
     run.route = (s.route === "A" || s.route === "B") ? s.route : null; // 旧セーブ（routeなし）は未選択
+    run.gameCleared = !!s.gameCleared; // 旧セーブ（第24面実装前）は未クリア扱い
+    run.coreChoice = (s.coreChoice === "stop" || s.coreChoice === "destroy") ? s.coreChoice : null;
     run.clearedStages = Array.isArray(s.clearedStages)
       ? s.clearedStages.filter(i => Number.isInteger(i) && i >= 0 && i < data.stages.stages.length) : [];
     // 旧セーブ互換: clearedStages が無く cleared だけある場合は、線形分（第1〜8面=インデックス0〜7）をクリア済みに移行
@@ -509,7 +624,10 @@
     const flags = {
       rustStorm: !!st.rustStorm,       // 錆嵐適用済み（第5面）
       bossHalfShown: !!st.bossHalfShown, // ボス半減会話の表示済み
-      medal: !!st.medal
+      medal: !!st.medal,
+      fogActive: st.fogActive !== undefined ? !!st.fogActive : !!st.stage.fog, // 霧の残存状態（第22面: 装置破壊で晴れる）
+      coreChoice: st.coreChoice || null, // 第24面のコア選択（済の場合）
+      sealProgress: st.sealProgress || 0 // 「止める」選択時の書き換え作業の進捗
     };
     if (st.flags && typeof st.flags === "object") flags.extra = deepCopyPlain(st.flags);
     const out = {
@@ -539,14 +657,16 @@
       data, run, stage, stageIdx: saved.stageIdx,
       turn: saved.turn || 1, phase: "player", result: null, // 再開直後は味方フェイズ（エンジン表記は "player"）
       units, log: [], pendingDialog: null,
-      rustStorm: !!pick("rustStorm"), bossHalfShown: !!pick("bossHalfShown"), medal: !!pick("medal")
+      rustStorm: !!pick("rustStorm"), bossHalfShown: !!pick("bossHalfShown"), medal: !!pick("medal"),
+      fogActive: pick("fogActive") !== undefined ? !!pick("fogActive") : !!stage.fog,
+      coreChoice: pick("coreChoice") || null, sealProgress: pick("sealProgress") || 0, pendingChoice: null
     };
     if (fl.extra) st.flags = deepCopyPlain(fl.extra);
     if (saved.firedEvents) st.firedEvents = new Set(saved.firedEvents);
     if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
     return st;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -31,11 +31,11 @@ function loadBattleSave() {
 }
 /* 素材マップ: 会話顔グラと戦闘シーンのユニット絵（プレビュー単一ファイル版では __IMG のデータURIを優先） */
 window.FACE_MAP = { aobee: "faces/aobee.jpg", warubee: "faces/warubee.jpg", galdo: "faces/galdo.jpg", marmi: "faces/marmi.jpg", poco: "faces/poco.jpg", minori: "faces/minori.jpg", mio: "faces/mio.jpg", teru: "faces/teru.jpg", hayate: "faces/hayate.jpg", tia: "faces/tia.jpg", seira: "faces/seira.jpg", rocco: "faces/rocco.jpg", mist: "faces/mist.jpg", ganzou: "chars/ganzou.jpg", granz: "chars/granz.jpg" };
-window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", telcarry: "units/teru-carry.png", hayatespin: "units/hayate-spin.png", tialaster: "units/tia-luster.png", seirabrig: "units/seira-brig.png", rocco: "units/rocco-works.png", mistral: "units/mistral.png", warugear: "units/warugia-custom.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png" };
+window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", telcarry: "units/teru-carry.png", hayatespin: "units/hayate-spin.png", tialaster: "units/tia-luster.png", seirabrig: "units/seira-brig.png", rocco: "units/rocco-works.png", roccoworks_ally: "units/rocco-works.png", mistral: "units/mistral.png", warugear: "units/warugia-custom.png", warugear_ally: "units/warugia-custom.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png", karakurishin: "units/karakuri-boss.png" };
 window.assetUrl = p => (window.__IMG && window.__IMG[p]) || ("assets/" + p);
 window.TILE_ART = { ".": "tiles/plain.jpg", P: "tiles/path.jpg", G: "tiles/gear.jpg", F: "tiles/forest.jpg", V: "tiles/village.jpg", R: "tiles/river.jpg", W: "tiles/water.jpg", L: "tiles/lamp.jpg", X: "tiles/block.jpg" };
 /* マップ駒専用アイコン（顔・上半身を大きく切り出した視認性重視版） */
-window.UNIT_ICON = { gearstar: "icons/gearstar.png", galdon: "icons/gardon.png", ovenmarmi: "icons/oven-marmi.png", pocodash: "icons/poco-dash.png", moomoo: "icons/minori-unit.png", hoshifune: "icons/mio-unit.png", telcarry: "icons/teru-carry.png", hayatespin: "icons/hayate-spin.png", tialaster: "icons/tia-luster.png", seirabrig: "icons/seira-brig.png", rocco: "icons/rocco-works.png", mistral: "icons/mistral.png", warugear: "icons/warugia-custom.png", cog: "icons/sabi-cog.png", bannin: "icons/bannin-cog.png", karakuri: "icons/karakuri-boss.png" };
+window.UNIT_ICON = { gearstar: "icons/gearstar.png", galdon: "icons/gardon.png", ovenmarmi: "icons/oven-marmi.png", pocodash: "icons/poco-dash.png", moomoo: "icons/minori-unit.png", hoshifune: "icons/mio-unit.png", telcarry: "icons/teru-carry.png", hayatespin: "icons/hayate-spin.png", tialaster: "icons/tia-luster.png", seirabrig: "icons/seira-brig.png", rocco: "icons/rocco-works.png", roccoworks_ally: "icons/rocco-works.png", mistral: "icons/mistral.png", warugear: "icons/warugia-custom.png", warugear_ally: "icons/warugia-custom.png", cog: "icons/sabi-cog.png", bannin: "icons/bannin-cog.png", karakuri: "icons/karakuri-boss.png", karakurishin: "icons/karakuri-boss.png" };
 const panel = new Panel($("panel"));
 const grid = new GridMap($("grid"), onTapCell);
 
@@ -63,9 +63,21 @@ function refreshTitle() {
   const rb = $("btn-resume");
   if (bs && saved) {
     rb.classList.remove("hidden");
-    rb.textContent = "つづきから（第" + DATA.stages.stages[bs.stageIdx].id + "面 ターン" + bs.turn + "）";
+    const bsStage = DATA.stages.stages[bs.stageIdx];
+    rb.textContent = "つづきから（" + (bsStage.ex ? "EX面" : "第" + bsStage.id + "面") + " ターン" + bs.turn + "）";
   } else rb.classList.add("hidden");
   $("btn-anim").textContent = "戦闘アニメ（横画面）: " + (settings.anim ? "ON" : "OFF");
+  // 本編クリア済み表示（EX面の解放通知）
+  let banner = $("clear-banner");
+  if (!banner) {
+    banner = document.createElement("div");
+    banner.id = "clear-banner";
+    banner.style.cssText = "color:#fde68a;font-size:13px;font-weight:700";
+    $("title-screen").insertBefore(banner, $("stage-select"));
+  }
+  const gameCleared = !!(saved && saved.gameCleared);
+  banner.textContent = gameCleared ? "★ 本編クリア済み ★ 隠しEX面「祭りのあとで」が解放されています" : "";
+  banner.classList.toggle("hidden", !gameCleared);
   const ss = $("stage-select");
   if (saved && saved.cleared > 0) {
     ss.classList.remove("hidden"); ss.innerHTML = "";
@@ -80,11 +92,15 @@ function refreshTitle() {
       const s = DATA.stages.stages[i];
       if (s && s.nextByRoute) { unlockedSet.add(s.nextByRoute.A); unlockedSet.add(s.nextByRoute.B); }
     }
+    if (saved.gameCleared) { // 本編クリアで EX 面（後日談）を解放
+      const exIdx = DATA.stages.stages.findIndex(s => s.ex);
+      if (exIdx >= 0) unlockedSet.add(exIdx);
+    }
     [...unlockedSet].sort((a, b) => a - b).forEach(i => {
       const s = DATA.stages.stages[i];
       if (!s) return;
       const b = document.createElement("button"); b.className = "sub";
-      b.textContent = "第" + s.id + "面 " + s.title + (s.route ? "（" + s.route + "ルート）" : "");
+      b.textContent = s.ex ? "EX面 " + s.title + "（後日談）" : "第" + s.id + "面 " + s.title + (s.route ? "（" + s.route + "ルート）" : "");
       b.style.marginTop = "6px";
       b.addEventListener("click", () => {
         run = saved;
@@ -158,16 +174,23 @@ async function startStage(idx) {
   render();
 }
 function objectiveText() {
-  let t = st.stage.winType === "boss" ? "目的: ボスの撃破" : "目的: 敵の全滅";
+  let t = st.stage.winType === "boss" ? "目的: ボスの撃破" : st.stage.winType === "bosses" ? "目的: ボス全員の撃破" : "目的: 敵の全滅";
+  if (st.stage.coreChoice) { // 第24面: コア選択の状態に応じて目的を出し分ける
+    const spec = st.stage.coreChoice;
+    const trig = st.units.find(u => u.side === "enemy" && u.unitId === spec.triggerUnit);
+    if (st.coreChoice === "stop") t = "目的: コアに隣接して制御の書き換え（作業 " + (st.sealProgress || 0) + "/" + (spec.sealTurns || 2) + "）";
+    else if (st.coreChoice === "destroy") t = "目的: サビのコアを破壊する";
+    else if (trig && trig.hp > 0) t = "目的: ラストギアを倒し、コアへの道を開く（コアはバリアで守られている）";
+  }
   if (st.stage.loseNpc) t += "／" + (st.stage.protectLabel || "動物") + "を守る";
   if (st.stage.turnLimit) t += "／" + st.stage.turnLimit + "ターン以内";
-  if (st.stage.fog) t += "／霧: 灯りの近く以外は命中-30";
+  if (st.fogActive) t += "／霧: 灯りの近く以外は命中-30";
   if (st.rustStorm) t += "／錆嵐: 敵攻撃+10%";
   return t;
 }
 function render() {
   if (!st) return;
-  $("hd-stage").textContent = "第" + st.stage.id + "面 " + st.stage.title;
+  $("hd-stage").textContent = st.stage.ex ? "EX面 " + st.stage.title : "第" + st.stage.id + "面 " + st.stage.title;
   $("hd-turn").textContent = "TURN " + st.turn;
   $("hd-obj").textContent = objectiveText();
   $("hd-funds").textContent = "歯車コイン " + run.funds;
@@ -190,8 +213,19 @@ function healTargetTiles() {
   return E.living(st, "ally").filter(a => { const d = E.dist(u, a); return d >= w.min && d <= w.max; }).map(a => ({ x: a.x, y: a.y }));
 }
 function attackWeaponsVsAny(u) {
-  return u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal && u.en >= (x.w.en || 0) && u.morale >= (x.w.morale || 0) &&
+  return u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal && u.en >= (x.w.en || 0) && u.morale >= (x.w.morale || 0) && E.comboPartnerOk(st, u, x.w) &&
     E.living(st, "enemy").some(e => { const d = E.dist(u, e); return d >= x.w.min && d <= x.w.max; }));
+}
+/* 武器が今使えない理由（武器リストで選択不可表示に添える）。使える場合は null */
+function weaponBlockReason(u, w) {
+  if (w.combo && !E.comboPartnerOk(st, u, w)) {
+    const partner = DATA.units.units[w.combo.partner];
+    return (partner ? partner.name : "相方") + "が近くにいないと使えない";
+  }
+  if (u.en < (w.en || 0)) return "EN不足";
+  if (u.morale < (w.morale || 0)) return "気力不足（要" + w.morale + "）";
+  if (!E.living(st, "enemy").some(e => { const d = E.dist(u, e); return d >= w.min && d <= w.max; })) return "射程内に敵がいない";
+  return null;
 }
 function renderPanel() {
   if (st.result) return renderResultPanel();
@@ -218,10 +252,16 @@ function renderPanel() {
     addHoshiButtons(u, "moved");
   } else if (sel.mode === "weapon") {
     panel.show(html + "<div class='stat'>武器を選んでください。</div>");
-    panel.buttons(attackWeaponsVsAny(u).map(x => ({
-      label: x.w.name + " (威力" + x.w.power + " 命中" + x.w.hit + " 射程" + x.w.min + "-" + x.w.max + (x.w.en ? " EN" + x.w.en : "") + ")",
-      onClick: () => { sel.weaponIdx = x.i; sel.mode = "target"; render(); }
-    })).concat([{ label: "もどる", onClick: () => { sel.mode = "moved"; render(); } }]));
+    const items = u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal).map(x => {
+      const reason = weaponBlockReason(u, x.w);
+      return {
+        label: x.w.name + " (威力" + x.w.power + " 命中" + x.w.hit + " 射程" + x.w.min + "-" + x.w.max + (x.w.en ? " EN" + x.w.en : "") + ")" + (reason ? " ※" + reason : ""),
+        disabled: !!reason,
+        onClick: () => { sel.weaponIdx = x.i; sel.mode = "target"; render(); }
+      };
+    });
+    items.push({ label: "もどる", onClick: () => { sel.mode = "moved"; render(); } });
+    panel.buttons(items);
   } else if (sel.mode === "target") {
     panel.show(html + "<div class='stat'>赤いマスの敵をタップすると戦闘予測が出ます。</div>");
     panel.buttons([{ label: "もどる", onClick: () => { sel.mode = "weapon"; render(); } }]);
@@ -358,9 +398,35 @@ async function doHeal(target) {
 }
 async function afterAction() {
   if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; await showDialog(d); }
+  if (st.pendingChoice) await presentCoreChoice(); // 第24面: グランツ決着後のコア選択
   checkEnd(); render();
   saveAll(); /* 育成・コイン＋戦況を行動ごとに自動セーブ */
   await maybeAutoEnemyPhase();
+}
+/* 第24面: サビのコアへの選択肢オーバーレイ（ルート選択と同じ流儀）。
+   台詞→選択→分岐台詞の順に見せ、選択は run.coreChoice に保存される */
+async function presentCoreChoice() {
+  const spec = st.stage.coreChoice;
+  if (!spec || !st.pendingChoice) return;
+  st.pendingChoice = null;
+  if (spec.lines) await showDialog(spec.lines);
+  const choice = await new Promise(resolve => {
+    const ov = document.createElement("div");
+    ov.style.cssText = "position:fixed;inset:0;background:rgba(2,6,23,.96);z-index:66;display:flex;align-items:center;justify-content:center;padding:16px";
+    ov.innerHTML = "<div style='max-width:520px;text-align:center'>" +
+      "<h2 style='color:#7dd3fc;margin:0 0 10px'>サビのコアをどうする？</h2>" +
+      "<p style='color:#cbd5e1;line-height:1.7;font-size:14px'>止めるなら、制御を書き換える間コアに張り付く必要がある。壊すなら早いが、コアの防衛反応で守護機が集まってくる。</p>" +
+      "<div style='display:flex;flex-direction:column;gap:10px;margin-top:14px'>" +
+      "<button data-c='stop' style='background:#0369a1;color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer'>止める（制御を書き換える）</button>" +
+      "<button data-c='destroy' style='background:#7f1d1d;color:#fff;border:1px solid #f87171;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer'>壊す（動力系を破壊する）</button>" +
+      "</div></div>";
+    ov.querySelectorAll("button[data-c]").forEach(b => b.addEventListener("click", () => { document.body.removeChild(ov); resolve(b.dataset.c); }));
+    document.body.appendChild(ov);
+  });
+  E.applyCoreChoice(st, run, choice);
+  if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; await showDialog(d); }
+  E.saveRun(localStorage, run);
+  render();
 }
 function checkEnd() { /* 結果は renderResultPanel が st.result を見て表示する */ }
 async function enemyTurn() {
@@ -369,10 +435,12 @@ async function enemyTurn() {
   const events = E.enemyPhase(st, Math.random);
   await BattleView.playSimplified($("grid"), st, events);
   if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; await showDialog(d); }
+  if (st.pendingChoice) await presentCoreChoice();
   if (!st.result) {
     E.npcPhase(st, Math.random);
     E.startPlayerPhase(st);
     if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; render(); await showDialog(d); }
+    if (!st.result && st.pendingChoice) await presentCoreChoice();
   }
   busy = false;
   render();
@@ -381,25 +449,35 @@ async function enemyTurn() {
 }
 function renderResultPanel() {
   if (st.result === "win") {
-    run.cleared = Math.max(run.cleared, stageIdx + 1);
-    if (!run.clearedStages.includes(stageIdx)) run.clearedStages.push(stageIdx);
+    E.applyStageClear(run, stageIdx, st.stage); // 第24面なら run.gameCleared が立ち EX が解放される
     E.saveRun(localStorage, run);
-    panel.show("<h3>面クリア！</h3><div class='stat'>" + st.turn + "ターンでクリア" +
+    panel.show("<h3>" + (st.stage.final ? "最終決戦クリア！" : st.stage.ex ? "EX面クリア！" : "面クリア！") + "</h3><div class='stat'>" + st.turn + "ターンでクリア" +
       (st.medal ? " ／ ほし勲章 獲得！" : "（ほし勲章は" + st.stage.medalTurns + "ターン以内）") +
-      "<br>歯車コイン: " + run.funds + "</div>");
+      "<br>歯車コイン: " + run.funds + (st.stage.final ? "<br>★ 本編クリア！ タイトルで隠しEX面「祭りのあとで」が解放されました" : "") + "</div>");
     const items = [];
     if (E.nextStageIndex(DATA, run, stageIdx) >= 0 || st.stage.nextByRoute) items.push({
       label: "次の面へ", cls: "primary", onClick: async () => {
-        if (st.stage.after) await showDialog(st.stage.after); // 面間の物語
+        if (st.stage.after) await showDialog(E.stageAfterLines(st.stage, run)); // 面間の物語
         if (st.stage.nextByRoute && !run.route) await chooseRoute(); // 第8面クリア後: ルート選択
         const next = E.nextStageIndex(DATA, run, stageIdx);
         if (next >= 0) openIntermission(next);                        // 整備・改造・買い物
         else $("btn-title").click();
       }
     });
+    if (st.stage.final) { // 最終面クリア後は EX 面へ直行できる導線も出す
+      const exIdx = DATA.stages.stages.findIndex(s => s.ex);
+      if (exIdx >= 0) items.push({ label: "EX面「祭りのあとで」へ", cls: "primary", onClick: () => startStage(exIdx) });
+    }
     items.push({ label: "タイトルへ", onClick: () => $("btn-title").click() });
     panel.buttons(items);
-    if (!st._clearShown) { st._clearShown = true; if (st.stage.clear) showDialog(st.stage.clear); }
+    let clearP = null;
+    if (!st._clearShown) { st._clearShown = true; if (st.stage.clear) clearP = showDialog(st.stage.clear); }
+    // 最終面・EX面は「次の面へ」が無いので、エンディング／後日談の会話をここで見せる（決着台詞の後）
+    if (!st._afterShown && E.nextStageIndex(DATA, run, stageIdx) < 0 && !st.stage.nextByRoute && st.stage.after) {
+      st._afterShown = true;
+      const lines = E.stageAfterLines(st.stage, run);
+      if (clearP) clearP.then(() => showDialog(lines)); else showDialog(lines);
+    }
   } else {
     E.saveRun(localStorage, run);
     panel.show("<h3>敗北…</h3><div class='stat'>" + (st.loseReason || "") + "<br>獲得した経験値と歯車コインは引き継がれます。育成して再挑戦できます。</div>");
