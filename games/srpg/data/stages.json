@@ -61,6 +61,10 @@
      "次はその相手も止めてみせるよ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 4,
    "enemies": [
     {
      "unit": "cog",
@@ -226,6 +230,11 @@
      "地方歯車は取り戻したよ。でも、止まった場所はここだけじゃないみたいだね"
     ]
    ],
+   "deployFixed": [
+    "aobee",
+    "minori"
+   ],
+   "deployLimit": 5,
    "enemies": [
     {
      "unit": "cog",
@@ -360,6 +369,10 @@
      "よく来たね。星時計が止まってしまったの。力を貸してほしい"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 5,
    "enemies": [
     {
      "unit": "cog",
@@ -488,6 +501,11 @@
      "これで神殿は大丈夫だよ。ぼくはミオと一緒に、残りの歯車を探しに行くよ"
     ]
    ],
+   "deployFixed": [
+    "aobee",
+    "mio"
+   ],
+   "deployLimit": 6,
    "enemies": [
     {
      "unit": "yuragi",
@@ -619,6 +637,10 @@
      "ラストワークス…。歯車を止めようとする相手の名前が、やっと分かったよ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 6,
    "enemies": [
     {
      "unit": "cog",
@@ -790,6 +812,11 @@
      "やった、追い払ったよ！"
     ]
    ],
+   "deployFixed": [
+    "aobee",
+    "teru"
+   ],
+   "deployLimit": 6,
    "enemies": [
     {
      "unit": "cogair",
@@ -980,6 +1007,10 @@
      "そこまで！ 模擬戦はあんたたちの勝ちだ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 7,
    "enemies": [
     {
      "boss": true,
@@ -1159,6 +1190,11 @@
      "わるびー…"
     ]
    ],
+   "deployFixed": [
+    "aobee",
+    "hayate"
+   ],
+   "deployLimit": 8,
    "enemies": [
     {
      "boss": true,
@@ -1344,6 +1380,10 @@
      "守備隊が弱ってきた。あと少しだよ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 7,
    "enemies": [
     {
      "boss": true,
@@ -1376,6 +1416,21 @@
      "x": 2,
      "y": 4
     }
+   ],
+   "gate": true,
+   "gateOpenLines": [
+    [
+     "toride",
+     "ぐお…門の制御は、この機体が握っておったか…"
+    ],
+    [
+     "galdo",
+     "見よ、門が開いたわい！ 砦の守備隊長が門の制御を握っとったんじゃな"
+    ],
+    [
+     "aobee",
+     "これで砦の中へ入れるようになったよ。砦は取り戻したね！"
+    ]
    ],
    "id": 9,
    "intro": [
@@ -1418,7 +1473,7 @@
    "route": "A",
    "terrain": [
     ".F..VVVV..F.",
-    ".F..X..X..F.",
+    ".F..XDDX..F.",
     "F...X..X...F",
     "FF........FF",
     ".FF..GG..FF.",
@@ -1513,6 +1568,11 @@
      "星の配置は、わたしには見えています。…あと少しです！"
     ]
    ],
+   "deployFixed": [
+    "aobee",
+    "tia"
+   ],
+   "deployLimit": 8,
    "enemies": [
     {
      "boss": true,
@@ -1679,6 +1739,10 @@
      "海賊が弱ってきた。船まであと少しだよ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 7,
    "enemies": [
     {
      "boss": true,
@@ -1867,6 +1931,11 @@
      "逃がしたか…。まあ、港は守れたわ"
     ]
    ],
+   "deployFixed": [
+    "aobee",
+    "seira"
+   ],
+   "deployLimit": 8,
    "enemies": [
     {
      "boss": true,
@@ -2042,6 +2111,10 @@
      "ミストは逃げた。でも歯車は取り戻したよ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 8,
    "enemies": [
     {
      "boss": true,
@@ -2214,6 +2287,10 @@
      "暴走機が弱ってきた。集落まであと少しだよ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 9,
    "enemies": [
     {
      "boss": true,
@@ -2382,6 +2459,10 @@
      "ガルドさん、何か知ってるの？"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 8,
    "enemies": [
     {
      "boss": true,
@@ -2541,6 +2622,10 @@
      "要塞が弱ってきたよ！ 島の落下も止まりつつあるみたい"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 8,
    "enemies": [
     {
      "boss": true,
@@ -2706,6 +2791,10 @@
      "空挺隊が弱ってきた。歯車まであと少しだよ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 8,
    "enemies": [
     {
      "boss": true,
@@ -2867,6 +2956,10 @@
      "あと少しじゃ。グランツ、お主はここで変わってしまったのか…"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 8,
    "enemies": [
     {
      "boss": true,
@@ -3035,6 +3128,10 @@
      "追撃隊が弱ってきた。みんなの力だね"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 10,
    "enemies": [
     {
      "boss": true,
@@ -3235,6 +3332,10 @@
      "心配するな。腕が少しやられただけじゃ。…戦線には出られんがな"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 10,
    "enemies": [
     {
      "boss": true,
@@ -3437,6 +3538,10 @@
      "ロッコ、ぼくたちと一緒に――"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 9,
    "enemies": [
     {
      "boss": true,
@@ -3520,6 +3625,9 @@
     "....VVVV...."
    ],
    "title": "少年整備兵",
+   "unavailable": [
+    "galdo"
+   ],
    "winType": "boss"
   },
   {
@@ -3625,6 +3733,11 @@
      "大隊長…ありがとうよ"
     ]
    ],
+   "deployFixed": [
+    "aobee",
+    "rocco"
+   ],
+   "deployLimit": 10,
    "enemies": [
     {
      "boss": true,
@@ -3698,6 +3811,9 @@
     "....VVVV...."
    ],
    "title": "ロッコの決意",
+   "unavailable": [
+    "galdo"
+   ],
    "winType": "boss"
   },
   {
@@ -3807,6 +3923,10 @@
      "記録を聞かせる。今がその時だ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 10,
    "enemies": [
     {
      "boss": true,
@@ -3875,6 +3995,9 @@
     "....VVVV...."
    ],
    "title": "わるびーの真実",
+   "unavailable": [
+    "galdo"
+   ],
    "winType": "boss"
   },
   {
@@ -3980,6 +4103,11 @@
      "合体攻撃、決まった！ このまま押し切るよ"
     ]
    ],
+   "deployFixed": [
+    "aobee",
+    "warubee"
+   ],
+   "deployLimit": 12,
    "enemies": [
     {
      "boss": true,
@@ -4178,6 +4306,21 @@
      "両組ともあと少し。踏ん張るよ！"
     ]
    ],
+   "deployFixed": [
+    "hayate",
+    "warubee",
+    "aobee",
+    "minori",
+    "marmi",
+    "tia",
+    "rocco",
+    "seira",
+    "galdo",
+    "teru",
+    "mio",
+    "poco"
+   ],
+   "deployLimit": 12,
    "enemies": [
     {
      "boss": true,
@@ -4391,6 +4534,10 @@
      "よかった…。ガンジョウも、いつか分かってくれるはずだよ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 12,
    "enemies": [
     {
      "boss": true,
@@ -4580,6 +4727,10 @@
      "…ふふ、気が向いたらね"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 12,
    "enemies": [
     {
      "boss": true,
@@ -4782,6 +4933,10 @@
      "グランツ、見ておれ。人々の手で回る歯車の力を"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 12,
    "enemies": [
     {
      "boss": true,
@@ -5087,6 +5242,10 @@
     ],
     "triggerUnit": "lastgear"
    },
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 12,
    "enemies": [
     {
      "boss": true,
@@ -5286,6 +5445,10 @@
      "人形が弱ってきた。祭りまであと少しだよ"
     ]
    ],
+   "deployFixed": [
+    "aobee"
+   ],
+   "deployLimit": 12,
    "enemies": [
     {
      "boss": true,

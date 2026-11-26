@@ -31,11 +31,11 @@ function loadBattleSave() {
 }
 /* 素材マップ: 会話顔グラと戦闘シーンのユニット絵（プレビュー単一ファイル版では __IMG のデータURIを優先） */
 window.FACE_MAP = { aobee: "faces/aobee.jpg", warubee: "faces/warubee.jpg", galdo: "faces/galdo.jpg", marmi: "faces/marmi.jpg", poco: "faces/poco.jpg", minori: "faces/minori.jpg", mio: "faces/mio.jpg", teru: "faces/teru.jpg", hayate: "faces/hayate.jpg", tia: "faces/tia.jpg", seira: "faces/seira.jpg", rocco: "faces/rocco.jpg", mist: "faces/mist.jpg", ganzou: "chars/ganzou.jpg", granz: "chars/granz.jpg" };
-window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", telcarry: "units/teru-carry.png", hayatespin: "units/hayate-spin.png", tialaster: "units/tia-luster.png", seirabrig: "units/seira-brig.png", rocco: "units/rocco-works.png", roccoworks_ally: "units/rocco-works.png", mistral: "units/mistral.png", warugear: "units/warugia-custom.png", warugear_ally: "units/warugia-custom.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png", karakurishin: "units/karakuri-boss.png" };
+window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", telcarry: "units/teru-carry.png", hayatespin: "units/hayate-spin.png", tialaster: "units/tia-luster.png", seirabrig: "units/seira-brig.png", rocco: "units/rocco-works.png", roccoworks_ally: "units/rocco-works.png", mistral: "units/mistral.png", warugear: "units/warugia-custom.png", warugear_ally: "units/warugia-custom.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png", karakurishin: "units/karakuri-boss.png" , banninkai: "units/banninkai.png", bousouboss: "units/bousouboss.png", cogair: "units/cogair.png", cogsea: "units/cogsea.png", fogdevice: "units/fogdevice.png", fortress: "units/fortress.png", fuusha: "units/fuusha.png", ganzou: "units/ganzou.png", kaizokuboss: "units/kaizokuboss.png", kuutei: "units/kuutei.png", kuuteiboss: "units/kuuteiboss.png", kuzokuboss: "units/kuzokuboss.png", lastgear: "units/lastgear.png", sabicore: "units/sabicore.png", sajou: "units/sajou.png", sajouboss: "units/sajouboss.png", shuei: "units/shuei.png", shueiboss: "units/shueiboss.png", sniper: "units/sniper.png", toride: "units/toride.png", toubatsuboss: "units/toubatsuboss.png", yuragi: "units/yuragi.png", yuragiboss: "units/yuragiboss.png", sniperboss: "units/sniperboss.png", tsuigekiboss: "units/tsuigekiboss.png"};
 window.assetUrl = p => (window.__IMG && window.__IMG[p]) || ("assets/" + p);
-window.TILE_ART = { ".": "tiles/plain.jpg", P: "tiles/path.jpg", G: "tiles/gear.jpg", F: "tiles/forest.jpg", V: "tiles/village.jpg", R: "tiles/river.jpg", W: "tiles/water.jpg", L: "tiles/lamp.jpg", X: "tiles/block.jpg" };
+window.TILE_ART = { ".": "tiles/plain.jpg", P: "tiles/path.jpg", G: "tiles/gear.jpg", F: "tiles/forest.jpg", V: "tiles/village.jpg", R: "tiles/river.jpg", W: "tiles/water.jpg", L: "tiles/lamp.jpg", D: "tiles/block.jpg", X: "tiles/block.jpg" };
 /* マップ駒専用アイコン（顔・上半身を大きく切り出した視認性重視版） */
-window.UNIT_ICON = { gearstar: "icons/gearstar.png", galdon: "icons/gardon.png", ovenmarmi: "icons/oven-marmi.png", pocodash: "icons/poco-dash.png", moomoo: "icons/minori-unit.png", hoshifune: "icons/mio-unit.png", telcarry: "icons/teru-carry.png", hayatespin: "icons/hayate-spin.png", tialaster: "icons/tia-luster.png", seirabrig: "icons/seira-brig.png", rocco: "icons/rocco-works.png", roccoworks_ally: "icons/rocco-works.png", mistral: "icons/mistral.png", warugear: "icons/warugia-custom.png", warugear_ally: "icons/warugia-custom.png", cog: "icons/sabi-cog.png", bannin: "icons/bannin-cog.png", karakuri: "icons/karakuri-boss.png", karakurishin: "icons/karakuri-boss.png" };
+window.UNIT_ICON = { gearstar: "icons/gearstar.png", galdon: "icons/gardon.png", ovenmarmi: "icons/oven-marmi.png", pocodash: "icons/poco-dash.png", moomoo: "icons/minori-unit.png", hoshifune: "icons/mio-unit.png", telcarry: "icons/teru-carry.png", hayatespin: "icons/hayate-spin.png", tialaster: "icons/tia-luster.png", seirabrig: "icons/seira-brig.png", rocco: "icons/rocco-works.png", roccoworks_ally: "icons/rocco-works.png", mistral: "icons/mistral.png", warugear: "icons/warugia-custom.png", warugear_ally: "icons/warugia-custom.png", cog: "icons/sabi-cog.png", bannin: "icons/bannin-cog.png", karakuri: "icons/karakuri-boss.png", karakurishin: "icons/karakuri-boss.png" , banninkai: "icons/banninkai.png", bousouboss: "icons/bousouboss.png", cogair: "icons/cogair.png", cogsea: "icons/cogsea.png", fogdevice: "icons/fogdevice.png", fortress: "icons/fortress.png", fuusha: "icons/fuusha.png", ganzou: "icons/ganzou.png", kaizokuboss: "icons/kaizokuboss.png", kuutei: "icons/kuutei.png", kuuteiboss: "icons/kuuteiboss.png", kuzokuboss: "icons/kuzokuboss.png", lastgear: "icons/lastgear.png", sabicore: "icons/sabicore.png", sajou: "icons/sajou.png", sajouboss: "icons/sajouboss.png", shuei: "icons/shuei.png", shueiboss: "icons/shueiboss.png", sniper: "icons/sniper.png", toride: "icons/toride.png", toubatsuboss: "icons/toubatsuboss.png", yuragi: "icons/yuragi.png", yuragiboss: "icons/yuragiboss.png", animal: "icons/animal.png", citizen: "icons/citizen.png", ship: "icons/ship.png", sniperboss: "icons/sniperboss.png", tsuigekiboss: "icons/tsuigekiboss.png"};
 const panel = new Panel($("panel"));
 const grid = new GridMap($("grid"), onTapCell);
 
@@ -161,9 +161,55 @@ function showEventArt(path, caption) {
   });
 }
 
-async function startStage(idx) {
+/* ===== 出撃メンバー選択（面開始前） =====
+   既定選択は従来の allies どおり。固定メンバーは外せず、枠数を超えて選べない。
+   選ばなかったメンバーはその面に出撃しない（配置は allies のスロット順に割り当てる）。 */
+let deployIdx = 0, deploySel = new Set();
+function startStage(idx) { openDeploy(idx); }
+function openDeploy(idx) {
+  deployIdx = idx;
+  deploySel = new Set(E.deployInfo(DATA, run, idx).defaultSelection);
+  renderDeploy();
+  $("deploy").classList.remove("hidden");
+}
+function closeDeploy() { $("deploy").classList.add("hidden"); }
+function renderDeploy() {
+  const info = E.deployInfo(DATA, run, deployIdx);
+  const stage = DATA.stages.stages[deployIdx];
+  let h = "<div class='im-inner'>";
+  h += "<div class='im-head'><h2>出撃メンバー選択</h2><div class='im-funds'>出撃枠 " + deploySel.size + " / " + info.limit + "</div></div>";
+  h += "<div class='stat'>" + (stage.ex ? "EX面" : "第" + stage.id + "面") + "「" + stage.title + "」へ出撃するメンバーを選んでください。タップで選択／解除、固定メンバーは外せません。</div>";
+  if (info.unavailable.length) {
+    h += "<div class='stat' style='color:#fca5a5'>参加不可: " + info.unavailable.map(pid => DATA.pilots.pilots[pid].name + "（負傷療養中）").join("、") + "</div>";
+  }
+  h += "<div class='im-tabs'>";
+  for (const pid of info.roster) {
+    const p = DATA.pilots.pilots[pid], u = DATA.units.units[p.unit], g = run.pilots[pid];
+    const face = window.FACE_MAP[pid];
+    const fixed = info.fixed.includes(pid);
+    const on = deploySel.has(pid);
+    h += "<button class='im-tab" + (on ? " active" : "") + "' data-pilot='" + pid + "'" + (fixed ? " disabled" : "") + ">" +
+      (face ? "<img src='" + assetUrl(face) + "' alt=''>" : "") + p.name + "／" + u.name + " Lv" + g.level + (fixed ? "（固定）" : "") + "</button>";
+  }
+  h += "</div>";
+  h += "<div class='im-topbtns'><button data-act='go' class='primary'" + (deploySel.size === 0 ? " disabled" : "") + ">このメンバーで出撃</button><button data-act='cancel'>やめる</button></div>";
+  h += "</div>";
+  const el = $("deploy");
+  el.innerHTML = h;
+  el.querySelectorAll("button[data-pilot]").forEach(b => b.addEventListener("click", () => {
+    const pid = b.dataset.pilot;
+    if (info.fixed.includes(pid)) return;
+    if (deploySel.has(pid)) deploySel.delete(pid);
+    else { if (deploySel.size >= info.limit) return; deploySel.add(pid); }
+    renderDeploy();
+  }));
+  el.querySelector("[data-act='go']").addEventListener("click", () => { closeDeploy(); beginStage(deployIdx, [...deploySel]); });
+  el.querySelector("[data-act='cancel']").addEventListener("click", () => { closeDeploy(); $("btn-title").click(); });
+}
+
+async function beginStage(idx, selection) {
   stageIdx = idx; sel = null;
-  st = E.startStage(DATA, run, idx);
+  st = E.startStage(DATA, run, idx, selection);
   $("title-screen").classList.add("hidden"); $("app").classList.remove("hidden");
   setOrientation();
   saveAll(); // 面開始時点の戦況も中断セーブに残す
@@ -182,6 +228,7 @@ function objectiveText() {
     else if (st.coreChoice === "destroy") t = "目的: サビのコアを破壊する";
     else if (trig && trig.hp > 0) t = "目的: ラストギアを倒し、コアへの道を開く（コアはバリアで守られている）";
   }
+  if (st.stage.gate) t += st.gateOpen ? "／砦の門は開いた" : "／砦の門は閉じている（ボスを倒すと開く）";
   if (st.stage.loseNpc) t += "／" + (st.stage.protectLabel || "動物") + "を守る";
   if (st.stage.turnLimit) t += "／" + st.stage.turnLimit + "ターン以内";
   if (st.fogActive) t += "／霧: 灯りの近く以外は命中-30";
@@ -207,13 +254,13 @@ function targetTiles() {
   const u = sel.unit, w = u.weapons[sel.weaponIdx];
   return E.living(st, "enemy").filter(e => { const d = E.dist(u, e); return d >= w.min && d <= w.max; }).map(e => ({ x: e.x, y: e.y }));
 }
-function healWeapons(u) { return u.weapons.map((w, i) => ({ w, i })).filter(x => x.w.heal); }
+function healWeapons(u) { return u.weapons.map((w, i) => ({ w, i })).filter(x => x.w.heal || x.w.supply); }
 function healTargetTiles() {
   const u = sel.unit, w = u.weapons[sel.weaponIdx];
   return E.living(st, "ally").filter(a => { const d = E.dist(u, a); return d >= w.min && d <= w.max; }).map(a => ({ x: a.x, y: a.y }));
 }
 function attackWeaponsVsAny(u) {
-  return u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal && u.en >= (x.w.en || 0) && u.morale >= (x.w.morale || 0) && E.comboPartnerOk(st, u, x.w) &&
+  return u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal && !x.w.supply && u.en >= (x.w.en || 0) && u.morale >= (x.w.morale || 0) && E.comboPartnerOk(st, u, x.w) &&
     E.living(st, "enemy").some(e => { const d = E.dist(u, e); return d >= x.w.min && d <= x.w.max; }));
 }
 /* 武器が今使えない理由（武器リストで選択不可表示に添える）。使える場合は null */
@@ -245,14 +292,18 @@ function renderPanel() {
     panel.show(html + "<div class='stat'>コマンドを選んでください。</div>");
     const items = [];
     if (attackWeaponsVsAny(u).length) items.push({ label: "攻撃", cls: "primary", onClick: () => { sel.mode = "weapon"; render(); } });
-    if (healWeapons(u).length && healTargetTilesFor(u).length) items.push({ label: "回復・修理", onClick: () => { sel.mode = "healWeapon"; render(); } });
+    const supWs = healWeapons(u);
+    if (supWs.length && healTargetTilesFor(u).length) {
+      const supLabel = supWs.every(x => x.w.supply) ? "補給" : (supWs.some(x => x.w.supply) ? "回復・修理・補給" : "回復・修理");
+      items.push({ label: supLabel, onClick: () => { sel.mode = "healWeapon"; render(); } });
+    }
     items.push({ label: "移動をキャンセル", onClick: cancelMove });
     items.push({ label: "待機する", onClick: () => endUnitAction() });
     panel.buttons(items);
     addHoshiButtons(u, "moved");
   } else if (sel.mode === "weapon") {
     panel.show(html + "<div class='stat'>武器を選んでください。</div>");
-    const items = u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal).map(x => {
+    const items = u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal && !x.w.supply).map(x => {
       const reason = weaponBlockReason(u, x.w);
       return {
         label: x.w.name + " (威力" + x.w.power + " 命中" + x.w.hit + " 射程" + x.w.min + "-" + x.w.max + (x.w.en ? " EN" + x.w.en : "") + ")" + (reason ? " ※" + reason : ""),
@@ -278,13 +329,14 @@ function renderPanel() {
       { label: "もどる", onClick: () => { sel.mode = "target"; render(); } }
     ]);
   } else if (sel.mode === "healWeapon") {
-    panel.show(html + "<div class='stat'>回復・修理の方法を選んでください。</div>");
+    panel.show(html + "<div class='stat'>回復・修理・補給の方法を選んでください。</div>");
     panel.buttons(healWeapons(u).map(x => ({
-      label: x.w.name + " (回復" + x.w.power + " 射程" + x.w.min + "-" + x.w.max + ")",
+      label: x.w.supply ? x.w.name + " (EN全回復 射程" + x.w.min + "-" + x.w.max + ")" : x.w.name + " (回復" + x.w.power + " 射程" + x.w.min + "-" + x.w.max + ")",
       onClick: () => { sel.weaponIdx = x.i; sel.mode = "healTarget"; render(); }
     })).concat([{ label: "もどる", onClick: () => { sel.mode = "moved"; render(); } }]));
   } else if (sel.mode === "healTarget") {
-    panel.show(html + "<div class='stat'>赤いマスの味方をタップで回復・修理します。</div>");
+    const isSupply = !!(u.weapons[sel.weaponIdx] && u.weapons[sel.weaponIdx].supply);
+    panel.show(html + "<div class='stat'>赤いマスの味方をタップで" + (isSupply ? "補給します（EN全回復）" : "回復・修理します") + "。</div>");
     panel.buttons([{ label: "もどる", onClick: () => { sel.mode = "healWeapon"; render(); } }]);
   } else if (sel.mode === "hoshiTarget") {
     panel.show(html + "<div class='stat'>対象の味方をタップしてください。</div>");
@@ -390,7 +442,8 @@ async function doPlayerAttack() {
 async function doHeal(target) {
   busy = true;
   const u = sel.unit;
-  const events = E.healAction(st, u, target, sel.weaponIdx, Math.random);
+  const w = u.weapons[sel.weaponIdx];
+  const events = w.supply ? E.supplyAction(st, u, target, sel.weaponIdx, Math.random) : E.healAction(st, u, target, sel.weaponIdx, Math.random);
   await BattleView.playSimplified($("grid"), st, events);
   sel = null; u.acted = true; busy = false;
   render();

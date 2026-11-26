@@ -17,7 +17,7 @@
       const idx = ev.defY * w + ev.defX;
       const cell = gridEl.children[idx];
       if (!cell) { resolve(); return; }
-      if (ev.type === "heal") {
+      if (ev.type === "heal" || ev.type === "supply") {
         const glow = document.createElement("div");
         glow.className = "cell-fx heal";
         cell.appendChild(glow);
@@ -45,7 +45,7 @@
       }
       const pop = document.createElement("div");
       pop.className = "dmg-pop";
-      pop.textContent = ev.type === "heal" ? "+" + ev.amount : (ev.hit ? "-" + ev.dmg : "MISS");
+      pop.textContent = ev.type === "heal" ? "+" + ev.amount : ev.type === "supply" ? "EN+" + ev.amount : (ev.hit ? "-" + ev.dmg : "MISS");
       if (ev.killed) pop.textContent += " 撃墜!";
       cell.appendChild(pop);
       setTimeout(() => { pop.remove(); resolve(); }, 650);
@@ -53,7 +53,7 @@
   }
   async function playSimplified(gridEl, st, events) {
     for (const ev of events) {
-      if (ev.type === "attack" || ev.type === "heal") await showPop(gridEl, st, ev);
+      if (ev.type === "attack" || ev.type === "heal" || ev.type === "supply") await showPop(gridEl, st, ev);
     }
   }
   // 横画面用シーン: 左右対峙・掛け合いセリフ・HPバーの減少アニメ・ダメージ数字・余韻つき
