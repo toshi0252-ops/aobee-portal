@@ -167,8 +167,11 @@ function showEventArt(path, caption) {
 let deployIdx = 0, deploySel = new Set();
 function startStage(idx) { openDeploy(idx); }
 function openDeploy(idx) {
+  const info = E.deployInfo(DATA, run, idx);
+  // 全員出撃しかありえない面（第1面など）は選択画面を出さず、そのまま出撃する
+  if (!info.needsChoice) { beginStage(idx, info.defaultSelection); return; }
   deployIdx = idx;
-  deploySel = new Set(E.deployInfo(DATA, run, idx).defaultSelection);
+  deploySel = new Set(info.defaultSelection);
   renderDeploy();
   $("deploy").classList.remove("hidden");
 }

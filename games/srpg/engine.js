@@ -186,7 +186,10 @@
     return {
       roster, fixed, unavailable, limit,
       defaultSelection: def.slice(0, Math.max(limit, fixed.length)),
-      slots: stage.allies.map(a => ({ x: a.x, y: a.y }))
+      slots: stage.allies.map(a => ({ x: a.x, y: a.y })),
+      // ロスター全員が枠に収まる面では選択の余地がない（全員出撃しかありえない）ので、
+      // UI 側は選択画面を出さず即出撃する。その判定をここに集約する。
+      needsChoice: roster.length > limit
     };
   }
   /* 選択をサニタイズする: ロスター外・重複を除き、固定メンバーを必ず含め、枠数で打ち切る */
