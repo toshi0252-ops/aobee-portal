@@ -331,6 +331,20 @@
      "morale": 120,
      "name": "スターフィーバー",
      "power": 2200
+    },
+    {
+     "combo": {
+      "partner": "warugear_ally",
+      "range": 4
+     },
+     "en": 40,
+     "fx": "beam",
+     "hit": 85,
+     "max": 4,
+     "min": 2,
+     "morale": 110,
+     "name": "スターギア・クロス",
+     "power": 2600
     }
    ]
   },
@@ -696,6 +710,44 @@
     }
    ]
   },
+  "roccoworks_ally": {
+   "armor": 1020,
+   "color": "#fbbf24",
+   "en": 110,
+   "hp": 3100,
+   "move": 5,
+   "name": "ロッコワークス",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "レンチアーム",
+     "power": 1400
+    },
+    {
+     "en": 0,
+     "fx": "gun",
+     "hit": 78,
+     "max": 3,
+     "min": 2,
+     "name": "スパナ投げ",
+     "power": 1200
+    },
+    {
+     "en": 0,
+     "fx": "heal",
+     "heal": true,
+     "hit": 100,
+     "max": 3,
+     "min": 1,
+     "name": "修理",
+     "power": 1100
+    }
+   ]
+  },
   "sajou": {
    "aim": 100,
    "armor": 900,
@@ -1002,6 +1054,36 @@
     }
    ]
   },
+  "toubatsuboss": {
+   "aim": 116,
+   "armor": 1120,
+   "color": "#881337",
+   "en": 120,
+   "eva": 102,
+   "hp": 4600,
+   "move": 5,
+   "name": "討伐隊長機",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 80,
+     "max": 1,
+     "min": 1,
+     "name": "討伐ブレード",
+     "power": 1600
+    },
+    {
+     "en": 10,
+     "fx": "gun",
+     "hit": 76,
+     "max": 4,
+     "min": 2,
+     "name": "討伐キャノン",
+     "power": 1450
+    }
+   ]
+  },
   "tsuigekiboss": {
    "aim": 114,
    "armor": 1100,
@@ -1039,6 +1121,43 @@
    "en": 130,
    "eva": 115,
    "hp": 3800,
+   "move": 6,
+   "name": "ワルギア・カスタム",
+   "weapons": [
+    {
+     "en": 0,
+     "fx": "melee",
+     "hit": 82,
+     "max": 1,
+     "min": 1,
+     "name": "ワルギアクロー",
+     "power": 1500
+    },
+    {
+     "en": 10,
+     "fx": "missile",
+     "hit": 75,
+     "max": 3,
+     "min": 2,
+     "name": "いたずらミサイル",
+     "power": 1350
+    },
+    {
+     "en": 15,
+     "fx": "beam",
+     "hit": 78,
+     "max": 4,
+     "min": 2,
+     "name": "星屑ランチャー",
+     "power": 1450
+    }
+   ]
+  },
+  "warugear_ally": {
+   "armor": 1050,
+   "color": "#a21caf",
+   "en": 130,
+   "hp": 3600,
    "move": 6,
    "name": "ワルギア・カスタム",
    "weapons": [

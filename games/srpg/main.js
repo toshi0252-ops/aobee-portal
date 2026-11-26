@@ -31,11 +31,11 @@ function loadBattleSave() {
 }
 /* 素材マップ: 会話顔グラと戦闘シーンのユニット絵（プレビュー単一ファイル版では __IMG のデータURIを優先） */
 window.FACE_MAP = { aobee: "faces/aobee.jpg", warubee: "faces/warubee.jpg", galdo: "faces/galdo.jpg", marmi: "faces/marmi.jpg", poco: "faces/poco.jpg", minori: "faces/minori.jpg", mio: "faces/mio.jpg", teru: "faces/teru.jpg", hayate: "faces/hayate.jpg", tia: "faces/tia.jpg", seira: "faces/seira.jpg", rocco: "faces/rocco.jpg", mist: "faces/mist.jpg", ganzou: "chars/ganzou.jpg", granz: "chars/granz.jpg" };
-window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", telcarry: "units/teru-carry.png", hayatespin: "units/hayate-spin.png", tialaster: "units/tia-luster.png", seirabrig: "units/seira-brig.png", rocco: "units/rocco-works.png", mistral: "units/mistral.png", warugear: "units/warugia-custom.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png" };
+window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", telcarry: "units/teru-carry.png", hayatespin: "units/hayate-spin.png", tialaster: "units/tia-luster.png", seirabrig: "units/seira-brig.png", rocco: "units/rocco-works.png", roccoworks_ally: "units/rocco-works.png", mistral: "units/mistral.png", warugear: "units/warugia-custom.png", warugear_ally: "units/warugia-custom.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png" };
 window.assetUrl = p => (window.__IMG && window.__IMG[p]) || ("assets/" + p);
 window.TILE_ART = { ".": "tiles/plain.jpg", P: "tiles/path.jpg", G: "tiles/gear.jpg", F: "tiles/forest.jpg", V: "tiles/village.jpg", R: "tiles/river.jpg", W: "tiles/water.jpg", L: "tiles/lamp.jpg", X: "tiles/block.jpg" };
 /* マップ駒専用アイコン（顔・上半身を大きく切り出した視認性重視版） */
-window.UNIT_ICON = { gearstar: "icons/gearstar.png", galdon: "icons/gardon.png", ovenmarmi: "icons/oven-marmi.png", pocodash: "icons/poco-dash.png", moomoo: "icons/minori-unit.png", hoshifune: "icons/mio-unit.png", telcarry: "icons/teru-carry.png", hayatespin: "icons/hayate-spin.png", tialaster: "icons/tia-luster.png", seirabrig: "icons/seira-brig.png", rocco: "icons/rocco-works.png", mistral: "icons/mistral.png", warugear: "icons/warugia-custom.png", cog: "icons/sabi-cog.png", bannin: "icons/bannin-cog.png", karakuri: "icons/karakuri-boss.png" };
+window.UNIT_ICON = { gearstar: "icons/gearstar.png", galdon: "icons/gardon.png", ovenmarmi: "icons/oven-marmi.png", pocodash: "icons/poco-dash.png", moomoo: "icons/minori-unit.png", hoshifune: "icons/mio-unit.png", telcarry: "icons/teru-carry.png", hayatespin: "icons/hayate-spin.png", tialaster: "icons/tia-luster.png", seirabrig: "icons/seira-brig.png", rocco: "icons/rocco-works.png", roccoworks_ally: "icons/rocco-works.png", mistral: "icons/mistral.png", warugear: "icons/warugia-custom.png", warugear_ally: "icons/warugia-custom.png", cog: "icons/sabi-cog.png", bannin: "icons/bannin-cog.png", karakuri: "icons/karakuri-boss.png" };
 const panel = new Panel($("panel"));
 const grid = new GridMap($("grid"), onTapCell);
 
@@ -190,8 +190,19 @@ function healTargetTiles() {
   return E.living(st, "ally").filter(a => { const d = E.dist(u, a); return d >= w.min && d <= w.max; }).map(a => ({ x: a.x, y: a.y }));
 }
 function attackWeaponsVsAny(u) {
-  return u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal && u.en >= (x.w.en || 0) && u.morale >= (x.w.morale || 0) &&
+  return u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal && u.en >= (x.w.en || 0) && u.morale >= (x.w.morale || 0) && E.comboPartnerOk(st, u, x.w) &&
     E.living(st, "enemy").some(e => { const d = E.dist(u, e); return d >= x.w.min && d <= x.w.max; }));
+}
+/* 武器が今使えない理由（武器リストで選択不可表示に添える）。使える場合は null */
+function weaponBlockReason(u, w) {
+  if (w.combo && !E.comboPartnerOk(st, u, w)) {
+    const partner = DATA.units.units[w.combo.partner];
+    return (partner ? partner.name : "相方") + "が近くにいないと使えない";
+  }
+  if (u.en < (w.en || 0)) return "EN不足";
+  if (u.morale < (w.morale || 0)) return "気力不足（要" + w.morale + "）";
+  if (!E.living(st, "enemy").some(e => { const d = E.dist(u, e); return d >= w.min && d <= w.max; })) return "射程内に敵がいない";
+  return null;
 }
 function renderPanel() {
   if (st.result) return renderResultPanel();
@@ -218,10 +229,16 @@ function renderPanel() {
     addHoshiButtons(u, "moved");
   } else if (sel.mode === "weapon") {
     panel.show(html + "<div class='stat'>武器を選んでください。</div>");
-    panel.buttons(attackWeaponsVsAny(u).map(x => ({
-      label: x.w.name + " (威力" + x.w.power + " 命中" + x.w.hit + " 射程" + x.w.min + "-" + x.w.max + (x.w.en ? " EN" + x.w.en : "") + ")",
-      onClick: () => { sel.weaponIdx = x.i; sel.mode = "target"; render(); }
-    })).concat([{ label: "もどる", onClick: () => { sel.mode = "moved"; render(); } }]));
+    const items = u.weapons.map((w, i) => ({ w, i })).filter(x => !x.w.heal).map(x => {
+      const reason = weaponBlockReason(u, x.w);
+      return {
+        label: x.w.name + " (威力" + x.w.power + " 命中" + x.w.hit + " 射程" + x.w.min + "-" + x.w.max + (x.w.en ? " EN" + x.w.en : "") + ")" + (reason ? " ※" + reason : ""),
+        disabled: !!reason,
+        onClick: () => { sel.weaponIdx = x.i; sel.mode = "target"; render(); }
+      };
+    });
+    items.push({ label: "もどる", onClick: () => { sel.mode = "moved"; render(); } });
+    panel.buttons(items);
   } else if (sel.mode === "target") {
     panel.show(html + "<div class='stat'>赤いマスの敵をタップすると戦闘予測が出ます。</div>");
     panel.buttons([{ label: "もどる", onClick: () => { sel.mode = "weapon"; render(); } }]);

@@ -223,9 +223,17 @@
     if (def.flags.fukutsu) d = Math.round(d / 2);
     return Math.max(50, d);
   }
+  /* 合体攻撃の使用条件: w.combo {partner: 相方ユニットID, range: 許容距離} がある武器は、
+     相方が生存し、攻撃側から range 以内にいる時だけ使える（スターギア・クロス等）。 */
+  function comboPartnerOk(st, atk, w) {
+    if (!w || !w.combo) return true;
+    const partner = st.units.find(u => u.side === atk.side && u.uid !== atk.uid && u.unitId === w.combo.partner && u.hp > 0);
+    if (!partner) return false;
+    return dist(atk, partner) <= (w.combo.range || 4);
+  }
   function canUseWeapon(st, atk, def, w) {
     const d = dist(atk, def);
-    return d >= w.min && d <= w.max && atk.en >= (w.en || 0) && atk.morale >= (w.morale || 0) && !w.heal;
+    return d >= w.min && d <= w.max && atk.en >= (w.en || 0) && atk.morale >= (w.morale || 0) && !w.heal && comboPartnerOk(st, atk, w);
   }
   function chooseStance(st, atk, def) {
     // 防御側AI: 期待被害が最小になる 反撃/防御/回避 を選ぶ
@@ -424,6 +432,10 @@
     if (st.stage.winType === "boss") {
       const boss = st.units.find(u => u.boss && u.side === "enemy");
       if (boss && boss.hp <= 0) st.result = "win";
+    } else if (st.stage.winType === "bosses") {
+      // 分割出撃面（第20面）: ボス格が複数いる場合は全員の撃破で勝利
+      const bosses = st.units.filter(u => u.boss && u.side === "enemy");
+      if (bosses.length && bosses.every(b => b.hp <= 0)) st.result = "win";
     } else if (!enemies.length) st.result = "win";
     if (st.result === "win") st.medal = st.turn <= (st.stage.medalTurns || 99);
   }
@@ -546,7 +558,7 @@
     if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
     return st;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  const api = { TERRAIN, terrainAt, terrainChar, dist, createRun, startStage, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
