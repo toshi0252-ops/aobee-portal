@@ -11,6 +11,78 @@
     } else setTimeout(() => el.remove(), delay + dur + 80);
   }
   // 簡略: マップのセル上にダメージ数字をポップ表示する。命中時はセルのフラッシュ、撃破時はバースト、回復時は光の粒も出す
+  /* ===== 効果音（Web Audio合成・素材なし）: 撃墜時の爆発音 =====
+     ON/OFF はホスト側（main.js のタイトル設定）が global.SRPG_SFX_ON で切り替える。未設定時は ON。
+     AudioContext は最初の再生時に作る（タップ起点の流れで呼ばれるので自動再生制限に触れにくい）。 */
+  let actx = null;
+  function audioCtx() {
+    if (global.SRPG_SFX_ON === false) return null;
+    try {
+      if (!actx) actx = new (global.AudioContext || global.webkitAudioContext)();
+      if (actx.state === "suspended") actx.resume();
+      return actx;
+    } catch (e) { return null; }
+  }
+  function sfxExplosion(big) {
+    const ac = audioCtx();
+    if (!ac) return;
+    try {
+      const t = ac.currentTime;
+      const dur = big ? 0.8 : 0.55;
+      // 破裂音: 減衰ノイズをローパスで高域から落とす
+      const len = Math.floor(ac.sampleRate * dur);
+      const buf = ac.createBuffer(1, len, ac.sampleRate);
+      const ch = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.6);
+      const src = ac.createBufferSource(); src.buffer = buf;
+      const lp = ac.createBiquadFilter(); lp.type = "lowpass";
+      lp.frequency.setValueAtTime(big ? 3000 : 2400, t);
+      lp.frequency.exponentialRampToValueAtTime(150, t + dur);
+      const g = ac.createGain();
+      g.gain.setValueAtTime(big ? 0.7 : 0.5, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(lp); lp.connect(g); g.connect(ac.destination);
+      src.start(t);
+      // 胴鳴り: 低いサインを落とす
+      const osc = ac.createOscillator(); osc.type = "sine";
+      osc.frequency.setValueAtTime(big ? 125 : 105, t);
+      osc.frequency.exponentialRampToValueAtTime(36, t + dur * 0.8);
+      const og = ac.createGain();
+      og.gain.setValueAtTime(big ? 0.55 : 0.4, t);
+      og.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.8);
+      osc.connect(og); og.connect(ac.destination);
+      osc.start(t); osc.stop(t + dur);
+    } catch (e) { /* 音が出なくても演出は続行する */ }
+  }
+  /* マップ上の撃墜爆発: 火球＋衝撃波リング＋破片＋煙。セル（position:relative 前提）に重ねる */
+  function mapExplosion(cell, big) {
+    const boomEl = document.createElement("div");
+    boomEl.className = "cell-boom" + (big ? " big" : "");
+    cell.appendChild(boomEl);
+    setTimeout(() => boomEl.remove(), 740);
+    const ring = document.createElement("div");
+    ring.className = "cell-ring";
+    cell.appendChild(ring);
+    setTimeout(() => ring.remove(), 660);
+    const n = big ? 10 : 7;
+    for (let i = 0; i < n; i++) {
+      const sp = document.createElement("div");
+      sp.className = "cell-spark boom-spark";
+      sp.textContent = i % 3 ? "✸" : "✦";
+      sp.style.left = "50%"; sp.style.top = "50%";
+      cell.appendChild(sp);
+      const ang = Math.random() * Math.PI * 2, distPx = (big ? 48 : 34) * (0.6 + Math.random() * 0.7);
+      anim(sp, [{ transform: "translate(-50%,-50%) scale(1)", opacity: 1 }, { transform: "translate(calc(-50% + " + (Math.cos(ang) * distPx).toFixed(1) + "px), calc(-50% + " + (Math.sin(ang) * distPx).toFixed(1) + "px)) scale(.4)", opacity: 0 }], { duration: 480 + Math.random() * 220, fill: "forwards" });
+    }
+    for (let i = 0; i < 3; i++) {
+      const sm = document.createElement("div");
+      sm.className = "cell-smoke";
+      sm.style.left = (30 + Math.random() * 40) + "%";
+      sm.style.top = (24 + Math.random() * 30) + "%";
+      cell.appendChild(sm);
+      anim(sm, [{ transform: "translate(-50%,-50%) scale(.6)", opacity: .55 }, { transform: "translate(-50%,-100%) scale(1.5)", opacity: 0 }], { duration: 900, delay: 120 + i * 90, fill: "forwards" });
+    }
+  }
   function showPop(gridEl, st, ev) {
     return new Promise(resolve => {
       const w = st.stage.terrain[0].length;
@@ -36,19 +108,30 @@
         cell.appendChild(fl);
         setTimeout(() => fl.remove(), 520);
       }
+      let wait = 650;
       if (ev.killed) {
-        const b = document.createElement("div");
-        b.className = "cell-burst";
-        b.textContent = "✸";
-        cell.appendChild(b);
-        setTimeout(() => b.remove(), 680);
+        const defU = (st.units || []).find(u => u.x === ev.defX && u.y === ev.defY);
+        const living = defU && (defU.unitId === "animal" || defU.unitId === "citizen");
+        if (living) {
+          // 動物・民間人は爆発させない（従来のバースト表示のみ）
+          const b = document.createElement("div");
+          b.className = "cell-burst";
+          b.textContent = "✸";
+          cell.appendChild(b);
+          setTimeout(() => b.remove(), 680);
+        } else {
+          const big = defU ? (defU.maxHp >= 2500 || /boss/.test(defU.unitId)) : false;
+          mapExplosion(cell, big);
+          sfxExplosion(big);
+          wait = 920; // 爆発を見せ切ってから次へ
+        }
       }
       const pop = document.createElement("div");
       pop.className = "dmg-pop";
       pop.textContent = ev.type === "heal" ? "+" + ev.amount : ev.type === "supply" ? "EN+" + ev.amount : (ev.hit ? "-" + ev.dmg : "MISS");
       if (ev.killed) pop.textContent += " 撃墜!";
       cell.appendChild(pop);
-      setTimeout(() => { pop.remove(); resolve(); }, 650);
+      setTimeout(() => { pop.remove(); resolve(); }, wait);
     });
   }
   async function playSimplified(gridEl, st, events) {
@@ -295,6 +378,17 @@
         if (s.ev.killed || big || ratio >= .45) { ov.classList.add("fx-quake-l"); setTimeout(() => ov.classList.remove("fx-quake-l"), 480); }
         else if (ratio >= .2) { ov.classList.add("fx-quake-s"); setTimeout(() => ov.classList.remove("fx-quake-s"), 360); }
         if (s.ev.killed) s.foe.classList.add("bs-destroyed");
+        if (s.ev.killed) {
+          sfxExplosion(big);
+          // 二段爆発: 少し遅れてもう一回り大きい爆発が起きてから消滅する
+          setTimeout(() => {
+            if (done) return;
+            boom(foeC.x + (Math.random() * 36 - 18), foeC.y - 10, true);
+            burst(foeC.x, foeC.y, 18, 120);
+            s.foe.classList.add("bs-hitflash");
+            setTimeout(() => s.foe.classList.remove("bs-hitflash"), 300);
+          }, 230);
+        }
       }
       const steps = [];
       if (main) steps.push({ el: left, foe: right, ev: main, who: atkU, foeSide: defSide, foeU: defU });

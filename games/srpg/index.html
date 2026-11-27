@@ -57,6 +57,7 @@ body.landscape.panel-hidden #panel{display:none}
 @keyframes bsfloat{0%,100%{transform:translateY(4px)}50%{transform:translateY(-4px)}}
 .chip-img{position:absolute;inset:1px;width:calc(100% - 2px);height:calc(100% - 2px);object-fit:contain;pointer-events:none;border-radius:7px;border:2px solid rgba(56,189,248,.95);background:rgba(10,28,50,.55);box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .chip-img.enemy{border-color:rgba(239,68,68,.95);background:rgba(50,16,16,.55)}
+.chip-img.npc{border-color:rgba(250,204,21,.95);background:rgba(50,42,4,.55)}
 .chip-img.boss{border-color:#facc15;background:rgba(50,40,4,.55)}
 .chip-img.acted{filter:grayscale(.45) brightness(.85)}
 .bs-dmg{position:absolute;left:0;right:0;top:-26px;text-align:center;font-weight:900;font-size:19px;color:#fff;text-shadow:0 0 5px #000,0 2px 2px #000;animation:pop .9s ease-out;z-index:5}
@@ -92,6 +93,13 @@ body.landscape.panel-hidden #panel{display:none}
 .cell-fx{position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(253,224,71,.65) 45%,rgba(249,115,22,0) 75%);z-index:4;pointer-events:none;animation:fxfade .45s ease-out forwards}
 .cell-fx.heal{background:radial-gradient(circle,rgba(220,252,231,.9),rgba(74,222,128,.45) 50%,rgba(74,222,128,0) 78%)}
 .cell-burst{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fb923c;text-shadow:0 0 8px #f59e0b,0 0 3px #fff;z-index:6;pointer-events:none;animation:burstpop .62s ease-out forwards}
+.cell-boom{position:absolute;left:50%;top:50%;width:190%;height:190%;border-radius:50%;background:radial-gradient(circle,#fff 0 15%,#fde68a 35%,rgba(249,115,22,.8) 60%,rgba(220,38,38,0) 78%);z-index:6;pointer-events:none;animation:cellboom .55s ease-out forwards}
+.cell-boom.big{width:270%;height:270%}
+@keyframes cellboom{0%{transform:translate(-50%,-50%) scale(.25);opacity:1}70%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.15);opacity:0}}
+.cell-ring{position:absolute;left:50%;top:50%;width:60%;height:60%;border:3px solid rgba(253,224,71,.9);border-radius:50%;z-index:6;pointer-events:none;animation:cellring .5s ease-out forwards}
+@keyframes cellring{0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0}}
+.boom-spark{color:#fb923c!important;text-shadow:0 0 6px #f59e0b,0 0 2px #fff!important;font-size:14px;z-index:7}
+.cell-smoke{position:absolute;width:46%;height:46%;border-radius:50%;background:radial-gradient(circle,rgba(100,116,139,.85),rgba(71,85,105,0) 70%);z-index:5;pointer-events:none}
 @keyframes burstpop{0%{transform:scale(.3) rotate(0deg);opacity:1}55%{opacity:1}100%{transform:scale(1.5) rotate(24deg);opacity:0}}
 .cell-spark{position:absolute;left:50%;top:55%;color:#86efac;font-size:12px;text-shadow:0 0 5px #22c55e;z-index:6;pointer-events:none}
 #log{font-size:11px;color:#94a3b8;max-height:90px;overflow-y:auto;line-height:1.5}
@@ -134,12 +142,13 @@ body.landscape.panel-hidden #panel{display:none}
 </style></head><body>
 <div id="title-screen">
   <h1>あおびー大戦 〜星の歯車〜</h1>
-  <div class="sub">スパロボ風SLG・全24面＋隠しEX面（第8面クリア後にルート分岐あり／EX面は本編クリア後に解放）<br>縦画面：下部パネル＋簡略戦闘 ／ 横画面：右パネル＋戦闘アニメ<br>絵のない一部の敵ユニットは仮チップ表示です<br>セーブは自動です。面の途中で閉じても、タイトルの「つづきから」でその面の途中から再開できます</div>
+  <div class="sub">スパロボ風SLG・全24面＋隠しEX面（第8面クリア後にルート分岐あり／EX面は本編クリア後に解放）<br>縦画面：下部パネル＋簡略戦闘 ／ 横画面：右パネル＋戦闘アニメ<br>セーブは自動です（インターミッションでは手動スロットにも保存できます）。面の途中で閉じても、タイトルの「つづきから」でその面の途中から再開できます</div>
   <button id="btn-new">はじめから</button>
   <button id="btn-continue" class="sub">つづきから</button>
   <button id="btn-resume" class="sub hidden">つづきから</button>
   <div id="stage-select" class="hidden"></div>
   <button id="btn-anim" class="sub">戦闘アニメ（横画面）: ON</button>
+  <button id="btn-sound" class="sub">効果音: ON</button>
 </div>
 <div id="app" class="hidden">
   <header>
@@ -171,6 +180,6 @@ body.landscape.panel-hidden #panel{display:none}
 <script src="../common/v1/dialog.js"></script>
 <script src="../common/v1/gridmap.js"></script>
 <script src="../common/v1/battle.js"></script>
-<script src="engine.js"></script>
-<script src="main.js"></script>
+<script src="games/srpg/engine.js"></script>
+<script src="games/srpg/main.js"></script>
 </body></html>

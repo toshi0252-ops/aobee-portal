@@ -27,7 +27,7 @@
       const u = st.units.find(u => u.hp > 0 && u.x === x && u.y === y);
       if (u) {
         const art = (global.UNIT_ICON || {})[u.unitId] || (global.UNIT_ART || {})[u.unitId];
-        if (art && u.side !== "npc") {
+        if (art) {
           const img = document.createElement("img");
           img.className = "chip-img " + u.side + (u.acted && u.side === "ally" ? " acted" : "") + (u.boss ? " boss" : "");
           img.src = global.assetUrl ? global.assetUrl(art) : "assets/" + art;
@@ -42,7 +42,7 @@
           chip.title = u.name + "／" + u.unitName + " HP" + u.hp;
           cell.appendChild(chip);
         }
-        if (u.side !== "npc") {
+        { // HPバーは npc（動物・民間人・船）にも出す。護衛対象の残HPが見えないと守りようがないため
           const bar = document.createElement("div"); bar.className = "mini-hp";
           const i = document.createElement("i"); i.style.width = Math.max(0, u.hp / u.maxHp * 100) + "%";
           bar.appendChild(i); cell.appendChild(bar);
