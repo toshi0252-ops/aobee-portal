@@ -59,6 +59,8 @@ body.landscape.panel-hidden #panel{display:none}
 .mini-hp{position:absolute;left:8%;right:8%;bottom:2px;height:4px;background:rgba(0,0,0,.6);border-radius:2px;z-index:3}
 .mini-hp i{display:block;height:100%;background:#22c55e;border-radius:2px}
 .dmg-pop{position:absolute;inset:auto 0 60% 0;text-align:center;font-weight:900;color:#fff;text-shadow:0 0 4px #000,0 2px 2px #000;font-size:13px;z-index:5;animation:pop .65s ease-out}
+.exp-pop{position:absolute;inset:auto 0 30% 0;text-align:center;font-weight:800;color:#7dd3fc;text-shadow:0 0 4px #000,0 2px 2px #000;font-size:11px;z-index:5;animation:pop .9s ease-out;pointer-events:none}
+.lvup-pop{position:absolute;inset:auto -30% 78% -30%;text-align:center;font-weight:900;color:#fde047;text-shadow:0 0 6px #b45309,0 0 3px #000,0 2px 2px #000;font-size:13px;z-index:7;animation:pop .95s ease-out;pointer-events:none;white-space:nowrap}
 @keyframes pop{0%{transform:translateY(6px);opacity:0}25%{opacity:1}100%{transform:translateY(-8px);opacity:0}}
 #title-screen{height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:linear-gradient(#1e3a5f,#0f172a);text-align:center;padding:16px}
 #title-screen h1{font-size:30px;margin:0;color:#7dd3fc}
@@ -93,6 +95,8 @@ body.landscape.panel-hidden #panel{display:none}
 .chip-img.boss{border-color:#facc15;background:rgba(50,40,4,.55)}
 .chip-img.acted{filter:grayscale(.45) brightness(.85)}
 .bs-dmg{position:absolute;left:0;right:0;top:-26px;text-align:center;font-weight:900;font-size:19px;color:#fff;text-shadow:0 0 5px #000,0 2px 2px #000;animation:pop .9s ease-out;z-index:5}
+.bs-exp{position:absolute;left:0;right:0;top:-48px;text-align:center;font-weight:800;font-size:13px;color:#7dd3fc;text-shadow:0 0 5px #000,0 2px 2px #000;animation:pop .9s ease-out;z-index:5;pointer-events:none}
+.bs-lvup{position:absolute;left:-40px;right:-40px;top:-76px;text-align:center;font-weight:900;font-size:17px;color:#fde047;text-shadow:0 0 7px #b45309,0 0 4px #000,0 2px 2px #000;animation:pop 1.15s ease-out;z-index:6;pointer-events:none;white-space:nowrap}
 .fx-layer{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
 .bs-unit{z-index:2}.bs-quote{z-index:6}.bs-skip{z-index:6}.bs-bars{z-index:5}
 .fx-beam{position:absolute;height:0;transform-origin:left center;pointer-events:none}
@@ -356,6 +360,22 @@ body.landscape.panel-hidden #panel{display:none}
       return actx;
     } catch (e) { return null; }
   }
+  function sfxLevelUp() {
+    const ac = audioCtx();
+    if (!ac) return;
+    try {
+      const t0 = ac.currentTime;
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = "triangle"; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0 + i * 0.085);
+        g.gain.exponentialRampToValueAtTime(0.22, t0 + i * 0.085 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.085 + 0.22);
+        o.connect(g).connect(ac.destination);
+        o.start(t0 + i * 0.085); o.stop(t0 + i * 0.085 + 0.25);
+      });
+    } catch (e) { /* 音が出なくても演出は続行 */ }
+  }
   function sfxExplosion(big) {
     const ac = audioCtx();
     if (!ac) return;
@@ -422,6 +442,16 @@ body.landscape.panel-hidden #panel{display:none}
       const idx = ev.defY * w + ev.defX;
       const cell = gridEl.children[idx];
       if (!cell) { resolve(); return; }
+      if (ev.type === "levelup") {
+        // レベルアップ: 金色のポップ＋ジングルで必ず気づけるようにする
+        const lp = document.createElement("div");
+        lp.className = "lvup-pop";
+        lp.textContent = "LEVEL UP! Lv" + ev.level;
+        cell.appendChild(lp);
+        sfxLevelUp();
+        setTimeout(() => { lp.remove(); resolve(); }, 980);
+        return;
+      }
       if (ev.type === "heal" || ev.type === "supply") {
         const glow = document.createElement("div");
         glow.className = "cell-fx heal";
@@ -464,12 +494,23 @@ body.landscape.panel-hidden #panel{display:none}
       pop.textContent = ev.type === "heal" ? "+" + ev.amount : ev.type === "supply" ? "EN+" + ev.amount : (ev.hit ? "-" + ev.dmg : "MISS");
       if (ev.killed) pop.textContent += " 撃墜!";
       cell.appendChild(pop);
+      if (ev.exp > 0 && typeof ev.atkX === "number") {
+        // 経験値は稼いだ側（攻撃・回復・補給の実行者）のマスに小さく出す
+        const acell = gridEl.children[ev.atkY * w + ev.atkX];
+        if (acell) {
+          const xp = document.createElement("div");
+          xp.className = "exp-pop";
+          xp.textContent = "+" + ev.exp + " EXP";
+          acell.appendChild(xp);
+          setTimeout(() => xp.remove(), 900);
+        }
+      }
       setTimeout(() => { pop.remove(); resolve(); }, wait);
     });
   }
   async function playSimplified(gridEl, st, events) {
     for (const ev of events) {
-      if (ev.type === "attack" || ev.type === "heal" || ev.type === "supply") await showPop(gridEl, st, ev);
+      if (ev.type === "attack" || ev.type === "heal" || ev.type === "supply" || ev.type === "levelup") await showPop(gridEl, st, ev);
     }
   }
   // 横画面用シーン: 左右対峙・掛け合いセリフ・HPバーの減少アニメ・ダメージ数字・余韻つき
@@ -491,6 +532,7 @@ body.landscape.panel-hidden #panel{display:none}
       ov.className = "battle-scene";
       const attacks = events.filter(e => e.type === "attack");
       const heals = events.filter(e => e.type === "heal");
+      const lvups = events.filter(e => e.type === "levelup");
       const main = attacks[0], counter = attacks[1];
       // 表示上の開始HP（エンジン側は計算済みなので、受けたダメージを足し戻して開始値にする）
       const startAtk = atkU.hp + (counter && counter.hit ? counter.dmg : 0);
@@ -763,6 +805,23 @@ body.landscape.panel-hidden #panel{display:none}
             quote.textContent = s.who.name + "「" + s.ev.weapon + "！」…回避された";
           }
           if (s.ev.killed) quote.textContent += " 撃墜！";
+          // 経験値とレベルアップは攻撃側に出す（いつの間にか上がっていた、を無くす）
+          if (s.ev.exp > 0) {
+            const xp = document.createElement("div");
+            xp.className = "bs-exp";
+            xp.textContent = "+" + s.ev.exp + " EXP";
+            s.el.appendChild(xp);
+            setTimeout(() => xp.remove(), 900);
+          }
+          const lv = lvups.find(e => e.pilotId === s.who.pilotId);
+          if (lv) {
+            const lp = document.createElement("div");
+            lp.className = "bs-lvup";
+            lp.textContent = "LEVEL UP! Lv" + lv.level;
+            s.el.appendChild(lp);
+            sfxLevelUp();
+            setTimeout(() => lp.remove(), 1200);
+          }
           setTimeout(next, 800);
         }, delay);
       }
@@ -1144,14 +1203,20 @@ body.landscape.panel-hidden #panel{display:none}
     return f;
   }
   function gainExp(st, unit, amount, rng) {
-    if (unit.side !== "ally") return;
+    if (unit.side !== "ally") return 0;
     const g = st.run.pilots[unit.pilotId];
     g.exp += amount;
+    let gained = 0;
     while (g.exp >= 100) {
-      g.exp -= 100; g.level++; g.hp += 150; g.atk += 6; g.aim += 2; g.eva += 2;
+      g.exp -= 100; g.level++; g.hp += 150; g.atk += 6; g.aim += 2; g.eva += 2; gained++;
       unit.level = g.level; unit.maxHp += 150; unit.hp = Math.min(unit.maxHp, unit.hp + 150);
       st.log.push({ type: "levelup", unit: unit.name, level: g.level });
     }
+    return gained;
+  }
+  /* レベルアップしたら表示用のイベントを積む（マップ／戦闘シーンが拾ってポップと音を出す） */
+  function pushLevelupEvent(st, unit, events, gained) {
+    if (gained > 0) events.push({ type: "levelup", pilotId: unit.pilotId, name: unit.name, level: st.run.pilots[unit.pilotId].level, defX: unit.x, defY: unit.y, x: unit.x, y: unit.y });
   }
   function doAttack(st, atk, def, w, stance, rng, events) {
     const hit = hitRate(st, atk, def, w, stance);
@@ -1166,7 +1231,8 @@ body.landscape.panel-hidden #panel{display:none}
       if (def.hp <= 0) { def.hp = 0; killed = true; }
     }
     atk.morale = Math.min(150, atk.morale + 5 + (killed ? 8 : 0));
-    events.push({ type: "attack", atk: atk.name, def: def.name, weapon: w.name, fx: w.fx || "melee", power: w.power, hit: isHit, hitRate: hit, dmg, killed, defHp: def.hp, atkX: atk.x, atkY: atk.y, defX: def.x, defY: def.y });
+    const ev = { type: "attack", atk: atk.name, def: def.name, weapon: w.name, fx: w.fx || "melee", power: w.power, hit: isHit, hitRate: hit, dmg, killed, defHp: def.hp, atkX: atk.x, atkY: atk.y, defX: def.x, defY: def.y, exp: 0 };
+    events.push(ev);
     if (atk.side === "ally" && def.side === "enemy") {
       let exp = isHit ? 20 : 8;
       if (killed) {
@@ -1174,7 +1240,8 @@ body.landscape.panel-hidden #panel{display:none}
         st.run.pilots[atk.pilotId].kills++;
       }
       if (atk.level < def.level) exp = Math.round(exp * (1 + 0.3 * (def.level - atk.level))); // 追いつき補正
-      gainExp(st, atk, exp, rng);
+      ev.exp = exp;
+      pushLevelupEvent(st, atk, events, gainExp(st, atk, exp, rng));
     }
     if (killed && atk.side === "enemy" && def.side === "ally") { /* 味方撃墜 */ }
     return killed;
@@ -1267,8 +1334,8 @@ body.landscape.panel-hidden #panel{display:none}
     const w = atk.weapons[wIdx];
     const amount = w.power + atk.atk * 3;
     target.hp = Math.min(target.maxHp, target.hp + amount);
-    const events = [{ type: "heal", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: w.power, amount, defHp: target.hp, defX: target.x, defY: target.y }];
-    if (atk.side === "ally") gainExp(st, atk, 15, rng || Math.random);
+    const events = [{ type: "heal", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: w.power, amount, defHp: target.hp, defX: target.x, defY: target.y, atkX: atk.x, atkY: atk.y, exp: atk.side === "ally" ? 15 : 0 }];
+    if (atk.side === "ally") pushLevelupEvent(st, atk, events, gainExp(st, atk, 15, rng || Math.random));
     return events;
   }
   /* 補給（テルキャリー）: 対象の味方1機のENを全回復させる。HPは回復しない。気力変動なし */
@@ -1276,8 +1343,8 @@ body.landscape.panel-hidden #panel{display:none}
     const w = atk.weapons[wIdx];
     const amount = Math.max(0, target.maxEn - target.en);
     target.en = target.maxEn;
-    const events = [{ type: "supply", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: 0, amount, defEn: target.en, defX: target.x, defY: target.y }];
-    if (atk.side === "ally") gainExp(st, atk, 15, rng || Math.random);
+    const events = [{ type: "supply", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: 0, amount, defEn: target.en, defX: target.x, defY: target.y, atkX: atk.x, atkY: atk.y, exp: atk.side === "ally" ? 15 : 0 }];
+    if (atk.side === "ally") pushLevelupEvent(st, atk, events, gainExp(st, atk, 15, rng || Math.random));
     return events;
   }
   function applyHoshi(st, unit, cmdId, target) {

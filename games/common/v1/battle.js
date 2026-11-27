@@ -23,6 +23,22 @@
       return actx;
     } catch (e) { return null; }
   }
+  function sfxLevelUp() {
+    const ac = audioCtx();
+    if (!ac) return;
+    try {
+      const t0 = ac.currentTime;
+      [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = "triangle"; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t0 + i * 0.085);
+        g.gain.exponentialRampToValueAtTime(0.22, t0 + i * 0.085 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.085 + 0.22);
+        o.connect(g).connect(ac.destination);
+        o.start(t0 + i * 0.085); o.stop(t0 + i * 0.085 + 0.25);
+      });
+    } catch (e) { /* 音が出なくても演出は続行 */ }
+  }
   function sfxExplosion(big) {
     const ac = audioCtx();
     if (!ac) return;
@@ -89,6 +105,16 @@
       const idx = ev.defY * w + ev.defX;
       const cell = gridEl.children[idx];
       if (!cell) { resolve(); return; }
+      if (ev.type === "levelup") {
+        // レベルアップ: 金色のポップ＋ジングルで必ず気づけるようにする
+        const lp = document.createElement("div");
+        lp.className = "lvup-pop";
+        lp.textContent = "LEVEL UP! Lv" + ev.level;
+        cell.appendChild(lp);
+        sfxLevelUp();
+        setTimeout(() => { lp.remove(); resolve(); }, 980);
+        return;
+      }
       if (ev.type === "heal" || ev.type === "supply") {
         const glow = document.createElement("div");
         glow.className = "cell-fx heal";
@@ -131,12 +157,23 @@
       pop.textContent = ev.type === "heal" ? "+" + ev.amount : ev.type === "supply" ? "EN+" + ev.amount : (ev.hit ? "-" + ev.dmg : "MISS");
       if (ev.killed) pop.textContent += " 撃墜!";
       cell.appendChild(pop);
+      if (ev.exp > 0 && typeof ev.atkX === "number") {
+        // 経験値は稼いだ側（攻撃・回復・補給の実行者）のマスに小さく出す
+        const acell = gridEl.children[ev.atkY * w + ev.atkX];
+        if (acell) {
+          const xp = document.createElement("div");
+          xp.className = "exp-pop";
+          xp.textContent = "+" + ev.exp + " EXP";
+          acell.appendChild(xp);
+          setTimeout(() => xp.remove(), 900);
+        }
+      }
       setTimeout(() => { pop.remove(); resolve(); }, wait);
     });
   }
   async function playSimplified(gridEl, st, events) {
     for (const ev of events) {
-      if (ev.type === "attack" || ev.type === "heal" || ev.type === "supply") await showPop(gridEl, st, ev);
+      if (ev.type === "attack" || ev.type === "heal" || ev.type === "supply" || ev.type === "levelup") await showPop(gridEl, st, ev);
     }
   }
   // 横画面用シーン: 左右対峙・掛け合いセリフ・HPバーの減少アニメ・ダメージ数字・余韻つき
@@ -158,6 +195,7 @@
       ov.className = "battle-scene";
       const attacks = events.filter(e => e.type === "attack");
       const heals = events.filter(e => e.type === "heal");
+      const lvups = events.filter(e => e.type === "levelup");
       const main = attacks[0], counter = attacks[1];
       // 表示上の開始HP（エンジン側は計算済みなので、受けたダメージを足し戻して開始値にする）
       const startAtk = atkU.hp + (counter && counter.hit ? counter.dmg : 0);
@@ -430,6 +468,23 @@
             quote.textContent = s.who.name + "「" + s.ev.weapon + "！」…回避された";
           }
           if (s.ev.killed) quote.textContent += " 撃墜！";
+          // 経験値とレベルアップは攻撃側に出す（いつの間にか上がっていた、を無くす）
+          if (s.ev.exp > 0) {
+            const xp = document.createElement("div");
+            xp.className = "bs-exp";
+            xp.textContent = "+" + s.ev.exp + " EXP";
+            s.el.appendChild(xp);
+            setTimeout(() => xp.remove(), 900);
+          }
+          const lv = lvups.find(e => e.pilotId === s.who.pilotId);
+          if (lv) {
+            const lp = document.createElement("div");
+            lp.className = "bs-lvup";
+            lp.textContent = "LEVEL UP! Lv" + lv.level;
+            s.el.appendChild(lp);
+            sfxLevelUp();
+            setTimeout(() => lp.remove(), 1200);
+          }
           setTimeout(next, 800);
         }, delay);
       }

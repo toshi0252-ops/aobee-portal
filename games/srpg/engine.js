@@ -362,14 +362,20 @@
     return f;
   }
   function gainExp(st, unit, amount, rng) {
-    if (unit.side !== "ally") return;
+    if (unit.side !== "ally") return 0;
     const g = st.run.pilots[unit.pilotId];
     g.exp += amount;
+    let gained = 0;
     while (g.exp >= 100) {
-      g.exp -= 100; g.level++; g.hp += 150; g.atk += 6; g.aim += 2; g.eva += 2;
+      g.exp -= 100; g.level++; g.hp += 150; g.atk += 6; g.aim += 2; g.eva += 2; gained++;
       unit.level = g.level; unit.maxHp += 150; unit.hp = Math.min(unit.maxHp, unit.hp + 150);
       st.log.push({ type: "levelup", unit: unit.name, level: g.level });
     }
+    return gained;
+  }
+  /* レベルアップしたら表示用のイベントを積む（マップ／戦闘シーンが拾ってポップと音を出す） */
+  function pushLevelupEvent(st, unit, events, gained) {
+    if (gained > 0) events.push({ type: "levelup", pilotId: unit.pilotId, name: unit.name, level: st.run.pilots[unit.pilotId].level, defX: unit.x, defY: unit.y, x: unit.x, y: unit.y });
   }
   function doAttack(st, atk, def, w, stance, rng, events) {
     const hit = hitRate(st, atk, def, w, stance);
@@ -384,7 +390,8 @@
       if (def.hp <= 0) { def.hp = 0; killed = true; }
     }
     atk.morale = Math.min(150, atk.morale + 5 + (killed ? 8 : 0));
-    events.push({ type: "attack", atk: atk.name, def: def.name, weapon: w.name, fx: w.fx || "melee", power: w.power, hit: isHit, hitRate: hit, dmg, killed, defHp: def.hp, atkX: atk.x, atkY: atk.y, defX: def.x, defY: def.y });
+    const ev = { type: "attack", atk: atk.name, def: def.name, weapon: w.name, fx: w.fx || "melee", power: w.power, hit: isHit, hitRate: hit, dmg, killed, defHp: def.hp, atkX: atk.x, atkY: atk.y, defX: def.x, defY: def.y, exp: 0 };
+    events.push(ev);
     if (atk.side === "ally" && def.side === "enemy") {
       let exp = isHit ? 20 : 8;
       if (killed) {
@@ -392,7 +399,8 @@
         st.run.pilots[atk.pilotId].kills++;
       }
       if (atk.level < def.level) exp = Math.round(exp * (1 + 0.3 * (def.level - atk.level))); // 追いつき補正
-      gainExp(st, atk, exp, rng);
+      ev.exp = exp;
+      pushLevelupEvent(st, atk, events, gainExp(st, atk, exp, rng));
     }
     if (killed && atk.side === "enemy" && def.side === "ally") { /* 味方撃墜 */ }
     return killed;
@@ -485,8 +493,8 @@
     const w = atk.weapons[wIdx];
     const amount = w.power + atk.atk * 3;
     target.hp = Math.min(target.maxHp, target.hp + amount);
-    const events = [{ type: "heal", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: w.power, amount, defHp: target.hp, defX: target.x, defY: target.y }];
-    if (atk.side === "ally") gainExp(st, atk, 15, rng || Math.random);
+    const events = [{ type: "heal", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: w.power, amount, defHp: target.hp, defX: target.x, defY: target.y, atkX: atk.x, atkY: atk.y, exp: atk.side === "ally" ? 15 : 0 }];
+    if (atk.side === "ally") pushLevelupEvent(st, atk, events, gainExp(st, atk, 15, rng || Math.random));
     return events;
   }
   /* 補給（テルキャリー）: 対象の味方1機のENを全回復させる。HPは回復しない。気力変動なし */
@@ -494,8 +502,8 @@
     const w = atk.weapons[wIdx];
     const amount = Math.max(0, target.maxEn - target.en);
     target.en = target.maxEn;
-    const events = [{ type: "supply", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: 0, amount, defEn: target.en, defX: target.x, defY: target.y }];
-    if (atk.side === "ally") gainExp(st, atk, 15, rng || Math.random);
+    const events = [{ type: "supply", atk: atk.name, def: target.name, weapon: w.name, fx: w.fx || "heal", power: 0, amount, defEn: target.en, defX: target.x, defY: target.y, atkX: atk.x, atkY: atk.y, exp: atk.side === "ally" ? 15 : 0 }];
+    if (atk.side === "ally") pushLevelupEvent(st, atk, events, gainExp(st, atk, 15, rng || Math.random));
     return events;
   }
   function applyHoshi(st, unit, cmdId, target) {
