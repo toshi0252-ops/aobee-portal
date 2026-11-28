@@ -210,6 +210,20 @@ window.addEventListener("resize", setOrientation);
 
 /* イベント一枚絵を全画面で見せて、タップで進む */
 const artsShown = new Set(); // 面開始前の一枚絵は1セッションに1回だけ（再挑戦で繰り返さない）
+/* 戦闘シーンの背景は防御側の立っている地形で決める（市販SRPGの作法） */
+const BG_MAP = { ".": "bgs/bg_plain.jpg", P: "bgs/bg_plain.jpg", L: "bgs/bg_night.jpg", G: "bgs/bg_gear.jpg", D: "bgs/bg_gear.jpg", X: "bgs/bg_gear.jpg", F: "bgs/bg_forest.jpg", V: "bgs/bg_village.jpg", R: "bgs/bg_water.jpg", W: "bgs/bg_water.jpg", S: "bgs/bg_sand.jpg" };
+/* 幹部・総帥・ライバルは面ごとに初戦闘でカットインを出す */
+const BOSS_CUTIN = { warubee: { img: "faces/warubee.jpg", label: "ライバル" }, ganzou: { img: "chars/ganzou.jpg", label: "ラストワークス幹部" }, mist: { img: "chars/mist.jpg", label: "ラストワークス幹部" }, granz: { img: "chars/granz.jpg", label: "ラストワークス総帥" } };
+const cutinsShown = new Set();
+function sceneOpts(atkU, defU) {
+  const opts = { bg: BG_MAP[E.terrainChar(st, defU.x, defU.y)] || "bgs/bg_plain.jpg" };
+  const boss = [defU, atkU].find(u => u.side === "enemy" && BOSS_CUTIN[u.pilotId]);
+  if (boss && !cutinsShown.has(E.stageKey(st.stage) + "|" + boss.pilotId)) {
+    cutinsShown.add(E.stageKey(st.stage) + "|" + boss.pilotId);
+    opts.cutin = { img: BOSS_CUTIN[boss.pilotId].img, label: BOSS_CUTIN[boss.pilotId].label, name: boss.name };
+  }
+  return opts;
+}
 async function showStageArt(art, stage) {
   if (!art) return;
   const head = stage.ex ? "EX面「" + stage.title + "」" : "第" + stage.id + "面「" + stage.title + "」";
@@ -507,7 +521,7 @@ async function doPlayerAttack() {
   const u = sel.unit, d = sel.target;
   const events = E.resolveCombat(st, u, d, sel.weaponIdx, Math.random);
   const useScene = isLandscape() && settings.anim;
-  if (useScene) await BattleView.playScene(u, d, events, sel.forecast);
+  if (useScene) await BattleView.playScene(u, d, events, sel.forecast, sceneOpts(u, d));
   else await BattleView.playSimplified($("grid"), st, events);
   sel = null; u.acted = true; busy = false;
   render();

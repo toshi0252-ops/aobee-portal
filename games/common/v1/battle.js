@@ -220,7 +220,7 @@
     hayate: "速さなら負けない！"
   };
   const SPARK_COLORS = ["#fde68a", "#fb923c", "#f8fafc", "#f87171"];
-  function playScene(atkU, defU, events, forecast) {
+  function playScene(atkU, defU, events, forecast, opts) {
     return new Promise(resolve => {
       const ov = document.createElement("div");
       ov.className = "battle-scene";
@@ -249,6 +249,13 @@
         "<div class='bs-unit bs-right'>" + spriteHtml(defU) + "<div class='bs-name'>" + defU.unitName + "</div></div>" +
         "<div class='bs-bars'>" + barHtml(atkU, startAtk) + barHtml(defU, startDef) + "</div>" +
         "<button class='bs-skip'>スキップ ≫</button>";
+      // 地形別背景（防御側の地形で main が選んだ絵）を一番奥に敷く
+      if (opts && opts.bg) {
+        const bg = document.createElement("div");
+        bg.className = "bs-bg";
+        bg.style.backgroundImage = "url('" + (global.assetUrl ? global.assetUrl(opts.bg) : "assets/" + opts.bg) + "')";
+        ov.insertBefore(bg, ov.firstChild);
+      }
       document.body.appendChild(ov);
       const fxLayer = document.createElement("div");
       fxLayer.className = "fx-layer";
@@ -555,6 +562,18 @@
           s._comboShown = true;
           quote.textContent = s.who.name + "＆" + s.ev.combo.partnerName + "「「" + s.ev.combo.weapon + "！！」」";
           ensurePartner(s);
+          // 二人の真剣な表情のカットイン（表情差分があればそちらを優先）
+          const exprOf = pid => { const ex = (global.FACE_EXPR || {})[pid]; return (ex && ex.serious) || (global.FACE_MAP || {})[pid]; };
+          const fA = exprOf(s.who.pilotId), fB = exprOf(s.ev.combo.partnerPilotId);
+          if (fA && fB) {
+            const url = p => global.assetUrl ? global.assetUrl(p) : "assets/" + p;
+            const ci = document.createElement("div");
+            ci.className = "bs-cutin combo";
+            ci.innerHTML = "<img src='" + url(fA) + "' alt=''><img src='" + url(fB) + "' alt=''>";
+            ov.appendChild(ci);
+            if (ci.animate) ci.animate([{ transform: "scale(.92)", opacity: 0 }, { transform: "scale(1)", opacity: 1, offset: .2 }, { transform: "scale(1)", opacity: 1, offset: .8 }, { opacity: 0 }], { duration: 1300, easing: "ease-out", fill: "forwards" });
+            setTimeout(() => ci.remove(), 1350);
+          }
           const b = document.createElement("div");
           b.className = "bs-combo-banner";
           b.innerHTML = "<span>合体攻撃</span><strong>" + s.ev.combo.weapon + "</strong>";
@@ -568,12 +587,23 @@
         quote.textContent = s.who.name + "「" + line + " " + s.ev.weapon + "！」";
         fireStep(s);
       }
+      // ボス初対面カットイン: 名乗りを見せてから戦闘ステップへ（その分、開始を遅らせる）
+      let startDelay = 300;
+      if (opts && opts.cutin) {
+        const c = document.createElement("div");
+        c.className = "bs-cutin boss";
+        c.innerHTML = "<img src='" + (global.assetUrl ? global.assetUrl(opts.cutin.img) : "assets/" + opts.cutin.img) + "' alt=''><div class='bs-cutin-name'><span>" + opts.cutin.label + "</span><strong>" + opts.cutin.name + "</strong></div>";
+        ov.appendChild(c);
+        if (c.animate) c.animate([{ transform: "translateX(46px)", opacity: 0 }, { transform: "translateX(0)", opacity: 1, offset: .25 }, { transform: "translateX(0)", opacity: 1, offset: .78 }, { transform: "translateX(24px)", opacity: 0 }], { duration: 1250, easing: "ease-out", fill: "forwards" });
+        setTimeout(() => c.remove(), 1300);
+        startDelay = 1100;
+      }
       if (!steps.length && heals.length) {
         // 回復だけのシーン（現行の呼び出しでは発生しないが、渡された場合の受け口）
         quote.textContent = heals[0].atk + "「" + heals[0].weapon + "！」";
         healFx(right);
         setTimeout(finish, 1000);
-      } else setTimeout(next, 300); // 登場スライドインを見せてから攻撃ステップへ
+      } else setTimeout(next, startDelay); // 登場スライドイン（＋ボスカットイン）を見せてから攻撃ステップへ
       setTimeout(finish, 9000); // 安全弁
     });
   }
