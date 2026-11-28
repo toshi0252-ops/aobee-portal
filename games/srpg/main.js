@@ -64,6 +64,9 @@ function refreshTitle() {
     const ts = $("title-screen"); ts.insertBefore(img, ts.firstChild);
   }
   const saved = E.loadRun(localStorage, DATA);
+  // 面の挿入・改番でクリア記録の写し替えが起きた場合、旧インデックス前提の中断セーブ（戦況）は
+  // 別の面を指してしまうため破棄する（育成・クリア記録そのものはキー方式で引き継がれる）
+  if (saved && saved._remapped) { localStorage.removeItem(BKEY); delete saved._remapped; }
   $("btn-continue").disabled = !saved;
   const bs = loadBattleSave();
   const rb = $("btn-resume");
