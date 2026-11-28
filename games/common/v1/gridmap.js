@@ -47,6 +47,14 @@
           const i = document.createElement("i"); i.style.width = Math.max(0, u.hp / u.maxHp * 100) + "%";
           bar.appendChild(i); cell.appendChild(bar);
         }
+        const fw = (st.foresight || {})[u.uid]; // ティアの予見: 次の敵フェイズの危険警告
+        if (fw) {
+          const b = document.createElement("div");
+          b.className = "chip-warn" + (fw.lethal ? " lethal" : "");
+          b.textContent = "⚠";
+          b.title = "ティアの予見: 次の敵フェイズで " + fw.from + " から最大 " + fw.dmg + " ダメージ" + (fw.lethal ? "（撃墜の恐れ！）" : "");
+          cell.appendChild(b);
+        }
       }
       cell.addEventListener("click", () => this.onTap(x, y));
       this.el.appendChild(cell);

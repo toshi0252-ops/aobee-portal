@@ -572,6 +572,46 @@
     }
     return events;
   }
+  /* ティアの予見: 敵AIの思考（最寄りの目標→最適マス→最良武器）をそのまま先読みし、
+     次の敵フェイズで大ダメージを受ける味方を洗い出す。ティアが出撃して生きている時だけ働く。
+     敵の位置は一時的に動かして計算し、必ず元に戻す（状態を変えない）。 */
+  function foreseeThreats(st) {
+    const tia = st.units.find(u => u.side === "ally" && u.pilotId === "tia" && u.hp > 0);
+    if (!tia) return null;
+    const threats = {};
+    for (const e of living(st, "enemy")) {
+      if (e.passive) continue;
+      let targets = living(st, "ally");
+      if (st.stage.loseNpc) targets = targets.concat(living(st, "npc"));
+      if (!targets.length) break;
+      targets.sort((a, b) => (dist(e, a) + (a.side === "npc" ? 3 : 0)) - (dist(e, b) + (b.side === "npc" ? 3 : 0)));
+      const target = targets[0];
+      const tiles = computeMoveRange(st, e);
+      let bestTile = { x: e.x, y: e.y }, bestD = dist(e, target);
+      for (const t of tiles) {
+        const d = Math.abs(t.x - target.x) + Math.abs(t.y - target.y);
+        const ev = terrainAt(st.stage, t.x, t.y).evade;
+        if (d < bestD || (d === bestD && ev > terrainAt(st.stage, bestTile.x, bestTile.y).evade)) { bestD = d; bestTile = t; }
+      }
+      const ox = e.x, oy = e.y;
+      e.x = bestTile.x; e.y = bestTile.y;
+      const wi = bestWeaponVs(st, e, target);
+      let dmg = 0;
+      if (wi >= 0) {
+        const w = e.weapons[wi];
+        e._w = w;
+        const stance = chooseStance(st, e, target);
+        delete e._w;
+        dmg = damage(st, e, target, w, stance); // 命中前提の最大値（警告は安全側に倒す）
+      }
+      e.x = ox; e.y = oy;
+      if (wi >= 0 && dmg >= target.hp * 0.5) {
+        const cur = threats[target.uid];
+        if (!cur || dmg > cur.dmg) threats[target.uid] = { dmg, lethal: dmg >= target.hp, from: e.name };
+      }
+    }
+    return threats;
+  }
   function npcPhase(st, rng) {
     rng = rng || Math.random;
     for (const n of living(st, "npc")) {
@@ -812,7 +852,7 @@
     if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
     return st;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, moveCostAt, terrainBonusFor, dist, createRun, startStage, deployInfo, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, supplyAction, applyHoshi, bestWeaponVs, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, SAVE_SLOTS, saveRunToSlot, loadRunFromSlot, saveSlotInfo, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, checkGate, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  const api = { TERRAIN, terrainAt, terrainChar, moveCostAt, terrainBonusFor, dist, createRun, startStage, deployInfo, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, supplyAction, applyHoshi, bestWeaponVs, foreseeThreats, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, SAVE_SLOTS, saveRunToSlot, loadRunFromSlot, saveSlotInfo, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, checkGate, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
