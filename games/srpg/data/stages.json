@@ -180,7 +180,11 @@
     "....VVVV...."
    ],
    "title": "止まった村を守れ！",
-   "winType": "boss"
+   "winType": "boss",
+   "artBefore": {
+    "file": "opening.jpg",
+    "caption": "祭りの朝"
+   }
   },
   {
    "after": [
@@ -351,7 +355,11 @@
     "....VVVV...."
    ],
    "title": "牧場の大暴走",
-   "winType": "boss"
+   "winType": "boss",
+   "artBefore": {
+    "file": "warubee_gear.jpg",
+    "caption": "制御歯車を掲げるわるびー"
+   }
   },
   {
    "after": [
@@ -850,7 +858,11 @@
     "....VVVV...."
    ],
    "title": "港町の錆嵐",
-   "winType": "boss"
+   "winType": "boss",
+   "artBefore": {
+    "file": "rust_storm.jpg",
+    "caption": "錆嵐が港を呑む"
+   }
   },
   {
    "after": [
@@ -1513,6 +1525,10 @@
    "nextByRoute": {
     "A": 8,
     "B": 10
+   },
+   "artAfter": {
+    "file": "warubee_conflict.jpg",
+    "caption": "命令と、自分の心のあいだで"
    }
   },
   {
@@ -1707,7 +1723,11 @@
     "....VVVV...."
    ],
    "title": "森の砦",
-   "winType": "boss"
+   "winType": "boss",
+   "artBefore": {
+    "file": "departure_a.jpg",
+    "caption": "森の道へ、旅立ちの朝"
+   }
   },
   {
    "after": [
@@ -1919,7 +1939,11 @@
    ],
    "title": "星読みの少女",
    "winType": "boss",
-   "next": 12
+   "next": 12,
+   "artBefore": {
+    "file": "tia_prophecy.jpg",
+    "caption": "星見台の予言"
+   }
   },
   {
    "after": [
@@ -2112,7 +2136,11 @@
     "....VVVV...."
    ],
    "title": "海峡の嵐",
-   "winType": "boss"
+   "winType": "boss",
+   "artBefore": {
+    "file": "departure_b.jpg",
+    "caption": "海峡へ、船出の朝"
+   }
   },
   {
    "after": [
@@ -2320,7 +2348,11 @@
    ],
    "title": "船長セイラ",
    "winType": "boss",
-   "next": 16
+   "next": 16,
+   "artAfter": {
+    "file": "seira_departure.jpg",
+    "caption": "セイラの船出"
+   }
   },
   {
    "after": [
@@ -4488,7 +4520,11 @@
    ],
    "title": "首都クランクシティ",
    "winType": "boss",
-   "enemyLevel": 15
+   "enemyLevel": 15,
+   "artAfter": {
+    "file": "galdo_wounded.jpg",
+    "caption": "負傷するガルド"
+   }
   },
   {
    "after": [
@@ -4908,7 +4944,11 @@
     "galdo"
    ],
    "winType": "boss",
-   "enemyLevel": 17
+   "enemyLevel": 17,
+   "artBefore": {
+    "file": "rocco_resolve.jpg",
+    "caption": "ロッコの決意"
+   }
   },
   {
    "after": [
@@ -5349,7 +5389,11 @@
    ],
    "title": "ふたりの星と歯車",
    "winType": "boss",
-   "enemyLevel": 19
+   "enemyLevel": 19,
+   "artAfter": {
+    "file": "star_gear_duo.jpg",
+    "caption": "ふたりの星と歯車"
+   }
   },
   {
    "after": [
@@ -6043,7 +6087,11 @@
    ],
    "title": "霧の向こう",
    "winType": "boss",
-   "enemyLevel": 22
+   "enemyLevel": 22,
+   "artAfter": {
+    "file": "mist_retreat.jpg",
+    "caption": "霧の中へ去るミスト"
+   }
   },
   {
    "after": [
@@ -6273,7 +6321,11 @@
    ],
    "title": "錆の塔",
    "winType": "all",
-   "enemyLevel": 23
+   "enemyLevel": 23,
+   "artBefore": {
+    "file": "young_granz.jpg",
+    "caption": "回想 ― 若き日の棟梁たち"
+   }
   },
   {
    "after": [
@@ -6507,7 +6559,11 @@
    ],
    "title": "グランツの工房",
    "winType": "boss",
-   "enemyLevel": 24
+   "enemyLevel": 24,
+   "artBefore": {
+    "file": "granz_workshop.jpg",
+    "caption": "グランツの工房"
+   }
   },
   {
    "after": [
@@ -6796,7 +6852,17 @@
    "title": "回り出す世界",
    "winType": "boss",
    "next": -1,
-   "enemyLevel": 24
+   "enemyLevel": 24,
+   "artEnding": {
+    "stop": {
+     "file": "ending_stop.jpg",
+     "caption": "歯車が回り出す祭り"
+    },
+    "destroy": {
+     "file": "ending_destroy.jpg",
+     "caption": "人々の手で作り直す世界"
+    }
+   }
   },
   {
    "after": [
@@ -7000,7 +7066,11 @@
    ],
    "title": "祭りのあとで",
    "winType": "boss",
-   "next": -1
+   "next": -1,
+   "artAfter": {
+    "file": "festival_group.jpg",
+    "caption": "祭りの夜に"
+   }
   },
   {
    "id": "EX2",

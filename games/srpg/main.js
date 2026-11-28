@@ -209,7 +209,12 @@ function setOrientation() { document.body.classList.toggle("landscape", isLandsc
 window.addEventListener("resize", setOrientation);
 
 /* イベント一枚絵を全画面で見せて、タップで進む */
-let artShown = false;
+const artsShown = new Set(); // 面開始前の一枚絵は1セッションに1回だけ（再挑戦で繰り返さない）
+async function showStageArt(art, stage) {
+  if (!art) return;
+  const head = stage.ex ? "EX面「" + stage.title + "」" : "第" + stage.id + "面「" + stage.title + "」";
+  await showEventArt("events/" + art.file, head + " ― " + art.caption);
+}
 function showEventArt(path, caption) {
   return new Promise(res => {
     const ov = document.createElement("div");
@@ -276,7 +281,7 @@ async function beginStage(idx, selection) {
   setOrientation();
   saveAll(); // 面開始時点の戦況も中断セーブに残す
   render();
-  if (idx === 0 && !artShown) { artShown = true; await showEventArt("events/opening.jpg", "第1面「" + st.stage.title + "」 ― 祭りの朝"); }
+  if (st.stage.artBefore && !artsShown.has(idx)) { artsShown.add(idx); await showStageArt(st.stage.artBefore, st.stage); }
   const introLines = E.stageIntroLines(st.stage, run); // 第14面はルート別台詞を差し込んだ実効行列
   if (introLines.length) await showDialog(introLines);
   if (st.pendingChoice) await presentCoreChoice(); // コア面（atStart）: 開始直後にコア選択を提示
@@ -594,7 +599,8 @@ function renderResultPanel() {
     if (E.nextStageIndex(DATA, run, stageIdx) >= 0 || st.stage.nextByRoute) items.push({
       label: "次の面へ", cls: "primary", onClick: async () => {
         if (st.stage.after) await showDialog(E.stageAfterLines(st.stage, run)); // 面間の物語
-        if (st.stage.nextByRoute && !run.route) await chooseRoute(); // 第8面クリア後: ルート選択
+        await showStageArt(st.stage.artAfter, st.stage); // クリア後の一枚絵（あれば）
+        if (st.stage.nextByRoute && !run.route) { await showEventArt("events/war_council.jpg", "作戦会議 ― 行く先を決める"); await chooseRoute(); } // 第8面クリア後: ルート選択
         const next = E.nextStageIndex(DATA, run, stageIdx);
         if (next >= 0) openIntermission(next);                        // 整備・改造・買い物
         else $("btn-title").click();
@@ -612,7 +618,11 @@ function renderResultPanel() {
     if (!st._afterShown && E.nextStageIndex(DATA, run, stageIdx) < 0 && !st.stage.nextByRoute && st.stage.after) {
       st._afterShown = true;
       const lines = E.stageAfterLines(st.stage, run);
-      if (clearP) clearP.then(() => showDialog(lines)); else showDialog(lines);
+      const p = clearP ? clearP.then(() => showDialog(lines)) : showDialog(lines);
+      p.then(async () => { // エンディング／後日談の締めに一枚絵（最終面はコア選択で出し分け）
+        const endArt = st.stage.artEnding ? st.stage.artEnding[run.coreChoice === "destroy" ? "destroy" : "stop"] : null;
+        await showStageArt(endArt || st.stage.artAfter, st.stage);
+      });
     }
   } else {
     E.saveRun(localStorage, run);
