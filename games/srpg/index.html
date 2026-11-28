@@ -39,6 +39,15 @@ body.landscape.panel-hidden #panel{display:none}
 .bs-combo-banner{position:absolute;top:15%;left:0;right:0;text-align:center;z-index:7;pointer-events:none;animation:pop 1.3s ease-out}
 .bs-combo-banner span{display:block;font-size:13px;letter-spacing:.5em;color:#fef08a;text-shadow:0 0 6px #000,0 2px 2px #000}
 .bs-combo-banner strong{display:block;font-size:30px;font-weight:900;color:#fde047;text-shadow:0 0 12px #b45309,0 0 4px #000,0 3px 3px #000}
+.bs-bg{position:absolute;inset:0;background-size:cover;background-position:center 38%;z-index:0}
+.battle-scene.bs-core .bs-bg{filter:brightness(.55) saturate(.85) hue-rotate(-20deg)}
+.bs-cutin{position:absolute;top:17%;left:0;right:0;z-index:6;display:flex;justify-content:center;gap:12px;pointer-events:none}
+.bs-cutin img{width:104px;height:104px;object-fit:cover;object-position:top;border-radius:14px;border:3px solid #fbbf24;box-shadow:0 8px 28px rgba(0,0,0,.6);background:#0f172a}
+.bs-cutin.boss{justify-content:flex-end;left:auto;right:14px;top:11%}
+.bs-cutin.boss img{width:118px;height:118px;border-color:#ef4444}
+.bs-cutin-name{align-self:center;background:rgba(2,6,23,.88);border:1px solid #ef4444;border-radius:8px;padding:6px 12px;color:#fff}
+.bs-cutin-name span{display:block;font-size:11px;color:#fca5a5;letter-spacing:.2em}
+.bs-cutin-name strong{display:block;font-size:17px}
 .battle-scene.bs-core{background:linear-gradient(#312e81 0 55%,#450a0a 55%)}
 .core-ov{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 38%,rgba(127,29,29,.55),rgba(2,6,23,.97) 70%);z-index:66;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
 .core-card{max-width:520px;width:100%;text-align:center}
@@ -168,7 +177,8 @@ body.landscape.panel-hidden #panel{display:none}
 </style></head><body>
 <div id="title-screen">
   <h1>あおびー大戦 〜星の歯車〜</h1>
-  <div class="sub">スパロボ風SLG・全24面＋隠しEX面（第8面クリア後にルート分岐あり／EX面は本編クリア後に解放）<br>縦画面：下部パネル＋簡略戦闘 ／ 横画面：右パネル＋戦闘アニメ<br>セーブは自動です（インターミッションでは手動スロットにも保存できます）。面の途中で閉じても、タイトルの「つづきから」でその面の途中から再開できます</div>
+  <img src="assets/events/keyvisual.jpg" alt="あおびー隊集合" style="max-width:520px;width:100%;border-radius:12px;border:2px solid #475569">
+  <div class="sub">スパロボ風SLG・全33面＋隠しEX面3面（第8面クリア後にルート分岐あり／EX面は本編クリア後に解放）<br>縦画面：下部パネル＋簡略戦闘 ／ 横画面：右パネル＋戦闘アニメ<br>セーブは自動です（インターミッションでは手動スロットにも保存できます）。面の途中で閉じても、タイトルの「つづきから」でその面の途中から再開できます</div>
   <button id="btn-new">はじめから</button>
   <button id="btn-continue" class="sub">つづきから</button>
   <button id="btn-resume" class="sub hidden">つづきから</button>

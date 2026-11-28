@@ -32,6 +32,22 @@ function loadBattleSave() {
 }
 /* 素材マップ: 会話顔グラと戦闘シーンのユニット絵（プレビュー単一ファイル版では __IMG のデータURIを優先） */
 window.FACE_MAP = { aobee: "faces/aobee.jpg", warubee: "faces/warubee.jpg", galdo: "faces/galdo.jpg", marmi: "faces/marmi.jpg", poco: "faces/poco.jpg", minori: "faces/minori.jpg", mio: "faces/mio.jpg", teru: "faces/teru.jpg", hayate: "faces/hayate.jpg", tia: "faces/tia.jpg", seira: "faces/seira.jpg", rocco: "faces/rocco.jpg", mist: "faces/mist.jpg", ganzou: "chars/ganzou.jpg", granz: "chars/granz.jpg" };
+/* 表情バリエーション: 会話行の第3要素（smile/serious/sad）で差し替わる。無いキャラ・表情は通常顔にフォールバック */
+window.FACE_EXPR = {
+  aobee: { smile: "faces/aobee_smile.jpg", serious: "faces/aobee_serious.jpg", sad: "faces/aobee_sad.jpg" },
+  warubee: { smile: "faces/warubee_smile.jpg", serious: "faces/warubee_serious.jpg", sad: "faces/warubee_sad.jpg" },
+  galdo: { smile: "faces/galdo_smile.jpg", serious: "faces/galdo_serious.jpg", sad: "faces/galdo_sad.jpg" },
+  marmi: { smile: "faces/marmi_smile.jpg", serious: "faces/marmi_serious.jpg", sad: "faces/marmi_sad.jpg" },
+  poco: { smile: "faces/poco_smile.jpg", serious: "faces/poco_serious.jpg", sad: "faces/poco_sad.jpg" },
+  minori: { smile: "faces/minori_smile.jpg", serious: "faces/minori_serious.jpg", sad: "faces/minori_sad.jpg" },
+  mio: { smile: "faces/mio_smile.jpg", serious: "faces/mio_serious.jpg", sad: "faces/mio_sad.jpg" },
+  teru: { smile: "faces/teru_smile.jpg", serious: "faces/teru_serious.jpg", sad: "faces/teru_sad.jpg" },
+  hayate: { smile: "faces/hayate_smile.jpg", serious: "faces/hayate_serious.jpg", sad: "faces/hayate_sad.jpg" },
+  tia: { smile: "faces/tia_smile.jpg", serious: "faces/tia_serious.jpg", sad: "faces/tia_sad.jpg" },
+  seira: { smile: "faces/seira_smile.jpg", serious: "faces/seira_serious.jpg", sad: "faces/seira_sad.jpg" },
+  rocco: { smile: "faces/rocco_smile.jpg", serious: "faces/rocco_serious.jpg", sad: "faces/rocco_sad.jpg" },
+  mist: { smile: "faces/mist_smile.jpg", serious: "faces/mist_serious.jpg", sad: "faces/mist_sad.jpg" }
+};
 window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", ovenmarmi: "units/oven-marmi.png", pocodash: "units/poco-dash.png", moomoo: "units/minori-unit.png", hoshifune: "units/mio-unit.png", telcarry: "units/teru-carry.png", hayatespin: "units/hayate-spin.png", tialaster: "units/tia-luster.png", seirabrig: "units/seira-brig.png", rocco: "units/rocco-works.png", roccoworks_ally: "units/rocco-works.png", mistral: "units/mistral.png", warugear: "units/warugia-custom.png", warugear_ally: "units/warugia-custom.png", cog: "units/sabi-cog.png", bannin: "units/bannin-cog.png", karakuri: "units/karakuri-boss.png", karakurishin: "units/karakuri-boss.png" , banninkai: "units/banninkai.png", bousouboss: "units/bousouboss.png", cogair: "units/cogair.png", cogsea: "units/cogsea.png", fogdevice: "units/fogdevice.png", fortress: "units/fortress.png", fuusha: "units/fuusha.png", ganzou: "units/ganzou.png", kaizokuboss: "units/kaizokuboss.png", kuutei: "units/kuutei.png", kuuteiboss: "units/kuuteiboss.png", kuzokuboss: "units/kuzokuboss.png", lastgear: "units/lastgear.png", sabicore: "units/sabicore.png", sajou: "units/sajou.png", sajouboss: "units/sajouboss.png", shuei: "units/shuei.png", shueiboss: "units/shueiboss.png", sniper: "units/sniper.png", toride: "units/toride.png", toubatsuboss: "units/toubatsuboss.png", yuragi: "units/yuragi.png", yuragiboss: "units/yuragiboss.png", sniperboss: "units/sniperboss.png", tsuigekiboss: "units/tsuigekiboss.png"};
 window.assetUrl = p => (window.__IMG && window.__IMG[p]) || ("assets/" + p);
 window.TILE_ART = { ".": "tiles/plain.jpg", P: "tiles/path.jpg", G: "tiles/gear.jpg", F: "tiles/forest.jpg", V: "tiles/village.jpg", R: "tiles/river.jpg", W: "tiles/water.jpg", L: "tiles/lamp.jpg", D: "tiles/block.jpg", X: "tiles/block.jpg" };
@@ -193,7 +209,26 @@ function setOrientation() { document.body.classList.toggle("landscape", isLandsc
 window.addEventListener("resize", setOrientation);
 
 /* イベント一枚絵を全画面で見せて、タップで進む */
-let artShown = false;
+const artsShown = new Set(); // 面開始前の一枚絵は1セッションに1回だけ（再挑戦で繰り返さない）
+/* 戦闘シーンの背景は防御側の立っている地形で決める（市販SRPGの作法） */
+const BG_MAP = { ".": "bgs/bg_plain.jpg", P: "bgs/bg_plain.jpg", L: "bgs/bg_night.jpg", G: "bgs/bg_gear.jpg", D: "bgs/bg_gear.jpg", X: "bgs/bg_gear.jpg", F: "bgs/bg_forest.jpg", V: "bgs/bg_village.jpg", R: "bgs/bg_water.jpg", W: "bgs/bg_water.jpg", S: "bgs/bg_sand.jpg" };
+/* 幹部・総帥・ライバルは面ごとに初戦闘でカットインを出す */
+const BOSS_CUTIN = { warubee: { img: "faces/warubee.jpg", label: "ライバル" }, ganzou: { img: "chars/ganzou.jpg", label: "ラストワークス幹部" }, mist: { img: "chars/mist.jpg", label: "ラストワークス幹部" }, granz: { img: "chars/granz.jpg", label: "ラストワークス総帥" } };
+const cutinsShown = new Set();
+function sceneOpts(atkU, defU) {
+  const opts = { bg: BG_MAP[E.terrainChar(st, defU.x, defU.y)] || "bgs/bg_plain.jpg" };
+  const boss = [defU, atkU].find(u => u.side === "enemy" && BOSS_CUTIN[u.pilotId]);
+  if (boss && !cutinsShown.has(E.stageKey(st.stage) + "|" + boss.pilotId)) {
+    cutinsShown.add(E.stageKey(st.stage) + "|" + boss.pilotId);
+    opts.cutin = { img: BOSS_CUTIN[boss.pilotId].img, label: BOSS_CUTIN[boss.pilotId].label, name: boss.name };
+  }
+  return opts;
+}
+async function showStageArt(art, stage) {
+  if (!art) return;
+  const head = stage.ex ? "EX面「" + stage.title + "」" : "第" + stage.id + "面「" + stage.title + "」";
+  await showEventArt("events/" + art.file, head + " ― " + art.caption);
+}
 function showEventArt(path, caption) {
   return new Promise(res => {
     const ov = document.createElement("div");
@@ -260,7 +295,7 @@ async function beginStage(idx, selection) {
   setOrientation();
   saveAll(); // 面開始時点の戦況も中断セーブに残す
   render();
-  if (idx === 0 && !artShown) { artShown = true; await showEventArt("events/opening.jpg", "第1面「" + st.stage.title + "」 ― 祭りの朝"); }
+  if (st.stage.artBefore && !artsShown.has(idx)) { artsShown.add(idx); await showStageArt(st.stage.artBefore, st.stage); }
   const introLines = E.stageIntroLines(st.stage, run); // 第14面はルート別台詞を差し込んだ実効行列
   if (introLines.length) await showDialog(introLines);
   if (st.pendingChoice) await presentCoreChoice(); // コア面（atStart）: 開始直後にコア選択を提示
@@ -486,7 +521,7 @@ async function doPlayerAttack() {
   const u = sel.unit, d = sel.target;
   const events = E.resolveCombat(st, u, d, sel.weaponIdx, Math.random);
   const useScene = isLandscape() && settings.anim;
-  if (useScene) await BattleView.playScene(u, d, events, sel.forecast);
+  if (useScene) await BattleView.playScene(u, d, events, sel.forecast, sceneOpts(u, d));
   else await BattleView.playSimplified($("grid"), st, events);
   sel = null; u.acted = true; busy = false;
   render();
@@ -578,7 +613,8 @@ function renderResultPanel() {
     if (E.nextStageIndex(DATA, run, stageIdx) >= 0 || st.stage.nextByRoute) items.push({
       label: "次の面へ", cls: "primary", onClick: async () => {
         if (st.stage.after) await showDialog(E.stageAfterLines(st.stage, run)); // 面間の物語
-        if (st.stage.nextByRoute && !run.route) await chooseRoute(); // 第8面クリア後: ルート選択
+        await showStageArt(st.stage.artAfter, st.stage); // クリア後の一枚絵（あれば）
+        if (st.stage.nextByRoute && !run.route) { await showEventArt("events/war_council.jpg", "作戦会議 ― 行く先を決める"); await chooseRoute(); } // 第8面クリア後: ルート選択
         const next = E.nextStageIndex(DATA, run, stageIdx);
         if (next >= 0) openIntermission(next);                        // 整備・改造・買い物
         else $("btn-title").click();
@@ -596,7 +632,11 @@ function renderResultPanel() {
     if (!st._afterShown && E.nextStageIndex(DATA, run, stageIdx) < 0 && !st.stage.nextByRoute && st.stage.after) {
       st._afterShown = true;
       const lines = E.stageAfterLines(st.stage, run);
-      if (clearP) clearP.then(() => showDialog(lines)); else showDialog(lines);
+      const p = clearP ? clearP.then(() => showDialog(lines)) : showDialog(lines);
+      p.then(async () => { // エンディング／後日談の締めに一枚絵（最終面はコア選択で出し分け）
+        const endArt = st.stage.artEnding ? st.stage.artEnding[run.coreChoice === "destroy" ? "destroy" : "stop"] : null;
+        await showStageArt(endArt || st.stage.artAfter, st.stage);
+      });
     }
   } else {
     E.saveRun(localStorage, run);
