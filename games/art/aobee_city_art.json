@@ -1,0 +1,40 @@
+{
+  "generator": "Built-in ImageGen",
+  "reference": "../aobee_city_title.webp (approved original, used only as character and style reference)",
+  "use": "Scenario preview and corresponding ending; grand is finale only",
+  "sharedPrompt": "Use case: illustration-story. One standalone premium city-building scene, very wide landscape approximately 5:2. Preserve Aobee: sky-blue round body, dark blue floppy ears without white tips, white muzzle and belly, pink cheeks, yellow star directly on head without antenna, one navy eye with yellow star and one orange gear eye, blue bow tie with yellow gear center, blue gear-shaped tail. Polished colorful painterly cel-shaded storybook look, richly detailed inviting city and coherent architecture. Mascot fully in frame. Keep key action in center 80%, top/bottom 12% calm for HTML headings. No lettering, logos, numbers, UI, buttons, collage, panels, borders or watermarks.",
+  "scenes": {
+    "growth": {
+      "file": "aobee_city_growth.webp",
+      "prompt": "The birthday of a small town. Aobee happily welcomes its first residents near little colorful houses, a modest town hall, flowering roadside trees, warm clear morning."
+    },
+    "recovery": {
+      "file": "aobee_city_recovery.webp",
+      "prompt": "Financial recovery celebration in a small city hall square. Aobee proudly holds a closed plain blue ledger, a tasteful gold commemorative ribbon, citizens applauding in the background. Warm sunset, atmosphere of relief and renewed trust. No money symbols or charts."
+    },
+    "green": {
+      "file": "aobee_city_green.webp",
+      "prompt": "A thriving garden city on a fresh green afternoon. Aobee strolling in a park of flowering trees and a clean stream, eco friendly midrise homes, lush green paths and happy distant residents, greenery harmoniously surrounding urban buildings."
+    },
+    "traffic": {
+      "file": "aobee_city_traffic.webp",
+      "prompt": "Grand opening of a new city railway. Aobee waves on a safe public viewing plaza next to a modern blue and white commuter train arriving at a bright station, flowing traffic and the connected city beyond. Dynamic optimistic sunny scene."
+    },
+    "tourism": {
+      "file": "aobee_city_tourism.webp",
+      "prompt": "The city's star festival at night. Aobee delights in elegant gold and pink fireworks above a sparkling waterfront, aquarium and ferris wheel and festive promenade glowing in the distance. Deep blue evening and warm lights."
+    },
+    "rebuild": {
+      "file": "aobee_city_rebuild.webp",
+      "prompt": "The first peaceful morning after rebuilding a city. Aobee plants a small young tree beside a dignified new memorial, clean repaired streets, restored houses, fire station and hospital in the distance. Gentle golden dawn and hopeful mood, no destruction or injuries."
+    },
+    "metro": {
+      "file": "aobee_city_metro.webp",
+      "prompt": "A dream realized: a mature metropolis at blue hour. Aobee seen in three quarter profile standing safely on a panoramic observation terrace, endless intricate city lights, high rise skyline, river bridges, shimmering blue and gold twilight. Emotional triumphant feeling."
+    },
+    "grand": {
+      "file": "aobee_city_grand.webp",
+      "prompt": "Grand finale of seven city building adventures. Aobee joyfully raises its arms on a flower covered observation hill overlooking a beautiful thriving coastal metropolis, railway, parks, waterfront attractions, distant hospital and town hall. Seven distinct luminous gold stars arch naturally across the deep blue sunset sky, spectacular celebratory fireworks, heartfelt dream fulfilled."
+    }
+  }
+}

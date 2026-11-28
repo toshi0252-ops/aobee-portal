@@ -1,0 +1,528 @@
+[
+  {
+    "key": "growth",
+    "won": true,
+    "month": 8,
+    "mode": "growth",
+    "pop": 540,
+    "happy": 87,
+    "cash": 4602,
+    "debt": 0,
+    "net": 408,
+    "streak": 1,
+    "rail": false,
+    "traffic": 67.6,
+    "pollution": 0.7555555555555555,
+    "tourism": 0,
+    "policies": [],
+    "logs": [
+      {
+        "month": 8,
+        "pop": 540,
+        "cash": 4602,
+        "net": 408,
+        "happy": 87,
+        "debt": 0,
+        "traffic": 67.6,
+        "pollution": 0.7555555555555555,
+        "tourism": 0,
+        "streak": 1
+      }
+    ],
+    "purchases": 254,
+    "debug": {
+      "cap": 480,
+      "need": 200,
+      "zones": {
+        "grass0": 3472,
+        "tree0": 370,
+        "road0": 171,
+        "plant0": 2,
+        "water0": 5,
+        "r1": 15,
+        "park0": 10,
+        "r3": 6,
+        "fire0": 3,
+        "r2": 6,
+        "r0": 7,
+        "i0": 3,
+        "c0": 4,
+        "i1": 9,
+        "c3": 1,
+        "school0": 3,
+        "hospital0": 2,
+        "c1": 2,
+        "i2": 2,
+        "c2": 1,
+        "i3": 2
+      }
+    }
+  },
+  {
+    "key": "recovery",
+    "won": true,
+    "month": 19,
+    "mode": "recovery",
+    "pop": 528,
+    "happy": 61,
+    "cash": 10838,
+    "debt": 0,
+    "net": 1235,
+    "streak": 1,
+    "rail": false,
+    "traffic": 34.43181818181818,
+    "pollution": 13,
+    "tourism": 0,
+    "policies": [
+      [
+        18,
+        "festival",
+        "盛大に開催 ／ $400"
+      ]
+    ],
+    "logs": [],
+    "purchases": 108,
+    "debug": {
+      "cap": 240,
+      "need": 171,
+      "zones": {
+        "grass0": 3622,
+        "tree0": 348,
+        "road0": 85,
+        "r1": 8,
+        "r3": 8,
+        "r2": 6,
+        "i2": 1,
+        "i3": 4,
+        "plant0": 1,
+        "water0": 1,
+        "r0": 5,
+        "i0": 3,
+        "c2": 2,
+        "c3": 1,
+        "c1": 1
+      }
+    }
+  },
+  {
+    "key": "green",
+    "won": true,
+    "month": 31,
+    "mode": "green",
+    "pop": 2448,
+    "happy": 90,
+    "cash": 42714,
+    "debt": 0,
+    "net": 3031,
+    "streak": 1,
+    "rail": false,
+    "traffic": 86.47058823529412,
+    "pollution": 1.2647058823529411,
+    "tourism": 0,
+    "policies": [
+      [
+        18,
+        "industry",
+        "誘致を支援 ／ $300"
+      ],
+      [
+        30,
+        "green",
+        "街路樹と花壇を整備 ／ $450"
+      ]
+    ],
+    "logs": [
+      {
+        "month": 12,
+        "pop": 1092,
+        "cash": 5426,
+        "net": 1206,
+        "happy": 71,
+        "debt": 0,
+        "traffic": 67,
+        "pollution": 1.2527472527472527,
+        "tourism": 0,
+        "streak": 0
+      },
+      {
+        "month": 24,
+        "pop": 2376,
+        "cash": 22309,
+        "net": 2826,
+        "happy": 83,
+        "debt": 0,
+        "traffic": 86.06060606060606,
+        "pollution": 1.0808080808080809,
+        "tourism": 0,
+        "streak": 0
+      },
+      {
+        "month": 31,
+        "pop": 2448,
+        "cash": 42714,
+        "net": 3031,
+        "happy": 90,
+        "debt": 0,
+        "traffic": 86.47058823529412,
+        "pollution": 1.2647058823529411,
+        "tourism": 0,
+        "streak": 1
+      }
+    ],
+    "purchases": 485,
+    "debug": {
+      "cap": 1200,
+      "need": 784,
+      "zones": {
+        "grass0": 3241,
+        "tree0": 370,
+        "road0": 323,
+        "plant0": 5,
+        "water0": 10,
+        "r3": 68,
+        "park0": 18,
+        "fire0": 4,
+        "i3": 27,
+        "c3": 13,
+        "school0": 5,
+        "hospital0": 4,
+        "i1": 4,
+        "c1": 2,
+        "i2": 1,
+        "c2": 1
+      }
+    }
+  },
+  {
+    "key": "traffic",
+    "won": true,
+    "month": 12,
+    "mode": "traffic",
+    "pop": 1536,
+    "happy": 96,
+    "cash": 24182,
+    "debt": 0,
+    "net": 1487,
+    "streak": 12,
+    "rail": true,
+    "traffic": 12.4921875,
+    "pollution": 8.6640625,
+    "tourism": 0,
+    "policies": [],
+    "logs": [
+      {
+        "month": 12,
+        "pop": 1536,
+        "cash": 24182,
+        "net": 1487,
+        "happy": 96,
+        "debt": 0,
+        "traffic": 12.4921875,
+        "pollution": 8.6640625,
+        "tourism": 0,
+        "streak": 12
+      }
+    ],
+    "purchases": 230,
+    "debug": {
+      "cap": 720,
+      "need": 526,
+      "zones": {
+        "grass0": 3448,
+        "tree0": 329,
+        "water0": 21,
+        "road0": 170,
+        "plant0": 3,
+        "r3": 39,
+        "c1": 1,
+        "r2": 5,
+        "c0": 1,
+        "r1": 1,
+        "c2": 12,
+        "c3": 16,
+        "park0": 10,
+        "school0": 2,
+        "i3": 7,
+        "hospital0": 2,
+        "station0": 2,
+        "rail0": 27
+      }
+    }
+  },
+  {
+    "key": "tourism",
+    "won": true,
+    "month": 29,
+    "mode": "tourism",
+    "pop": 3048,
+    "happy": 91,
+    "cash": 7534,
+    "debt": 0,
+    "net": 3744,
+    "streak": 1,
+    "rail": false,
+    "traffic": 83.40944881889764,
+    "pollution": 1,
+    "tourism": 630,
+    "policies": [
+      [
+        18,
+        "education",
+        "教育予算を拡充 ／ $500"
+      ]
+    ],
+    "logs": [
+      {
+        "month": 12,
+        "pop": 852,
+        "cash": 3072,
+        "net": 784,
+        "happy": 74,
+        "debt": 0,
+        "traffic": 56.87323943661972,
+        "pollution": 0.9859154929577465,
+        "tourism": 34,
+        "streak": 0
+      },
+      {
+        "month": 24,
+        "pop": 2328,
+        "cash": 8173,
+        "net": 3140,
+        "happy": 90,
+        "debt": 0,
+        "traffic": 85.72164948453609,
+        "pollution": 0.9896907216494846,
+        "tourism": 630,
+        "streak": 0
+      },
+      {
+        "month": 29,
+        "pop": 3048,
+        "cash": 7534,
+        "net": 3744,
+        "happy": 91,
+        "debt": 0,
+        "traffic": 83.40944881889764,
+        "pollution": 1,
+        "tourism": 630,
+        "streak": 1
+      }
+    ],
+    "purchases": 708,
+    "debug": {
+      "cap": 1440,
+      "need": 978,
+      "zones": {
+        "grass0": 3018,
+        "tree0": 370,
+        "road0": 437,
+        "plant0": 6,
+        "leisure0": 1,
+        "aquarium0": 1,
+        "golf0": 1,
+        "museum0": 1,
+        "water0": 15,
+        "r3": 73,
+        "park0": 42,
+        "fire0": 9,
+        "i3": 29,
+        "c3": 12,
+        "c2": 6,
+        "i1": 8,
+        "school0": 12,
+        "hospital0": 9,
+        "i2": 2,
+        "r2": 11,
+        "r0": 5,
+        "r1": 13,
+        "c1": 1,
+        "i0": 9,
+        "c0": 5
+      }
+    }
+  },
+  {
+    "key": "rebuild",
+    "won": true,
+    "month": 8,
+    "mode": "rebuild",
+    "pop": 1728,
+    "happy": 90,
+    "cash": 7651,
+    "debt": 0,
+    "net": 1480,
+    "streak": 1,
+    "rail": true,
+    "traffic": 55.083333333333336,
+    "pollution": 6.798611111111111,
+    "tourism": 0,
+    "policies": [],
+    "logs": [
+      {
+        "month": 8,
+        "pop": 1728,
+        "cash": 7651,
+        "net": 1480,
+        "happy": 90,
+        "debt": 0,
+        "traffic": 55.083333333333336,
+        "pollution": 6.798611111111111,
+        "tourism": 0,
+        "streak": 1
+      }
+    ],
+    "purchases": 331,
+    "debug": {
+      "cap": 960,
+      "need": 596,
+      "zones": {
+        "grass0": 3318,
+        "tree0": 363,
+        "road0": 218,
+        "plant0": 4,
+        "park0": 28,
+        "school0": 7,
+        "r2": 14,
+        "i3": 7,
+        "r3": 38,
+        "i2": 6,
+        "r1": 2,
+        "water0": 11,
+        "c1": 6,
+        "c3": 14,
+        "c2": 8,
+        "hospital0": 6,
+        "station0": 2,
+        "rail0": 27,
+        "fire0": 4,
+        "i0": 7,
+        "i1": 3,
+        "c0": 3
+      }
+    }
+  },
+  {
+    "key": "metro",
+    "won": true,
+    "month": 49,
+    "mode": "metro",
+    "pop": 10128,
+    "happy": 91,
+    "cash": 32761,
+    "debt": 0,
+    "net": 10893,
+    "streak": 1,
+    "rail": false,
+    "traffic": 85.13625592417061,
+    "pollution": 0.9052132701421801,
+    "tourism": 0,
+    "policies": [
+      [
+        18,
+        "economy",
+        "事業者を支援 ／ $700"
+      ],
+      [
+        30,
+        "tour",
+        "広域キャンペーン ／ $500"
+      ],
+      [
+        42,
+        "education",
+        "教育予算を拡充 ／ $500"
+      ]
+    ],
+    "logs": [
+      {
+        "month": 12,
+        "pop": 1188,
+        "cash": 5649,
+        "net": 1301,
+        "happy": 70,
+        "debt": 0,
+        "traffic": 69.92929292929293,
+        "pollution": 1.292929292929293,
+        "tourism": 0,
+        "streak": 0
+      },
+      {
+        "month": 24,
+        "pop": 2652,
+        "cash": 6858,
+        "net": 2847,
+        "happy": 89,
+        "debt": 0,
+        "traffic": 80.97285067873302,
+        "pollution": 0.7330316742081447,
+        "tourism": 0,
+        "streak": 0
+      },
+      {
+        "month": 36,
+        "pop": 5220,
+        "cash": 10409,
+        "net": 5337,
+        "happy": 88,
+        "debt": 0,
+        "traffic": 83.80459770114942,
+        "pollution": 0.9425287356321839,
+        "tourism": 0,
+        "streak": 0
+      },
+      {
+        "month": 48,
+        "pop": 9732,
+        "cash": 20568,
+        "net": 10297,
+        "happy": 91,
+        "debt": 0,
+        "traffic": 84.43156596794081,
+        "pollution": 0.8458692971639951,
+        "tourism": 0,
+        "streak": 0
+      },
+      {
+        "month": 49,
+        "pop": 10128,
+        "cash": 32761,
+        "net": 10893,
+        "happy": 91,
+        "debt": 0,
+        "traffic": 85.13625592417061,
+        "pollution": 0.9052132701421801,
+        "tourism": 0,
+        "streak": 1
+      }
+    ],
+    "purchases": 1897,
+    "debug": {
+      "cap": 4320,
+      "need": 3194,
+      "zones": {
+        "grass0": 1974,
+        "tree0": 225,
+        "road0": 1033,
+        "plant0": 18,
+        "water0": 45,
+        "r3": 254,
+        "park0": 162,
+        "fire0": 36,
+        "i3": 90,
+        "c3": 42,
+        "school0": 45,
+        "hospital0": 36,
+        "c2": 8,
+        "i2": 20,
+        "c1": 13,
+        "i1": 27,
+        "r2": 33,
+        "c0": 9,
+        "i0": 7,
+        "r1": 16,
+        "r0": 3
+      }
+    }
+  }
+]
