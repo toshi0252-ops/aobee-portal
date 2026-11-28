@@ -1067,7 +1067,7 @@ body.landscape.panel-hidden #panel{display:none}
   }
 
   function createRun(data) {
-    const run = { funds: 0, cleared: 0, pilots: {}, mods: {}, parts: {}, hoshiLearned: {}, partStock: {}, route: null, clearedStages: [], gameCleared: false, coreChoice: null };
+    const run = { funds: 0, cleared: 0, pilots: {}, mods: {}, parts: {}, hoshiLearned: {}, partStock: {}, route: null, clearedStages: [], clearedStageKeys: [], gameCleared: false, coreChoice: null };
     for (const pid of Object.keys(data.pilots.pilots)) {
       run.pilots[pid] = { level: 1, exp: 0, kills: 0, hp: 0, atk: 0, aim: 0, eva: 0 };
       run.hoshiLearned[pid] = data.pilots.pilots[pid].hoshi.slice();
@@ -1669,10 +1669,21 @@ body.landscape.panel-hidden #panel{display:none}
   }
   /* 面クリアの run への反映（main の結果表示とテストで共用）。何度呼んでも結果は同じ。
      stage.final（第24面）をクリアすると run.gameCleared が立ち、EX面が解放される。 */
+  /* ステージの安定キー（id＋ルート）。面の追加・並べ替えがあっても変わらない識別子で、
+     セーブのクリア記録はこのキーで保持する（インデックスは表示順に過ぎない）。 */
+  function stageKey(stage) { return String(stage.id) + (stage.route || ""); }
+  /* v1セーブ（インデックス記録）解釈用の凍結リスト: 2026-11-28時点（全32面）のキー順。
+     これ以降に面を挿入・改番しても、この並びで旧セーブのインデックスをキーへ変換する。 */
+  const STAGE_KEYS_V1 = ["1", "2", "3", "4", "5", "6", "7", "8", "9A", "10A", "9B", "10B", "11A", "12A", "13A", "11B", "12B", "13B", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "EX", "EX2", "EX3"];
   function applyStageClear(run, stageIdx, stage) {
     run.cleared = Math.max(run.cleared || 0, stageIdx + 1);
     if (!Array.isArray(run.clearedStages)) run.clearedStages = [];
     if (!run.clearedStages.includes(stageIdx)) run.clearedStages.push(stageIdx);
+    if (stage) {
+      if (!Array.isArray(run.clearedStageKeys)) run.clearedStageKeys = [];
+      const k = stageKey(stage);
+      if (!run.clearedStageKeys.includes(k)) run.clearedStageKeys.push(k);
+    }
     if (stage && stage.final) run.gameCleared = true;
   }
   function stagePath(data, run) {
@@ -1686,14 +1697,14 @@ body.landscape.panel-hidden #panel{display:none}
     return path;
   }
   function buildSave(run) {
-    return { version: 1, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned, partStock: run.partStock || {}, route: run.route || null, clearedStages: run.clearedStages || [], gameCleared: !!run.gameCleared, coreChoice: run.coreChoice || null };
+    return { version: 2, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned, partStock: run.partStock || {}, route: run.route || null, clearedStages: run.clearedStages || [], clearedStageKeys: run.clearedStageKeys || [], gameCleared: !!run.gameCleared, coreChoice: run.coreChoice || null };
   }
   function saveRun(storage, run) { storage.setItem("aobee-taisen-save-v1", JSON.stringify(buildSave(run))); }
   function loadRun(storage, data) {
     const raw = storage.getItem("aobee-taisen-save-v1");
     if (!raw) return null;
     const s = JSON.parse(raw);
-    if (s.version !== 1) return null;
+    if (s.version !== 1 && s.version !== 2) return null;
     return parseRunSave(data, s);
   }
   /* 手動セーブスロット（3つ）: インターミッション等から任意の時点を残すための保存。
@@ -1710,7 +1721,7 @@ body.landscape.panel-hidden #panel{display:none}
     if (!raw) return null;
     let s;
     try { s = JSON.parse(raw); } catch (e) { return null; }
-    if (!s || s.version !== 1) return null;
+    if (!s || (s.version !== 1 && s.version !== 2)) return null;
     return parseRunSave(data, s);
   }
   function saveSlotInfo(storage, slot) {
@@ -1718,8 +1729,8 @@ body.landscape.panel-hidden #panel{display:none}
     if (!raw) return null;
     let s;
     try { s = JSON.parse(raw); } catch (e) { return null; }
-    if (!s || s.version !== 1) return null;
-    return { clearedCount: (Array.isArray(s.clearedStages) ? s.clearedStages.length : (s.cleared || 0)), funds: s.funds || 0, route: (s.route === "A" || s.route === "B") ? s.route : null, gameCleared: !!s.gameCleared, savedAt: s.savedAt || null };
+    if (!s || (s.version !== 1 && s.version !== 2)) return null;
+    return { clearedCount: (Array.isArray(s.clearedStageKeys) && s.clearedStageKeys.length ? s.clearedStageKeys.length : (Array.isArray(s.clearedStages) ? s.clearedStages.length : (s.cleared || 0))), funds: s.funds || 0, route: (s.route === "A" || s.route === "B") ? s.route : null, gameCleared: !!s.gameCleared, savedAt: s.savedAt || null };
   }
   function parseRunSave(data, s) {
     const run = createRun(data);
@@ -1738,11 +1749,31 @@ body.landscape.panel-hidden #panel{display:none}
     run.route = (s.route === "A" || s.route === "B") ? s.route : null; // 旧セーブ（routeなし）は未選択
     run.gameCleared = !!s.gameCleared; // 旧セーブ（第24面実装前）は未クリア扱い
     run.coreChoice = (s.coreChoice === "stop" || s.coreChoice === "destroy") ? s.coreChoice : null;
-    run.clearedStages = Array.isArray(s.clearedStages)
-      ? s.clearedStages.filter(i => Number.isInteger(i) && i >= 0 && i < data.stages.stages.length) : [];
+    /* クリア記録の解決: まず安定キー（clearedStageKeys）を現行データのインデックスへ写す。
+       キーが無い v1 セーブは、凍結リスト STAGE_KEYS_V1 経由でインデックス→キー→現行インデックスと変換する。
+       写し替えが発生したら run._remapped を立て、main 側で旧インデックス前提の中断セーブを破棄する。 */
+    const keyToIdx = new Map(data.stages.stages.map((s, i) => [stageKey(s), i]));
+    const storedIdx = Array.isArray(s.clearedStages) ? s.clearedStages.slice() : null;
+    let keys = null;
+    if (Array.isArray(s.clearedStageKeys) && s.clearedStageKeys.length) {
+      keys = s.clearedStageKeys.filter(k => keyToIdx.has(k));
+    } else if (storedIdx && storedIdx.length) {
+      keys = storedIdx.map(i => STAGE_KEYS_V1[i]).filter(k => k && keyToIdx.has(k));
+    }
+    if (keys) {
+      run.clearedStageKeys = [...new Set(keys)];
+      run.clearedStages = run.clearedStageKeys.map(k => keyToIdx.get(k));
+      const before = (storedIdx || []).slice().sort((a, b) => a - b).join();
+      const after = run.clearedStages.slice().sort((a, b) => a - b).join();
+      if (before !== after) run._remapped = true;
+    } else {
+      run.clearedStageKeys = [];
+      run.clearedStages = [];
+    }
     // 旧セーブ互換: clearedStages が無く cleared だけある場合は、線形分（第1〜8面=インデックス0〜7）をクリア済みに移行
     if (!run.clearedStages.length && run.cleared > 0) {
       for (let i = 0; i < Math.min(run.cleared, 8); i++) run.clearedStages.push(i);
+      run.clearedStageKeys = run.clearedStages.map(i => stageKey(data.stages.stages[i]));
     }
     return run;
   }
@@ -1804,7 +1835,7 @@ body.landscape.panel-hidden #panel{display:none}
     if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
     return st;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, moveCostAt, terrainBonusFor, dist, createRun, startStage, deployInfo, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, supplyAction, applyHoshi, bestWeaponVs, foreseeThreats, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, SAVE_SLOTS, saveRunToSlot, loadRunFromSlot, saveSlotInfo, serializeState, restoreState, nextStageIndex, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, checkGate, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  const api = { TERRAIN, terrainAt, terrainChar, moveCostAt, terrainBonusFor, dist, createRun, startStage, deployInfo, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, supplyAction, applyHoshi, bestWeaponVs, foreseeThreats, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, SAVE_SLOTS, saveRunToSlot, loadRunFromSlot, saveSlotInfo, serializeState, restoreState, nextStageIndex, stageKey, STAGE_KEYS_V1, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, checkGate, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
@@ -1873,6 +1904,9 @@ function refreshTitle() {
     const ts = $("title-screen"); ts.insertBefore(img, ts.firstChild);
   }
   const saved = E.loadRun(localStorage, DATA);
+  // 面の挿入・改番でクリア記録の写し替えが起きた場合、旧インデックス前提の中断セーブ（戦況）は
+  // 別の面を指してしまうため破棄する（育成・クリア記録そのものはキー方式で引き継がれる）
+  if (saved && saved._remapped) { localStorage.removeItem(BKEY); delete saved._remapped; }
   $("btn-continue").disabled = !saved;
   const bs = loadBattleSave();
   const rb = $("btn-resume");
