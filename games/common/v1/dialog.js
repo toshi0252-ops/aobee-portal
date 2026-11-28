@@ -8,7 +8,7 @@
       const ov = document.createElement("div");
       ov.style.cssText = "position:fixed;inset:0;background:rgba(2,6,23,.45);display:flex;align-items:flex-end;justify-content:center;z-index:60";
       const box = document.createElement("div");
-      box.style.cssText = "background:rgba(15,23,42,.96);border:2px solid #475569;border-radius:12px;margin:10px;padding:12px 14px;max-width:640px;width:100%;color:#e2e8f0;min-height:96px;cursor:pointer";
+      box.style.cssText = "background:linear-gradient(180deg,rgba(27,42,69,.97),rgba(13,20,36,.97));border:2px solid #3d5a80;border-radius:12px;margin:10px;padding:12px 14px;max-width:640px;width:100%;color:#e2e8f0;min-height:96px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(148,197,255,.18),0 10px 30px rgba(0,0,0,.55)";
       ov.appendChild(box); document.body.appendChild(ov);
       let i = 0;
       function render() {
