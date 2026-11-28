@@ -233,6 +233,23 @@
       // 表示上の開始HP（エンジン側は計算済みなので、受けたダメージを足し戻して開始値にする）
       const startAtk = atkU.hp + (counter && counter.hit ? counter.dmg : 0);
       const startDef = defU.hp + (main && main.hit ? main.dmg : 0);
+      // ポーズ差し替え: 攻撃時は _atk、被弾時は _hit の絵へ一時的に切り替える（対応する機体のみ）
+      function posePath(u, kind) {
+        const art = (global.UNIT_ART || {})[u.unitId];
+        if (!art || art.slice(-4) !== ".png") return null;
+        const stem = art.split("/").pop().replace(".png", "");
+        if ((global.POSE_STEMS || []).indexOf(stem) < 0) return null;
+        return art.replace(".png", "_" + kind + ".png");
+      }
+      function swapPose(unitEl, u, kind, holdMs) {
+        const img = unitEl.querySelector(".bs-img");
+        if (!img) return;
+        const p = posePath(u, kind);
+        if (!p) return;
+        if (!img.dataset.baseSrc) img.dataset.baseSrc = img.src;
+        img.src = global.assetUrl ? global.assetUrl(p) : "assets/" + p;
+        if (holdMs) setTimeout(() => { if (!done && img.dataset.baseSrc) img.src = img.dataset.baseSrc; }, holdMs);
+      }
       const barHtml = (u, cur) =>
         "<div class='bs-side'><div class='bs-hpname'>" + u.name + "／" + u.unitName + "</div>" +
         "<div class='bs-barwrap'><i style='width:" + Math.max(0, Math.round(cur / u.maxHp * 100)) + "%'></i></div>" +
@@ -267,6 +284,7 @@
         left.animate([{ transform: "translateX(-64px)", opacity: 0 }, { transform: "translateX(0)", opacity: 1 }], { duration: 300, easing: "ease-out" });
         right.animate([{ transform: "translateX(64px)", opacity: 0 }, { transform: "translateX(0)", opacity: 1 }], { duration: 300, easing: "ease-out" });
       }
+      [atkU, defU].forEach(u => ["atk", "hit"].forEach(k => { const p = posePath(u, k); if (p) { const im = new Image(); im.src = global.assetUrl ? global.assetUrl(p) : "assets/" + p; } }));
       const sides = ov.querySelectorAll(".bs-side");
       const atkSide = sides[0], defSide = sides[1];
       let done = false;
@@ -444,6 +462,7 @@
       }
       // 着弾時の共通演出: フラッシュ＋破片＋画面の揺れ（ダメージ比で大小）＋撃破時は大爆発と消滅
       function impactFx(s, big) {
+        swapPose(s.foe, s.foeU, "hit", s.ev.killed ? 0 : 750); // 撃墜時は被弾ポーズのまま消える
         const foeC = impactPointOf(s.foe);
         // 被弾のよろけ: 衝撃方向（攻撃側と反対）へ約6px押し出されて戻る
         nudge(s.foe, (foeC.x >= centerOf(s.el).x ? 1 : -1) * 6, 280);
@@ -483,11 +502,13 @@
         partnerEl = document.createElement("div");
         partnerEl.className = "bs-unit " + (s.el.classList.contains("bs-left") ? "bs-left" : "bs-right") + " bs-partner";
         partnerEl.innerHTML = spriteHtml(pseudo) + "<div class='bs-name'>" + c.partnerUnitName + "</div>";
+        swapPose(partnerEl, pseudo, "atk", 1500); // 合体攻撃の相方も攻撃ポーズに
         ov.appendChild(partnerEl);
         if (partnerEl.animate) partnerEl.animate([{ transform: "translateY(30px) scale(.92)", opacity: 0 }, { transform: "translateY(0) scale(.92)", opacity: 1 }], { duration: 340, easing: "ease-out", fill: "forwards" });
         return partnerEl;
       }
       function fireStep(s) {
+        swapPose(s.el, s.who, "atk", 820);
         const fx = s.ev.fx || "melee";
         const big = (s.ev.power || 0) >= 2000; // 威力2000以上の必殺は一回り派手に
         if (fx === "melee") s.el.classList.add("bs-dash");
