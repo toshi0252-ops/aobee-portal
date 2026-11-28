@@ -13,8 +13,9 @@
       let i = 0;
       function render() {
         if (i >= lines.length) { document.body.removeChild(ov); resolve(); return; }
-        const [who, text] = lines[i];
-        const face = (global.FACE_MAP || {})[who];
+        const [who, text, expr] = lines[i];
+        const exprFace = expr ? ((global.FACE_EXPR || {})[who] || {})[expr] : null;
+        const face = exprFace || (global.FACE_MAP || {})[who];
         const faceHtml = face ? "<img src='" + (global.assetUrl ? global.assetUrl(face) : "assets/" + face) + "' alt='' style='width:64px;height:64px;border-radius:10px;object-fit:cover;object-position:top;flex:none;border:2px solid " + (COLORS[who] || "#475569") + "'>" : "";
         box.innerHTML = "<div style='display:flex;gap:10px;align-items:flex-start'>" + faceHtml + "<div style='flex:1'><div style='font-weight:700;color:" + (COLORS[who] || "#e2e8f0") + "'>" + (NAMES[who] || who) + "</div><div style='margin-top:4px;line-height:1.6'>" + text + "</div></div></div><div style='text-align:right;color:#64748b;font-size:11px'>タップで進む ▼</div>";
       }
