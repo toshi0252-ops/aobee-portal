@@ -1413,6 +1413,18 @@
      "power": 1300
     }
    ]
+  },
+  "mistworker": {
+   "aim": 0,
+   "armor": 500,
+   "color": "#c4b5fd",
+   "en": 0,
+   "eva": 40,
+   "hp": 1700,
+   "move": 0,
+   "name": "ミスト",
+   "npc": true,
+   "weapons": []
   }
  }
 }

@@ -36,7 +36,7 @@ window.UNIT_ART = { gearstar: "units/gearstar.png", galdon: "units/gardon.png", 
 window.assetUrl = p => (window.__IMG && window.__IMG[p]) || ("assets/" + p);
 window.TILE_ART = { ".": "tiles/plain.jpg", P: "tiles/path.jpg", G: "tiles/gear.jpg", F: "tiles/forest.jpg", V: "tiles/village.jpg", R: "tiles/river.jpg", W: "tiles/water.jpg", L: "tiles/lamp.jpg", D: "tiles/block.jpg", X: "tiles/block.jpg" };
 /* マップ駒専用アイコン（顔・上半身を大きく切り出した視認性重視版） */
-window.UNIT_ICON = { gearstar: "icons/gearstar.png", galdon: "icons/gardon.png", ovenmarmi: "icons/oven-marmi.png", pocodash: "icons/poco-dash.png", moomoo: "icons/minori-unit.png", hoshifune: "icons/mio-unit.png", telcarry: "icons/teru-carry.png", hayatespin: "icons/hayate-spin.png", tialaster: "icons/tia-luster.png", seirabrig: "icons/seira-brig.png", rocco: "icons/rocco-works.png", roccoworks_ally: "icons/rocco-works.png", mistral: "icons/mistral.png", warugear: "icons/warugia-custom.png", warugear_ally: "icons/warugia-custom.png", cog: "icons/sabi-cog.png", bannin: "icons/bannin-cog.png", karakuri: "icons/karakuri-boss.png", karakurishin: "icons/karakuri-boss.png" , banninkai: "icons/banninkai.png", bousouboss: "icons/bousouboss.png", cogair: "icons/cogair.png", cogsea: "icons/cogsea.png", fogdevice: "icons/fogdevice.png", fortress: "icons/fortress.png", fuusha: "icons/fuusha.png", ganzou: "icons/ganzou.png", kaizokuboss: "icons/kaizokuboss.png", kuutei: "icons/kuutei.png", kuuteiboss: "icons/kuuteiboss.png", kuzokuboss: "icons/kuzokuboss.png", lastgear: "icons/lastgear.png", sabicore: "icons/sabicore.png", sajou: "icons/sajou.png", sajouboss: "icons/sajouboss.png", shuei: "icons/shuei.png", shueiboss: "icons/shueiboss.png", sniper: "icons/sniper.png", toride: "icons/toride.png", toubatsuboss: "icons/toubatsuboss.png", yuragi: "icons/yuragi.png", yuragiboss: "icons/yuragiboss.png", animal: "icons/animal.png", citizen: "icons/citizen.png", ship: "icons/ship.png", sniperboss: "icons/sniperboss.png", tsuigekiboss: "icons/tsuigekiboss.png"};
+window.UNIT_ICON = { gearstar: "icons/gearstar.png", galdon: "icons/gardon.png", ovenmarmi: "icons/oven-marmi.png", pocodash: "icons/poco-dash.png", moomoo: "icons/minori-unit.png", hoshifune: "icons/mio-unit.png", telcarry: "icons/teru-carry.png", hayatespin: "icons/hayate-spin.png", tialaster: "icons/tia-luster.png", seirabrig: "icons/seira-brig.png", rocco: "icons/rocco-works.png", roccoworks_ally: "icons/rocco-works.png", mistral: "icons/mistral.png", warugear: "icons/warugia-custom.png", warugear_ally: "icons/warugia-custom.png", cog: "icons/sabi-cog.png", bannin: "icons/bannin-cog.png", karakuri: "icons/karakuri-boss.png", karakurishin: "icons/karakuri-boss.png" , banninkai: "icons/banninkai.png", bousouboss: "icons/bousouboss.png", cogair: "icons/cogair.png", cogsea: "icons/cogsea.png", fogdevice: "icons/fogdevice.png", fortress: "icons/fortress.png", fuusha: "icons/fuusha.png", ganzou: "icons/ganzou.png", kaizokuboss: "icons/kaizokuboss.png", kuutei: "icons/kuutei.png", kuuteiboss: "icons/kuuteiboss.png", kuzokuboss: "icons/kuzokuboss.png", lastgear: "icons/lastgear.png", sabicore: "icons/sabicore.png", sajou: "icons/sajou.png", sajouboss: "icons/sajouboss.png", shuei: "icons/shuei.png", shueiboss: "icons/shueiboss.png", sniper: "icons/sniper.png", toride: "icons/toride.png", toubatsuboss: "icons/toubatsuboss.png", yuragi: "icons/yuragi.png", yuragiboss: "icons/yuragiboss.png", animal: "icons/animal.png", citizen: "icons/citizen.png", ship: "icons/ship.png", mistworker: "faces/mist.jpg", sniperboss: "icons/sniperboss.png", tsuigekiboss: "icons/tsuigekiboss.png"};
 const panel = new Panel($("panel"));
 const grid = new GridMap($("grid"), onTapCell);
 
@@ -83,7 +83,7 @@ function refreshTitle() {
     $("title-screen").insertBefore(banner, $("stage-select"));
   }
   const gameCleared = !!(saved && saved.gameCleared);
-  banner.textContent = gameCleared ? "★ 本編クリア済み ★ 隠しEX面「祭りのあとで」が解放されています" : "";
+  banner.textContent = gameCleared ? "★ 本編クリア済み ★ 隠しEX面（後日談・全3面）が解放されています" : "";
   banner.classList.toggle("hidden", !gameCleared);
   // 手動セーブスロットからの再開（スロットがある時だけ出す）
   let slotBox = $("slot-loads");
@@ -127,9 +127,8 @@ function refreshTitle() {
       const s = DATA.stages.stages[i];
       if (s && s.nextByRoute) { unlockedSet.add(s.nextByRoute.A); unlockedSet.add(s.nextByRoute.B); }
     }
-    if (saved.gameCleared) { // 本編クリアで EX 面（後日談）を解放
-      const exIdx = DATA.stages.stages.findIndex(s => s.ex);
-      if (exIdx >= 0) unlockedSet.add(exIdx);
+    if (saved.gameCleared) { // 本編クリアで EX 面（後日談・全EX面）を解放
+      DATA.stages.stages.forEach((s, i) => { if (s.ex) unlockedSet.add(i); });
     }
     [...unlockedSet].sort((a, b) => a - b).forEach(i => {
       const s = DATA.stages.stages[i];
@@ -570,7 +569,7 @@ function renderResultPanel() {
     E.saveRun(localStorage, run);
     panel.show("<h3>" + (st.stage.final ? "最終決戦クリア！" : st.stage.ex ? "EX面クリア！" : "面クリア！") + "</h3><div class='stat'>" + st.turn + "ターンでクリア" +
       (st.medal ? " ／ ほし勲章 獲得！" : "（ほし勲章は" + st.stage.medalTurns + "ターン以内）") +
-      "<br>歯車コイン: " + run.funds + (st.stage.final ? "<br>★ 本編クリア！ タイトルで隠しEX面「祭りのあとで」が解放されました" : "") + "</div>");
+      "<br>歯車コイン: " + run.funds + (st.stage.final ? "<br>★ 本編クリア！ タイトルで隠しEX面（後日談・全3面）が解放されました" : "") + "</div>");
     const items = [];
     if (E.nextStageIndex(DATA, run, stageIdx) >= 0 || st.stage.nextByRoute) items.push({
       label: "次の面へ", cls: "primary", onClick: async () => {

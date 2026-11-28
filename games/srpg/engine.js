@@ -227,7 +227,7 @@
     for (const e of stage.enemies) st.units.push(enemyUnit(data, e, stageLevel(stage)));
     for (const n of stage.npcs || []) {
       const u = data.units.units[n.unit];
-      st.units.push({ uid: uidSeq++, side: "npc", pilotId: null, unitId: n.unit, name: u.name, unitName: u.name, color: u.color, x: n.x, y: n.y, maxHp: u.hp, hp: u.hp, maxEn: 0, en: 0, move: u.move, moveType: u.moveType || "land", armor: u.armor, aim: 0, eva: u.eva, atk: 0, weapons: [], maxSp: 0, sp: 0, morale: 100, level: 1, acted: false, boss: false, flags: {} });
+      st.units.push({ uid: uidSeq++, side: "npc", pilotId: null, unitId: n.unit, name: u.name, unitName: u.name, color: u.color, x: n.x, y: n.y, maxHp: u.hp, hp: u.hp, maxEn: 0, en: 0, move: u.move, moveType: u.moveType || "land", armor: u.armor, aim: 0, eva: u.eva, atk: 0, weapons: [], maxSp: 0, sp: 0, morale: 100, level: 1, acted: false, boss: false, stay: !!n.stay, flags: {} });
     }
     return st;
   }
@@ -615,6 +615,7 @@
   function npcPhase(st, rng) {
     rng = rng || Math.random;
     for (const n of living(st, "npc")) {
+      if (n.stay) continue; // その場で作業中などのNPCは逃げない（EX2の修理中のミスト等）
       const enemies = living(st, "enemy");
       if (!enemies.length) break;
       const tiles = computeMoveRange(st, n);
