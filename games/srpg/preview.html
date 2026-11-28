@@ -2,10 +2,12 @@
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>あおびー大戦 〜星の歯車〜｜全24面＋EX（分岐あり）</title>
 <style>
-/* 共通パネル部品: 画面下部（縦）／右側（横）の両配置で同じ中身を使う */
+/* 共通パネル部品: 画面下部（縦）／右側（横）の両配置で同じ中身を使う
+   質感テーマ「星の歯車」: 紺メタルのグラデ＋金の差し色で全画面統一（2026-11-28） */
 #panel {
-  background: #111827;
-  border-top: 2px solid #334155;
+  background: linear-gradient(180deg, #1b2a45 0%, #131f36 55%, #0e1729 100%);
+  border-top: 2px solid #3d5a80;
+  box-shadow: inset 0 1px 0 rgba(148,197,255,.16);
   padding: 8px;
   overflow-y: auto;
   font-size: 13px;
@@ -13,40 +15,45 @@
 }
 body.landscape #panel {
   border-top: none;
-  border-left: 2px solid #334155;
+  border-left: 2px solid #3d5a80;
 }
-#panel h3 { margin: 2px 0 6px; font-size: 14px; }
-#panel .pc-face { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; object-position: top; float: left; margin: 0 8px 4px 0; }
+#panel h3 { margin: 2px 0 6px; font-size: 14px; color: #e0f2fe; text-shadow: 0 1px 2px rgba(0,0,0,.6); border-bottom: 1px solid rgba(251,191,36,.35); padding-bottom: 4px; }
+#panel .pc-face { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; object-position: top; float: left; margin: 0 8px 4px 0; border: 1px solid #3d5a80; box-shadow: 0 2px 6px rgba(0,0,0,.45); }
 #panel .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
 #panel button {
-  background: #1f2937; color: #e2e8f0; border: 1px solid #4b5563;
-  border-radius: 8px; padding: 9px 12px; font-size: 13px; cursor: pointer;
+  background: linear-gradient(180deg, #2c3a52, #1c2536);
+  color: #e2e8f0; border: 1px solid #55677f;
+  border-radius: 10px; padding: 9px 12px; font-size: 13px; cursor: pointer;
   min-height: 40px;
+  box-shadow: inset 0 1px 0 rgba(186,230,253,.14), 0 2px 5px rgba(0,0,0,.35);
+  transition: filter .12s ease, transform .05s ease;
 }
-#panel button.primary { background: #0369a1; border-color: #38bdf8; font-weight: 700; }
+#panel button:active { transform: translateY(1px); filter: brightness(1.15); }
+#panel button.primary { background: linear-gradient(180deg, #0e8fd0, #0369a1); border-color: #38bdf8; font-weight: 700; color: #fff; box-shadow: inset 0 1px 0 rgba(224,242,254,.35), 0 2px 8px rgba(2,132,199,.45); }
 #panel button:disabled { opacity: 0.4; }
-#panel .stat { color: #94a3b8; font-size: 12px; line-height: 1.5; }
-#panel .bar { height: 8px; background: #374151; border-radius: 4px; overflow: hidden; margin: 2px 0 4px; }
-#panel .bar i { display: block; height: 100%; background: #22c55e; }
-#panel .bar.en i { background: #38bdf8; }
-#panel .bar.sp i { background: #f59e0b; }
+#panel .stat { color: #a8bdd4; font-size: 12px; line-height: 1.5; }
+#panel .bar { height: 8px; background: #0b1220; border: 1px solid rgba(148,197,255,.14); border-radius: 4px; overflow: hidden; margin: 2px 0 4px; box-shadow: inset 0 1px 3px rgba(0,0,0,.6); }
+#panel .bar i { display: block; height: 100%; background: linear-gradient(180deg, #4ade80, #16a34a); }
+#panel .bar.en i { background: linear-gradient(180deg, #7dd3fc, #0284c7); }
+#panel .bar.sp i { background: linear-gradient(180deg, #fbbf24, #d97706); }
 #panel table { width: 100%; border-collapse: collapse; font-size: 12px; }
 #panel td, #panel th { border: 1px solid #334155; padding: 4px 6px; text-align: left; }
+#panel th { background: rgba(56,189,248,.12); color: #bae6fd; }
 
 </style>
 <style>
 *{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#0f172a;color:#e2e8f0;font-family:system-ui,"Hiragino Sans","Noto Sans JP",sans-serif}
 #app{height:100dvh;display:flex;flex-direction:column}
-header{display:flex;gap:8px;align-items:center;background:#1e3a5f;padding:6px 10px;font-size:13px;font-weight:700;flex-wrap:wrap}
-header .spacer{flex:1}header button{background:#0ea5e9;border:none;color:#fff;border-radius:6px;padding:6px 10px;font-weight:700;cursor:pointer}
-header button.sub{background:#334155}
+header{display:flex;gap:8px;align-items:center;background:linear-gradient(180deg,#2a5484,#1e3a5f 60%,#18304f);border-bottom:2px solid rgba(251,191,36,.55);box-shadow:0 2px 8px rgba(0,0,0,.4);padding:6px 10px;font-size:13px;font-weight:700;flex-wrap:wrap;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+header .spacer{flex:1}header button{background:linear-gradient(180deg,#0e8fd0,#0369a1);border:1px solid #38bdf8;color:#fff;border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(224,242,254,.35),0 2px 5px rgba(0,0,0,.35)}
+header button.sub{background:linear-gradient(180deg,#2c3a52,#1c2536);border:1px solid #55677f;box-shadow:inset 0 1px 0 rgba(186,230,253,.14),0 2px 5px rgba(0,0,0,.35)}
 #main{flex:1;display:flex;flex-direction:column;min-height:0}
 #mapwrap{padding:6px;display:flex;justify-content:center}
 #grid{display:grid;gap:1px;width:min(100%,calc((100dvh - 330px)*1.333));max-width:560px}
 body.landscape #main{position:relative;display:block}
 body.landscape #mapwrap{position:absolute;inset:0;align-items:center;justify-content:flex-start}
 body.landscape #grid{width:min(100%,calc((100dvh - 64px)*1.333));max-width:none}
-body.landscape #panel{position:absolute;top:6px;right:6px;bottom:6px;width:min(330px,44vw);flex:none;z-index:6;background:rgba(17,24,39,.94);border:1px solid #475569;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+body.landscape #panel{position:absolute;top:6px;right:6px;bottom:6px;width:min(330px,44vw);flex:none;z-index:6;background:linear-gradient(180deg,rgba(27,42,69,.96),rgba(14,23,41,.96));border:1px solid #3d5a80;border-radius:12px;box-shadow:inset 0 1px 0 rgba(148,197,255,.16),0 8px 24px rgba(0,0,0,.55)}
 body.landscape.panel-hidden #panel{display:none}
 #panel{flex:1;min-height:120px}
 .cell{aspect-ratio:1;border:1px solid rgba(255,255,255,.12);position:relative;display:flex;align-items:center;justify-content:center}
@@ -90,18 +97,18 @@ body.landscape.panel-hidden #panel{display:none}
 .core-btns{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .core-btn{border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer;color:#fff}
 .core-btn small{display:block;font-size:12px;font-weight:400;opacity:.85;margin-top:4px}
-.core-btn.stop{background:#0369a1;border:1px solid #38bdf8}
-.core-btn.destroy{background:#7f1d1d;border:1px solid #f87171}
+.core-btn.stop{background:linear-gradient(180deg,#0e8fd0,#0369a1);border:1px solid #38bdf8;box-shadow:inset 0 1px 0 rgba(224,242,254,.35),0 4px 12px rgba(2,132,199,.4)}
+.core-btn.destroy{background:linear-gradient(180deg,#b91c1c,#7f1d1d);border:1px solid #f87171;box-shadow:inset 0 1px 0 rgba(254,226,226,.3),0 4px 12px rgba(185,28,28,.4)}
 @keyframes pop{0%{transform:translateY(6px);opacity:0}25%{opacity:1}100%{transform:translateY(-8px);opacity:0}}
-#title-screen{height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:linear-gradient(#1e3a5f,#0f172a);text-align:center;padding:16px}
-#title-screen h1{font-size:30px;margin:0;color:#7dd3fc}
+#title-screen{height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(ellipse 90% 55% at 50% 0%,#2a5484 0%,#1e3a5f 45%,#0f172a 100%);text-align:center;padding:16px}
+#title-screen h1{font-size:30px;margin:0;background:linear-gradient(180deg,#fef9c3,#fbbf24 45%,#7dd3fc 90%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 6px rgba(0,0,0,.55));letter-spacing:.04em}
 #title-screen .sub{color:#94a3b8;font-size:13px;max-width:520px;line-height:1.7}
-#title-screen button{background:#0369a1;color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;min-width:240px}
+#title-screen button{background:linear-gradient(180deg,#0e8fd0,#0369a1);color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;min-width:240px;box-shadow:inset 0 1px 0 rgba(224,242,254,.35),0 4px 12px rgba(2,132,199,.4);transition:filter .12s ease,transform .05s ease}
 #title-screen button:disabled{opacity:.4}
-#title-screen button.sub{background:#1f2937;border-color:#4b5563;font-weight:400}
+#title-screen button.sub{background:linear-gradient(180deg,#2c3a52,#1c2536);border-color:#55677f;font-weight:400;box-shadow:inset 0 1px 0 rgba(186,230,253,.14),0 3px 8px rgba(0,0,0,.4)}
 .hidden{display:none!important}
 .battle-scene{position:fixed;inset:0;background:linear-gradient(#7dd3fc 0 55%,#65a30d 55%);z-index:80}
-.bs-quote{position:absolute;top:10px;left:10px;right:10px;background:rgba(2,6,23,.88);color:#fff;border-radius:8px;padding:8px 12px;font-size:14px}
+.bs-quote{position:absolute;top:10px;left:10px;right:10px;background:linear-gradient(180deg,rgba(27,42,69,.92),rgba(2,6,23,.92));border:1px solid #3d5a80;color:#fff;border-radius:10px;padding:8px 12px;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.5)}
 .bs-unit{position:absolute;bottom:52px;text-align:center;transition:transform .3s}
 .bs-left{left:10%}.bs-right{right:10%}
 .bs-sprite{width:92px;height:92px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#111;border:3px solid rgba(255,255,255,.8);padding:4px}
@@ -109,12 +116,12 @@ body.landscape.panel-hidden #panel{display:none}
 .bs-name{color:#fff;text-shadow:0 1px 3px #000;font-size:12px;margin-top:4px;font-weight:700}
 .bs-dash{transform:translateX(46px)}.bs-right.bs-dash{transform:translateX(-46px)}
 .bs-shake{animation:shake .35s}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
-.bs-bars{position:absolute;left:0;right:0;bottom:0;background:rgba(2,6,23,.9);color:#fff;display:flex;justify-content:space-between;padding:8px 14px;font-size:13px}
-.bs-skip{position:absolute;top:64px;right:10px;background:#f59e0b;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer}
+.bs-bars{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(27,42,69,.94),rgba(2,6,23,.96));border-top:1px solid #3d5a80;color:#fff;display:flex;justify-content:space-between;padding:8px 14px;font-size:13px}
+.bs-skip{position:absolute;top:64px;right:10px;background:linear-gradient(180deg,#fbbf24,#d97706);border:1px solid #fde68a;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4);border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.4)}
 .battle-scene{transition:opacity .25s}.bs-fade{opacity:0}
 .bs-side{min-width:38%}.bs-hpname{font-size:11px;color:#bae6fd}
 .bs-barwrap{height:9px;background:rgba(255,255,255,.18);border-radius:4px;overflow:hidden;margin:3px 0}
-.bs-barwrap i{display:block;height:100%;background:#22c55e;border-radius:4px;transition:width .6s ease}
+.bs-barwrap i{display:block;height:100%;background:linear-gradient(180deg,#4ade80,#16a34a);border-radius:4px;transition:width .6s ease}
 .bs-guard{filter:brightness(1.7)} .bs-evade{transform:translateX(-30px)}
 .bs-img{width:min(38vw,240px);max-height:200px;object-fit:contain;filter:drop-shadow(0 4px 8px rgba(0,0,0,.45))}
 .bs-float{animation:bsfloat 2.6s ease-in-out infinite}
@@ -170,46 +177,46 @@ body.landscape.panel-hidden #panel{display:none}
 @keyframes burstpop{0%{transform:scale(.3) rotate(0deg);opacity:1}55%{opacity:1}100%{transform:scale(1.5) rotate(24deg);opacity:0}}
 .cell-spark{position:absolute;left:50%;top:55%;color:#86efac;font-size:12px;text-shadow:0 0 5px #22c55e;z-index:6;pointer-events:none}
 #log{font-size:11px;color:#94a3b8;max-height:90px;overflow-y:auto;line-height:1.5}
-#intermission{position:fixed;inset:0;background:rgba(2,6,23,.97);z-index:65;overflow-y:auto;padding:12px;color:#e2e8f0}
+#intermission{position:fixed;inset:0;background:radial-gradient(ellipse 90% 50% at 50% 0%,#1e3a5f 0%,rgba(2,6,23,.98) 55%);z-index:65;overflow-y:auto;padding:12px;color:#e2e8f0}
 #intermission .im-inner{max-width:680px;margin:0 auto;padding-bottom:24px}
 #intermission .im-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-#intermission h2{margin:4px 0;color:#7dd3fc;font-size:22px}
+#intermission h2{margin:4px 0;color:#7dd3fc;font-size:22px;text-shadow:0 2px 8px rgba(56,189,248,.35)}
 #intermission .im-funds{font-weight:700;color:#fde68a}
 #intermission .im-topbtns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-#intermission button{background:#1f2937;color:#e2e8f0;border:1px solid #4b5563;border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:700;font-size:13px}
-#intermission button.primary{background:#0369a1;border-color:#38bdf8;color:#fff}
+#intermission button{background:linear-gradient(180deg,#2c3a52,#1c2536);color:#e2e8f0;border:1px solid #55677f;border-radius:10px;padding:7px 12px;cursor:pointer;font-weight:700;font-size:13px;box-shadow:inset 0 1px 0 rgba(186,230,253,.14),0 2px 5px rgba(0,0,0,.35);transition:filter .12s ease,transform .05s ease}
+#intermission button.primary{background:linear-gradient(180deg,#0e8fd0,#0369a1);border-color:#38bdf8;color:#fff;box-shadow:inset 0 1px 0 rgba(224,242,254,.35),0 2px 8px rgba(2,132,199,.45)}
 #intermission button:disabled{opacity:.35;cursor:default}
 #intermission .im-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
 #intermission .im-tab{display:flex;align-items:center;gap:6px}
-#intermission .im-tab.active{background:#0369a1;border-color:#38bdf8;color:#fff}
+#intermission .im-tab.active{background:linear-gradient(180deg,#0e8fd0,#0369a1);border-color:#38bdf8;color:#fff}
 #intermission .im-tab img{width:30px;height:30px;border-radius:6px;object-fit:cover}
-#intermission .im-unit{display:flex;gap:10px;align-items:center;background:rgba(30,58,95,.5);border:1px solid #475569;border-radius:10px;padding:10px}
+#intermission .im-unit{display:flex;gap:10px;align-items:center;background:linear-gradient(180deg,rgba(42,84,132,.45),rgba(24,48,79,.45));border:1px solid #3d5a80;border-radius:12px;padding:10px;box-shadow:inset 0 1px 0 rgba(148,197,255,.14),0 4px 12px rgba(0,0,0,.35)}
 #intermission .im-face{width:64px;height:64px;border-radius:8px;object-fit:cover}
 #intermission .im-unit h3{margin:0 0 4px;font-size:16px}
 #intermission .im-sec{margin-top:16px}
-#intermission .im-sec h3{margin:0 0 6px;font-size:15px;color:#7dd3fc}
+#intermission .im-sec h3{margin:0 0 6px;font-size:15px;color:#7dd3fc;border-left:3px solid #fbbf24;padding-left:8px}
 #intermission table{width:100%;border-collapse:collapse;font-size:13px}
 #intermission td,#intermission th{padding:5px 6px;border-bottom:1px solid #334155;text-align:left;vertical-align:middle}
 #intermission .im-marks{letter-spacing:2px;color:#38bdf8;white-space:nowrap}
 #intermission .stat{color:#cbd5e1;font-size:13px;line-height:1.6}
-#deploy{position:fixed;inset:0;background:rgba(2,6,23,.97);z-index:65;overflow-y:auto;padding:12px;color:#e2e8f0}
+#deploy{position:fixed;inset:0;background:radial-gradient(ellipse 90% 50% at 50% 0%,#1e3a5f 0%,rgba(2,6,23,.98) 55%);z-index:65;overflow-y:auto;padding:12px;color:#e2e8f0}
 #deploy .im-inner{max-width:680px;margin:0 auto;padding-bottom:24px}
 #deploy .im-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
-#deploy h2{margin:4px 0;color:#7dd3fc;font-size:22px}
+#deploy h2{margin:4px 0;color:#7dd3fc;font-size:22px;text-shadow:0 2px 8px rgba(56,189,248,.35)}
 #deploy .im-funds{font-weight:700;color:#fde68a}
 #deploy .im-topbtns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-#deploy button{background:#1f2937;color:#e2e8f0;border:1px solid #4b5563;border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:700;font-size:13px}
-#deploy button.primary{background:#0369a1;border-color:#38bdf8;color:#fff}
+#deploy button{background:linear-gradient(180deg,#2c3a52,#1c2536);color:#e2e8f0;border:1px solid #55677f;border-radius:10px;padding:7px 12px;cursor:pointer;font-weight:700;font-size:13px;box-shadow:inset 0 1px 0 rgba(186,230,253,.14),0 2px 5px rgba(0,0,0,.35);transition:filter .12s ease,transform .05s ease}
+#deploy button.primary{background:linear-gradient(180deg,#0e8fd0,#0369a1);border-color:#38bdf8;color:#fff;box-shadow:inset 0 1px 0 rgba(224,242,254,.35),0 2px 8px rgba(2,132,199,.45)}
 #deploy button:disabled{opacity:.45;cursor:default}
 #deploy .im-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
 #deploy .im-tab{display:flex;align-items:center;gap:6px}
-#deploy .im-tab.active{background:#0369a1;border-color:#38bdf8;color:#fff}
+#deploy .im-tab.active{background:linear-gradient(180deg,#0e8fd0,#0369a1);border-color:#38bdf8;color:#fff}
 #deploy .im-tab img{width:30px;height:30px;border-radius:6px;object-fit:cover}
 #deploy .stat{color:#cbd5e1;font-size:13px;line-height:1.6}
 </style></head><body>
 <div id="title-screen">
   <h1>あおびー大戦 〜星の歯車〜</h1>
-  <img src="games/srpg/assets/events/keyvisual.jpg" alt="あおびー隊集合" style="max-width:520px;width:100%;border-radius:12px;border:2px solid #475569">
+  <img src="games/srpg/assets/events/keyvisual.jpg" alt="あおびー隊集合" style="max-width:520px;width:100%;border-radius:12px;border:2px solid #b45309;box-shadow:0 0 0 1px rgba(251,191,36,.5),0 12px 32px rgba(0,0,0,.6)">
   <div class="sub">スパロボ風SLG・全33面＋隠しEX面3面（第8面クリア後にルート分岐あり／EX面は本編クリア後に解放）<br>縦画面：下部パネル＋簡略戦闘 ／ 横画面：右パネル＋戦闘アニメ<br>セーブは自動です（インターミッションでは手動スロットにも保存できます）。面の途中で閉じても、タイトルの「つづきから」でその面の途中から再開できます</div>
   <button id="btn-new">はじめから</button>
   <button id="btn-continue" class="sub">つづきから</button>
@@ -237,8 +244,8 @@ body.landscape.panel-hidden #panel{display:none}
     <h2 style="color:#7dd3fc;margin:0 0 10px">どちらの歯車を追う？</h2>
     <p style="color:#cbd5e1;line-height:1.7;font-size:14px">星読みの結果、次の歯車は二か所――森の砦と、海峡の浮遊島。部隊は一つしかない。どちらか一方を選ぼう。<br>（選ばなかったルートの面は、この周回では進めません）</p>
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
-      <button id="btn-route-a" style="background:#0369a1;color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer">Aルート: 森と星読み（第9面「森の砦」へ）</button>
-      <button id="btn-route-b" style="background:#0369a1;color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer">Bルート: 海と港（第9面「海峡の嵐」へ）</button>
+      <button id="btn-route-a" style="background:linear-gradient(180deg,#0e8fd0,#0369a1);color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(224,242,254,.35),0 4px 12px rgba(2,132,199,.4)">Aルート: 森と星読み（第9面「森の砦」へ）</button>
+      <button id="btn-route-b" style="background:linear-gradient(180deg,#0e8fd0,#0369a1);color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px 0 rgba(224,242,254,.35),0 4px 12px rgba(2,132,199,.4)">Bルート: 海と港（第9面「海峡の嵐」へ）</button>
     </div>
   </div>
 </div>
@@ -289,7 +296,7 @@ body.landscape.panel-hidden #panel{display:none}
       const ov = document.createElement("div");
       ov.style.cssText = "position:fixed;inset:0;background:rgba(2,6,23,.45);display:flex;align-items:flex-end;justify-content:center;z-index:60";
       const box = document.createElement("div");
-      box.style.cssText = "background:rgba(15,23,42,.96);border:2px solid #475569;border-radius:12px;margin:10px;padding:12px 14px;max-width:640px;width:100%;color:#e2e8f0;min-height:96px;cursor:pointer";
+      box.style.cssText = "background:linear-gradient(180deg,rgba(27,42,69,.97),rgba(13,20,36,.97));border:2px solid #3d5a80;border-radius:12px;margin:10px;padding:12px 14px;max-width:640px;width:100%;color:#e2e8f0;min-height:96px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(148,197,255,.18),0 10px 30px rgba(0,0,0,.55)";
       ov.appendChild(box); document.body.appendChild(ov);
       let i = 0;
       function render() {
