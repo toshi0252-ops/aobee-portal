@@ -19,7 +19,9 @@
       let ch = stage.terrain[y][x];
       if (ch === "D" && st.gateOpen) ch = "P"; // 開いた砦の門は通路として描く
       cell.className = "cell " + (TERR_CLASS[ch] || "t-plain");
-      const tile = (global.TILE_ART || {})[ch];
+      const tileEntry = (global.TILE_ART || {})[ch];
+      // 地形ごとに複数バリエーションがある場合は座標ハッシュで決定的に選ぶ（再描画で変わらない）
+      const tile = Array.isArray(tileEntry) ? tileEntry[(x * 7 + y * 13) % tileEntry.length] : tileEntry;
       if (tile) { cell.style.backgroundImage = "url(" + (global.assetUrl ? global.assetUrl(tile) : "assets/" + tile) + ")"; cell.style.backgroundSize = "cover"; cell.style.backgroundPosition = "center"; }
       const k = x + "," + y;
       if (this.moveTiles.has(k)) cell.classList.add("hl-move");
