@@ -261,6 +261,7 @@ async function beginStage(idx, selection) {
   if (idx === 0 && !artShown) { artShown = true; await showEventArt("events/opening.jpg", "第1面「" + st.stage.title + "」 ― 祭りの朝"); }
   const introLines = E.stageIntroLines(st.stage, run); // 第14面はルート別台詞を差し込んだ実効行列
   if (introLines.length) await showDialog(introLines);
+  await maybeForesightDialog(); // ティアの予見: 開始時点で既に致命的な危険があれば警告台詞
   render();
 }
 function objectiveText() {
@@ -290,6 +291,8 @@ function render() {
   if (sel && sel.mode === "target") attackTiles = targetTiles();
   if (sel && sel.mode === "healTarget") attackTiles = healTargetTiles();
   if (sel && sel.mode === "hoshiTarget") attackTiles = E.living(st, "ally").map(u => ({ x: u.x, y: u.y }));
+  // ティアの予見（味方フェイズ中だけ、次の敵フェイズの危険を先読みして警告を出す）
+  st.foresight = (st.phase === "player" && !st.result) ? E.foreseeThreats(st) : null;
   grid.setHighlights(moveTiles, attackTiles);
   grid.render(st);
   renderPanel();
@@ -321,7 +324,10 @@ function weaponBlockReason(u, w) {
 function renderPanel() {
   if (st.result) return renderResultPanel();
   if (!sel) {
-    panel.show("<h3>味方フェイズ (TURN " + st.turn + ")</h3><div class='stat'>味方ユニットをタップして選択。移動→武器→予測→攻撃の順に進みます。ほしコマンドはSPを消費します。</div><div class='row'><button id='btn-suspend'>中断してタイトルへ</button></div>");
+    let html = "<h3>味方フェイズ (TURN " + st.turn + ")</h3><div class='stat'>味方ユニットをタップして選択。移動→武器→予測→攻撃の順に進みます。ほしコマンドはSPを消費します。</div>";
+    const fw = st.foresight ? Object.values(st.foresight) : [];
+    if (fw.length) html += "<div class='stat' style='color:#fca5a5'>⚠ ティアの予見: " + fw.length + "人が次の敵フェイズで危険" + (fw.some(t => t.lethal) ? "（撃墜の恐れあり！）" : "") + "</div>";
+    panel.show(html + "<div class='row'><button id='btn-suspend'>中断してタイトルへ</button></div>");
     $("btn-suspend").addEventListener("click", suspendToTitle);
     return;
   }
@@ -509,13 +515,14 @@ async function presentCoreChoice() {
   if (spec.lines) await showDialog(spec.lines);
   const choice = await new Promise(resolve => {
     const ov = document.createElement("div");
-    ov.style.cssText = "position:fixed;inset:0;background:rgba(2,6,23,.96);z-index:66;display:flex;align-items:center;justify-content:center;padding:16px";
-    ov.innerHTML = "<div style='max-width:520px;text-align:center'>" +
-      "<h2 style='color:#7dd3fc;margin:0 0 10px'>サビのコアをどうする？</h2>" +
-      "<p style='color:#cbd5e1;line-height:1.7;font-size:14px'>止めるなら、制御を書き換える間コアに張り付く必要がある。壊すなら早いが、コアの防衛反応で守護機が集まってくる。</p>" +
-      "<div style='display:flex;flex-direction:column;gap:10px;margin-top:14px'>" +
-      "<button data-c='stop' style='background:#0369a1;color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer'>止める（制御を書き換える）</button>" +
-      "<button data-c='destroy' style='background:#7f1d1d;color:#fff;border:1px solid #f87171;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer'>壊す（動力系を破壊する）</button>" +
+    ov.className = "core-ov";
+    ov.innerHTML = "<div class='core-card'>" +
+      "<img class='core-img' src='" + assetUrl("events/core.jpg") + "' alt='サビのコア'>" +
+      "<h2>サビのコアをどうする？</h2>" +
+      "<p>止めるなら、制御を書き換える間コアに張り付く必要がある。壊すなら早いが、コアの防衛反応で守護機が集まってくる。</p>" +
+      "<div class='core-btns'>" +
+      "<button data-c='stop' class='core-btn stop'>止める（制御を書き換える）<small>コアに隣接して2ターン作業 ― 傷つけずに終わらせる</small></button>" +
+      "<button data-c='destroy' class='core-btn destroy'>壊す（動力系を破壊する）<small>守護機の増援が来る ― 決着は早い</small></button>" +
       "</div></div>";
     ov.querySelectorAll("button[data-c]").forEach(b => b.addEventListener("click", () => { document.body.removeChild(ov); resolve(b.dataset.c); }));
     document.body.appendChild(ov);
@@ -524,6 +531,18 @@ async function presentCoreChoice() {
   if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; await showDialog(d); }
   E.saveRun(localStorage, run);
   render();
+}
+/* ティアの予見: 味方フェイズ開始時、撃墜の恐れがある味方がいればティアが台詞で警告する。
+   危険（大ダメージ）止まりならマップ上の⚠バッジだけにし、台詞は致命的な時だけに絞る */
+async function maybeForesightDialog() {
+  if (!st || st.result) return;
+  const fw = E.foreseeThreats(st);
+  if (!fw) return;
+  const names = Object.keys(fw).filter(k => fw[k].lethal)
+    .map(k => { const u = st.units.find(u => String(u.uid) === k); return u ? u.name : null; })
+    .filter(Boolean);
+  if (!names.length) return;
+  await showDialog([["tia", "待って…！ " + names.join("と") + "が危ない。このままだと、やられちゃう…！"]]);
 }
 function checkEnd() { /* 結果は renderResultPanel が st.result を見て表示する */ }
 async function enemyTurn() {
@@ -538,6 +557,7 @@ async function enemyTurn() {
     E.startPlayerPhase(st);
     if (st.pendingDialog) { const d = st.pendingDialog; st.pendingDialog = null; render(); await showDialog(d); }
     if (!st.result && st.pendingChoice) await presentCoreChoice();
+    if (!st.result) await maybeForesightDialog(); // ティアの予見: 致命的な危険がある時だけ台詞で警告
   }
   busy = false;
   render();
