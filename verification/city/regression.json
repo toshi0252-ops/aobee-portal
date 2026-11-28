@@ -1,0 +1,22 @@
+{
+  "streak": {
+    "reset": true,
+    "resume": true,
+    "twelfthMonth": true,
+    "legacyVersion8": true
+  },
+  "long": {
+    "start": 49,
+    "end": 409,
+    "pop": 11016,
+    "cash": 4838244,
+    "happy": 86,
+    "policies": 30,
+    "storms": 5,
+    "fireEventMonths": 16,
+    "disasters": true,
+    "history": 360,
+    "mode": "free"
+  },
+  "policyChoices": 16
+}

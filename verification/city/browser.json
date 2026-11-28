@@ -1,0 +1,84 @@
+{
+  "viewports": [
+    {
+      "width": 320,
+      "height": 568,
+      "overlap": false,
+      "menuVisible": true,
+      "scroll": false,
+      "touchBuild": true,
+      "touchPan": true,
+      "audio": {
+        "state": "running",
+        "musicOn": true,
+        "volume": 0.5,
+        "soundOn": true
+      },
+      "previousTile": "grass"
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "overlap": false,
+      "menuVisible": true,
+      "scroll": false,
+      "touchBuild": true,
+      "touchPan": true,
+      "audio": {
+        "state": "running",
+        "musicOn": true,
+        "volume": 0.5,
+        "soundOn": true
+      },
+      "previousTile": "grass"
+    },
+    {
+      "width": 568,
+      "height": 320,
+      "overlap": false,
+      "menuVisible": true,
+      "scroll": false,
+      "touchBuild": true,
+      "touchPan": true,
+      "audio": {
+        "state": "running",
+        "musicOn": true,
+        "volume": 0.5,
+        "soundOn": true
+      },
+      "previousTile": "grass"
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "overlap": false,
+      "menuVisible": true,
+      "scroll": false,
+      "touchBuild": true,
+      "touchPan": true,
+      "audio": {
+        "state": "running",
+        "musicOn": true,
+        "volume": 0.5,
+        "soundOn": true
+      },
+      "previousTile": "grass"
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "overlap": false,
+      "menuVisible": true,
+      "scroll": false,
+      "touchBuild": true,
+      "touchPan": true,
+      "audio": {
+        "state": "running",
+        "musicOn": true,
+        "volume": 0.5,
+        "soundOn": true
+      },
+      "previousTile": "grass"
+    }
+  ]
+}
