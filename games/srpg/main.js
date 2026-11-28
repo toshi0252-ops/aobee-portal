@@ -210,14 +210,6 @@ window.addEventListener("resize", setOrientation);
 
 /* イベント一枚絵を全画面で見せて、タップで進む */
 const artsShown = new Set(); // 面開始前の一枚絵は1セッションに1回だけ（再挑戦で繰り返さない）
-
-  const boss = [defU, atkU].find(u => u.side === "enemy" && BOSS_CUTIN[u.pilotId]);
-  if (boss && !cutinsShown.has(E.stageKey(st.stage) + "|" + boss.pilotId)) {
-    cutinsShown.add(E.stageKey(st.stage) + "|" + boss.pilotId);
-    opts.cutin = { img: BOSS_CUTIN[boss.pilotId].img, label: BOSS_CUTIN[boss.pilotId].label, name: boss.name };
-  }
-  return opts;
-}
 async function showStageArt(art, stage) {
   if (!art) return;
   const head = stage.ex ? "EX面「" + stage.title + "」" : "第" + stage.id + "面「" + stage.title + "」";
