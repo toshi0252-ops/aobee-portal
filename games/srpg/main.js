@@ -263,6 +263,7 @@ async function beginStage(idx, selection) {
   if (idx === 0 && !artShown) { artShown = true; await showEventArt("events/opening.jpg", "第1面「" + st.stage.title + "」 ― 祭りの朝"); }
   const introLines = E.stageIntroLines(st.stage, run); // 第14面はルート別台詞を差し込んだ実効行列
   if (introLines.length) await showDialog(introLines);
+  if (st.pendingChoice) await presentCoreChoice(); // コア面（atStart）: 開始直後にコア選択を提示
   await maybeForesightDialog(); // ティアの予見: 開始時点で既に致命的な危険があれば警告台詞
   render();
 }

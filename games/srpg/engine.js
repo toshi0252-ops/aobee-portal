@@ -207,6 +207,8 @@
       units: [], log: [], pendingDialog: null, rustStorm: false, bossHalfShown: false, medal: false,
       fogActive: !!stage.fog, coreChoice: null, sealProgress: 0, pendingChoice: null, gateOpen: false
     };
+    // 最終面分割後のコア面: 選択は戦闘開始直後に提示する（triggerUnit を持たない atStart 形式）
+    if (stage.coreChoice && stage.coreChoice.atStart) st.pendingChoice = stage.coreChoice.id || "core";
     let specs = stage.allies;
     if (selection) {
       // 配置位置は allies の座標（スロット）を、選択メンバーへ allies の並び順優先で割り当てる
@@ -724,6 +726,9 @@
   /* v1セーブ（インデックス記録）解釈用の凍結リスト: 2026-11-28時点（全32面）のキー順。
      これ以降に面を挿入・改番しても、この並びで旧セーブのインデックスをキーへ変換する。 */
   const STAGE_KEYS_V1 = ["1", "2", "3", "4", "5", "6", "7", "8", "9A", "10A", "9B", "10B", "11A", "12A", "13A", "11B", "12B", "13B", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "EX", "EX2", "EX3"];
+  /* v2→v3 のキー改番表: 増面（2026-11-28）で面番号が繰り上がった分の旧キー→新キー。
+     v1セーブは凍結リストでキー化した後、v2セーブはそのまま、この表を通してから解決する。 */
+  const KEY_RENAMES_V3 = { "12A": "13A", "13A": "14A", "12B": "13B", "13B": "14B", "15": "16", "16": "17", "17": "18", "18": "19", "19": "20", "20": "21", "21": "22", "22": "23", "23": "24", "24": "25" };
   function applyStageClear(run, stageIdx, stage) {
     run.cleared = Math.max(run.cleared || 0, stageIdx + 1);
     if (!Array.isArray(run.clearedStages)) run.clearedStages = [];
@@ -746,14 +751,14 @@
     return path;
   }
   function buildSave(run) {
-    return { version: 2, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned, partStock: run.partStock || {}, route: run.route || null, clearedStages: run.clearedStages || [], clearedStageKeys: run.clearedStageKeys || [], gameCleared: !!run.gameCleared, coreChoice: run.coreChoice || null };
+    return { version: 3, funds: run.funds, cleared: run.cleared, pilots: run.pilots, mods: run.mods, parts: run.parts, hoshiLearned: run.hoshiLearned, partStock: run.partStock || {}, route: run.route || null, clearedStages: run.clearedStages || [], clearedStageKeys: run.clearedStageKeys || [], gameCleared: !!run.gameCleared, coreChoice: run.coreChoice || null };
   }
   function saveRun(storage, run) { storage.setItem("aobee-taisen-save-v1", JSON.stringify(buildSave(run))); }
   function loadRun(storage, data) {
     const raw = storage.getItem("aobee-taisen-save-v1");
     if (!raw) return null;
     const s = JSON.parse(raw);
-    if (s.version !== 1 && s.version !== 2) return null;
+    if (![1, 2, 3].includes(s.version)) return null;
     return parseRunSave(data, s);
   }
   /* 手動セーブスロット（3つ）: インターミッション等から任意の時点を残すための保存。
@@ -770,7 +775,7 @@
     if (!raw) return null;
     let s;
     try { s = JSON.parse(raw); } catch (e) { return null; }
-    if (!s || (s.version !== 1 && s.version !== 2)) return null;
+    if (!s || ![1, 2, 3].includes(s.version)) return null;
     return parseRunSave(data, s);
   }
   function saveSlotInfo(storage, slot) {
@@ -778,7 +783,7 @@
     if (!raw) return null;
     let s;
     try { s = JSON.parse(raw); } catch (e) { return null; }
-    if (!s || (s.version !== 1 && s.version !== 2)) return null;
+    if (!s || ![1, 2, 3].includes(s.version)) return null;
     return { clearedCount: (Array.isArray(s.clearedStageKeys) && s.clearedStageKeys.length ? s.clearedStageKeys.length : (Array.isArray(s.clearedStages) ? s.clearedStages.length : (s.cleared || 0))), funds: s.funds || 0, route: (s.route === "A" || s.route === "B") ? s.route : null, gameCleared: !!s.gameCleared, savedAt: s.savedAt || null };
   }
   function parseRunSave(data, s) {
@@ -805,10 +810,12 @@
     const storedIdx = Array.isArray(s.clearedStages) ? s.clearedStages.slice() : null;
     let keys = null;
     if (Array.isArray(s.clearedStageKeys) && s.clearedStageKeys.length) {
-      keys = s.clearedStageKeys.filter(k => keyToIdx.has(k));
+      keys = s.clearedStageKeys.slice();
     } else if (storedIdx && storedIdx.length) {
-      keys = storedIdx.map(i => STAGE_KEYS_V1[i]).filter(k => k && keyToIdx.has(k));
+      keys = storedIdx.map(i => STAGE_KEYS_V1[i]).filter(Boolean);
     }
+    if (keys && s.version !== 3) keys = keys.map(k => KEY_RENAMES_V3[k] || k); // 増面改番より前のセーブは旧キーを新キーへ
+    if (keys) keys = keys.filter(k => keyToIdx.has(k));
     if (keys) {
       run.clearedStageKeys = [...new Set(keys)];
       run.clearedStages = run.clearedStageKeys.map(k => keyToIdx.get(k));
@@ -884,7 +891,7 @@
     if (saved.protectIds) st.protectIds = deepCopyPlain(saved.protectIds);
     return st;
   }
-  const api = { TERRAIN, terrainAt, terrainChar, moveCostAt, terrainBonusFor, dist, createRun, startStage, deployInfo, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, supplyAction, applyHoshi, bestWeaponVs, foreseeThreats, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, SAVE_SLOTS, saveRunToSlot, loadRunFromSlot, saveSlotInfo, serializeState, restoreState, nextStageIndex, stageKey, STAGE_KEYS_V1, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, checkGate, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
+  const api = { TERRAIN, terrainAt, terrainChar, moveCostAt, terrainBonusFor, dist, createRun, startStage, deployInfo, unitAt, living, computeMoveRange, reachableSet, fogPenalty, hitRate, damage, isShielded, canUseWeapon, comboPartnerOk, forecast, resolveCombat, healAction, supplyAction, applyHoshi, bestWeaponVs, foreseeThreats, enemyPhase, npcPhase, startPlayerPhase, updateResult, buildSave, saveRun, loadRun, SAVE_SLOTS, saveRunToSlot, loadRunFromSlot, saveSlotInfo, serializeState, restoreState, nextStageIndex, stageKey, STAGE_KEYS_V1, KEY_RENAMES_V3, stagePath, stageIntroLines, stageAfterLines, applyStageClear, checkCoreChoice, applyCoreChoice, checkGate, stageLevel, gainExp, MOD_TRACKS, MOD_MAX, MOD_PER, HOSHI_COST, modCost, buyMod, buyPart, equipPart, unequipPart, learnHoshi, calcBonuses };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   global.SRPGEngine = api;
 })(typeof window !== "undefined" ? window : globalThis);
