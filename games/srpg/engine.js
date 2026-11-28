@@ -391,6 +391,11 @@
     }
     atk.morale = Math.min(150, atk.morale + 5 + (killed ? 8 : 0));
     const ev = { type: "attack", atk: atk.name, def: def.name, weapon: w.name, fx: w.fx || "melee", power: w.power, hit: isHit, hitRate: hit, dmg, killed, defHp: def.hp, atkX: atk.x, atkY: atk.y, defX: def.x, defY: def.y, exp: 0 };
+    if (w.combo) {
+      // 合体攻撃: 相方の情報をイベントに載せ、専用演出（バナー＋相方登場＋二重ビーム）が組めるようにする
+      const partner = st.units.find(u => u.side === atk.side && u.uid !== atk.uid && u.unitId === w.combo.partner && u.hp > 0);
+      if (partner) ev.combo = { weapon: w.name, partnerPilotId: partner.pilotId, partnerName: partner.name, partnerUnitId: partner.unitId, partnerUnitName: partner.unitName, partnerColor: partner.color };
+    }
     events.push(ev);
     if (atk.side === "ally" && def.side === "enemy") {
       let exp = isHit ? 20 : 8;

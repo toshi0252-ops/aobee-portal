@@ -23,6 +23,23 @@
       return actx;
     } catch (e) { return null; }
   }
+  function sfxCombo() {
+    const ac = audioCtx();
+    if (!ac) return;
+    try {
+      const t0 = ac.currentTime;
+      [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = i % 2 ? "square" : "triangle"; o.frequency.value = f;
+        const vol = i % 2 ? 0.08 : 0.2;
+        g.gain.setValueAtTime(0.0001, t0 + i * 0.07);
+        g.gain.exponentialRampToValueAtTime(vol, t0 + i * 0.07 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + i * 0.07 + 0.26);
+        o.connect(g).connect(ac.destination);
+        o.start(t0 + i * 0.07); o.stop(t0 + i * 0.07 + 0.3);
+      });
+    } catch (e) { /* 音が出なくても演出は続行 */ }
+  }
   function sfxLevelUp() {
     const ac = audioCtx();
     if (!ac) return;
@@ -115,6 +132,20 @@
         setTimeout(() => { lp.remove(); resolve(); }, 980);
         return;
       }
+      let comboWait = 0;
+      if (ev.combo && typeof ev.atkX === "number") {
+        // 合体攻撃: 攻撃側のマスに金色のバナーポップ＋ファンファーレ
+        const acell = gridEl.children[ev.atkY * w + ev.atkX];
+        if (acell) {
+          const cp = document.createElement("div");
+          cp.className = "combo-pop";
+          cp.textContent = "合体攻撃！ " + ev.combo.weapon;
+          acell.appendChild(cp);
+          setTimeout(() => cp.remove(), 1250);
+        }
+        sfxCombo();
+        comboWait = 420;
+      }
       if (ev.type === "heal" || ev.type === "supply") {
         const glow = document.createElement("div");
         glow.className = "cell-fx heal";
@@ -134,7 +165,7 @@
         cell.appendChild(fl);
         setTimeout(() => fl.remove(), 520);
       }
-      let wait = 650;
+      let wait = 650 + comboWait;
       if (ev.killed) {
         const defU = (st.units || []).find(u => u.x === ev.defX && u.y === ev.defY);
         const living = defU && (defU.unitId === "animal" || defU.unitId === "citizen");
@@ -149,7 +180,7 @@
           const big = defU ? (defU.maxHp >= 2500 || /boss/.test(defU.unitId)) : false;
           mapExplosion(cell, big);
           sfxExplosion(big);
-          wait = 920; // 爆発を見せ切ってから次へ
+          wait = 920 + comboWait; // 爆発を見せ切ってから次へ
         }
       }
       const pop = document.createElement("div");
@@ -193,10 +224,12 @@
     return new Promise(resolve => {
       const ov = document.createElement("div");
       ov.className = "battle-scene";
+      if (atkU.unitId === "sabicore" || defU.unitId === "sabicore") ov.classList.add("bs-core"); // コア戦は専用の暗赤い舞台にする
       const attacks = events.filter(e => e.type === "attack");
       const heals = events.filter(e => e.type === "heal");
       const lvups = events.filter(e => e.type === "levelup");
       const main = attacks[0], counter = attacks[1];
+      const coreDied = (defU.unitId === "sabicore" && main && main.killed) || (atkU.unitId === "sabicore" && counter && counter.killed);
       // 表示上の開始HP（エンジン側は計算済みなので、受けたダメージを足し戻して開始値にする）
       const startAtk = atkU.hp + (counter && counter.hit ? counter.dmg : 0);
       const startDef = defU.hp + (main && main.hit ? main.dmg : 0);
@@ -434,27 +467,34 @@
       else if (main && forecast && forecast.stance === "defend") steps.push({ react: "defend", el: right, who: defU });
       else if (main && forecast && forecast.stance === "evade" && main.hit) steps.push({ react: "evade", el: right, who: defU });
       let i = 0;
-      function next() {
-        if (done) return;
-        if (i >= steps.length) {
-          const killed = attacks.some(e => e.killed);
-          quote.textContent = killed ? "撃墜！" : "戦闘終了";
-          setTimeout(finish, 950); // 余韻
-          return;
-        }
-        const s = steps[i++];
-        if (s.react) {
-          quote.textContent = s.who.name + (s.react === "defend" ? "「防御した！ ダメージ半減」" : "「回避しきれなかった…！」");
-          s.el.classList.add(s.react === "defend" ? "bs-guard" : "bs-evade");
-          setTimeout(() => { s.el.classList.remove("bs-guard", "bs-evade"); setTimeout(next, 500); }, 650);
-          return;
-        }
-        const line = LINES[s.who.pilotId] || (s.who.side === "enemy" ? "……！" : "いくよ！");
-        quote.textContent = s.who.name + "「" + line + " " + s.ev.weapon + "！」";
+      // 合体攻撃の相方ユニット（必要な時だけ遅れて登場させる）
+      let partnerEl = null;
+      function ensurePartner(s) {
+        if (partnerEl) return partnerEl;
+        const c = s.ev.combo;
+        const pseudo = { unitId: c.partnerUnitId, name: c.partnerName, unitName: c.partnerUnitName, color: c.partnerColor };
+        partnerEl = document.createElement("div");
+        partnerEl.className = "bs-unit " + (s.el.classList.contains("bs-left") ? "bs-left" : "bs-right") + " bs-partner";
+        partnerEl.innerHTML = spriteHtml(pseudo) + "<div class='bs-name'>" + c.partnerUnitName + "</div>";
+        ov.appendChild(partnerEl);
+        if (partnerEl.animate) partnerEl.animate([{ transform: "translateY(30px) scale(.92)", opacity: 0 }, { transform: "translateY(0) scale(.92)", opacity: 1 }], { duration: 340, easing: "ease-out", fill: "forwards" });
+        return partnerEl;
+      }
+      function fireStep(s) {
         const fx = s.ev.fx || "melee";
         const big = (s.ev.power || 0) >= 2000; // 威力2000以上の必殺は一回り派手に
         if (fx === "melee") s.el.classList.add("bs-dash");
         const delay = launchFx(s, big);
+        if (s.ev.combo && fx === "beam" && partnerEl) {
+          // 相方からも二本目のビームを撃ち、対象の一点で合流させる
+          const from = centerOf(partnerEl), foeI = impactPointOf(s.foe);
+          const to = s.ev.hit ? foeI : { x: foeI.x, y: foeI.y - 48 };
+          const dx = to.x - from.x, dy = to.y - from.y, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
+          const b2 = mk("fx-beam big", from.x, from.y);
+          b2.style.width = len + "px";
+          b2.innerHTML = "<i class='glow'></i><i class='mid'></i><i class='core'></i>";
+          anim(b2, [{ transform: "rotate(" + ang + "rad) scale(0,.4)", opacity: 1 }, { transform: "rotate(" + ang + "rad) scale(1,1)", opacity: 1, offset: .3 }, { transform: "rotate(" + ang + "rad) scale(1,1.5)", opacity: 1, offset: .5 }, { transform: "rotate(" + ang + "rad) scale(1,1)", opacity: 1, offset: .7 }, { transform: "rotate(" + ang + "rad) scale(1,.7)", opacity: 0 }], { duration: 450, delay: 70, fill: "forwards" });
+        }
         setTimeout(() => {
           if (done) return;
           s.el.classList.remove("bs-dash");
@@ -487,6 +527,46 @@
           }
           setTimeout(next, 800);
         }, delay);
+      }
+      function next() {
+        if (done) return;
+        if (i >= steps.length) {
+          const killed = attacks.some(e => e.killed);
+          quote.textContent = killed ? "撃墜！" : "戦闘終了";
+          if (coreDied) {
+            // サビのコア撃破: 白い閃光と長い余韻で最終決戦の決着らしくする
+            const sf = document.createElement("div");
+            sf.className = "fx-screenflash";
+            fxLayer.appendChild(sf);
+            setTimeout(() => sf.remove(), 720);
+          }
+          setTimeout(finish, coreDied ? 1800 : 950); // 余韻
+          return;
+        }
+        const s = steps[i++];
+        if (s.react) {
+          quote.textContent = s.who.name + (s.react === "defend" ? "「防御した！ ダメージ半減」" : "「回避しきれなかった…！」");
+          s.el.classList.add(s.react === "defend" ? "bs-guard" : "bs-evade");
+          setTimeout(() => { s.el.classList.remove("bs-guard", "bs-evade"); setTimeout(next, 500); }, 650);
+          return;
+        }
+        if (s.ev.combo && !s._comboShown) {
+          // 合体攻撃の専用導入: 相方が駆けつけ、二人の名乗りとバナーの後に発射する
+          s._comboShown = true;
+          quote.textContent = s.who.name + "＆" + s.ev.combo.partnerName + "「「" + s.ev.combo.weapon + "！！」」";
+          ensurePartner(s);
+          const b = document.createElement("div");
+          b.className = "bs-combo-banner";
+          b.innerHTML = "<span>合体攻撃</span><strong>" + s.ev.combo.weapon + "</strong>";
+          ov.appendChild(b);
+          sfxCombo();
+          setTimeout(() => b.remove(), 1350);
+          setTimeout(() => { if (!done) fireStep(s); }, 840);
+          return;
+        }
+        const line = LINES[s.who.pilotId] || (s.who.side === "enemy" ? "……！" : "いくよ！");
+        quote.textContent = s.who.name + "「" + line + " " + s.ev.weapon + "！」";
+        fireStep(s);
       }
       if (!steps.length && heals.length) {
         // 回復だけのシーン（現行の呼び出しでは発生しないが、渡された場合の受け口）

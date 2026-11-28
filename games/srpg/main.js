@@ -509,13 +509,14 @@ async function presentCoreChoice() {
   if (spec.lines) await showDialog(spec.lines);
   const choice = await new Promise(resolve => {
     const ov = document.createElement("div");
-    ov.style.cssText = "position:fixed;inset:0;background:rgba(2,6,23,.96);z-index:66;display:flex;align-items:center;justify-content:center;padding:16px";
-    ov.innerHTML = "<div style='max-width:520px;text-align:center'>" +
-      "<h2 style='color:#7dd3fc;margin:0 0 10px'>サビのコアをどうする？</h2>" +
-      "<p style='color:#cbd5e1;line-height:1.7;font-size:14px'>止めるなら、制御を書き換える間コアに張り付く必要がある。壊すなら早いが、コアの防衛反応で守護機が集まってくる。</p>" +
-      "<div style='display:flex;flex-direction:column;gap:10px;margin-top:14px'>" +
-      "<button data-c='stop' style='background:#0369a1;color:#fff;border:1px solid #38bdf8;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer'>止める（制御を書き換える）</button>" +
-      "<button data-c='destroy' style='background:#7f1d1d;color:#fff;border:1px solid #f87171;border-radius:10px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer'>壊す（動力系を破壊する）</button>" +
+    ov.className = "core-ov";
+    ov.innerHTML = "<div class='core-card'>" +
+      "<img class='core-img' src='" + assetUrl("events/core.jpg") + "' alt='サビのコア'>" +
+      "<h2>サビのコアをどうする？</h2>" +
+      "<p>止めるなら、制御を書き換える間コアに張り付く必要がある。壊すなら早いが、コアの防衛反応で守護機が集まってくる。</p>" +
+      "<div class='core-btns'>" +
+      "<button data-c='stop' class='core-btn stop'>止める（制御を書き換える）<small>コアに隣接して2ターン作業 ― 傷つけずに終わらせる</small></button>" +
+      "<button data-c='destroy' class='core-btn destroy'>壊す（動力系を破壊する）<small>守護機の増援が来る ― 決着は早い</small></button>" +
       "</div></div>";
     ov.querySelectorAll("button[data-c]").forEach(b => b.addEventListener("click", () => { document.body.removeChild(ov); resolve(b.dataset.c); }));
     document.body.appendChild(ov);
